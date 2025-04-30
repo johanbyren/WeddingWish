@@ -1,10 +1,10 @@
 import { Link, Navigate } from "react-router-dom"
 import { Button } from "~/components/ui/button"
-import { HeartIcon } from "lucide-react"
+import { HeartIcon, LogIn, UserPlus } from "lucide-react"
 import { useAuth } from "~/context/auth";
 
 export default function Home() {
-  const { user, loaded, login } = useAuth();
+  const { user, loaded, login, logout } = useAuth();
 
   if (user && loaded) {
     return <Navigate to="/dashboard" replace />;
@@ -15,15 +15,28 @@ export default function Home() {
       <header className="px-4 lg:px-6 h-14 flex items-center border-b">
         <Link to="/" className="flex items-center gap-2 font-semibold">
           <HeartIcon className="h-6 w-6 text-pink-500" />
-          <span>WeddingWish</span>
+          <span>WeddingWish{user ? ` - ${user.email}` : ''}</span>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Button onClick={login} className="text-sm font-medium hover:underline underline-offset-4">
-            Login
-          </Button>
-          <Link to="/register" className="text-sm font-medium hover:underline underline-offset-4">
-            Register
-          </Link>
+          {!user ? (
+            <>
+              <Button variant="ghost" size="sm" onClick={login}>
+                <LogIn className="h-4 w-4 mr-2" />
+                Login
+              </Button>
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/register" className="flex items-center">
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Register
+                </Link>
+              </Button>
+            </>
+          ) : (
+            <Button variant="ghost" size="sm" onClick={logout}>
+              <LogIn className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
+          )}
         </nav>
       </header>
       <main className="flex-1 flex flex-col">
@@ -39,9 +52,15 @@ export default function Home() {
                 </p>
               </div>
               <div className="space-x-4">
-                <Button size="lg" className="bg-pink-500 hover:bg-pink-600">
-                  Get Started
-                </Button>
+                {user ? (
+                  <Button size="lg" className="bg-pink-500 hover:bg-pink-600" asChild>
+                    <Link to="/dashboard">Your Dashboard</Link>
+                  </Button>
+                ) : (
+                  <Button size="lg" className="bg-pink-500 hover:bg-pink-600">
+                    Get Started
+                  </Button>
+                )}
                 <Button size="lg" variant="outline">
                   Learn More
                 </Button>
@@ -124,7 +143,7 @@ export default function Home() {
         </section>
       </main>
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full border-t px-4 md:px-6">
-        <p className="text-xs text-gray-500">© 2024 WeddingWish. All rights reserved.</p>
+        <p className="text-xs text-gray-500">© 2025 WeddingWish. All rights reserved.</p>
         <nav className="sm:ml-auto flex gap-4 sm:gap-6">
           <Link to="#" className="text-xs hover:underline underline-offset-4">
             Terms of Service

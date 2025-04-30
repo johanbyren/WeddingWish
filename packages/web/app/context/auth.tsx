@@ -128,7 +128,7 @@ export function AuthProvider ({ children }: { children: ReactNode }) {
           console.error("callback: Token exchange failed", exchanged.err);
         }
       }
-      navigate("/");
+      navigate("/dashboard");
     }
   }
 
@@ -137,7 +137,7 @@ export function AuthProvider ({ children }: { children: ReactNode }) {
     token.current = undefined;
     setUser(undefined);
     setLoggedIn(false);
-    window.location.replace('/login');
+    window.location.replace('/');
   }
 
   return (

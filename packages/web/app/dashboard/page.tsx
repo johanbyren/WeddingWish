@@ -11,12 +11,12 @@ export default function Dashboard() {
       <header className="px-4 lg:px-6 h-14 flex items-center border-b">
         <Link to="/" className="flex items-center gap-2 font-semibold">
           <HeartIcon className="h-6 w-6 text-pink-500" />
-          <span>WeddingWish - {user?.email}</span>
+          <span>WeddingWish{user ? ` - ${user.email}` : ''}</span>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
             <Button variant="ghost" size="sm" onClick={logout}>
               <LogOut className="h-4 w-4 mr-2" />
-              Back to Home
+              Logout
             </Button>
         </nav>
       </header>

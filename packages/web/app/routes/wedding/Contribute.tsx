@@ -146,7 +146,7 @@ export default function ContributePage() {
       <footer className="border-t py-6">
         <div className="container px-4 md:px-6 mx-auto">
           <div className="text-center text-sm text-gray-500">
-            <p>© 2024 WeddingWish. All rights reserved.</p>
+            <p>© 2025 WeddingWish. All rights reserved.</p>
           </div>
         </div>
       </footer>

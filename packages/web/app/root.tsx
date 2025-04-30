@@ -7,7 +7,6 @@ import {
   ScrollRestoration,
 } from "react-router";
 import { AuthProvider } from "./context/auth";
-import { DevToolbar } from "./components/dev-toolbar";
 import { StrictMode } from "react";
 
 import type { Route } from "./+types/root";
@@ -51,7 +50,6 @@ export default function App() {
         <div className="min-h-screen">
           <Outlet />
         </div>
-        <DevToolbar />
       </AuthProvider>
     </StrictMode>
   );

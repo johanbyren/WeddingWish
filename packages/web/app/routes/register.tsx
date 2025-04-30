@@ -3,15 +3,20 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { HeartIcon } from "lucide-react";
+import { HeartIcon, LogIn } from "lucide-react";
+import { useAuth } from "~/context/auth";
+import { User } from "@wedding-wish/core/user";
+
 
 export default function Register() {
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
-    password: "",
-    confirmPassword: "",
+    // password: "",
+    // confirmPassword: "",
   });
   const [error, setError] = useState("");
 
@@ -24,13 +29,20 @@ export default function Register() {
     e.preventDefault();
     setError("");
 
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
+    // if (formData.password !== formData.confirmPassword) {
+    //   setError("Passwords do not match");
+    //   return;
+    // }
 
     // Here you would typically call an API to register the user
     // For demo purposes, we'll just redirect to the dashboard
+    
+    await User.create({
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+    });
+    
     navigate("/dashboard");
   };
 
@@ -51,13 +63,24 @@ export default function Register() {
           <div className="space-y-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name">First Name</Label>
                 <Input
-                  id="name"
-                  name="name"
-                  placeholder="John & Jane Doe"
+                  id="firstName"
+                  name="firstName"
+                  placeholder="Joe"
                   required
-                  value={formData.name}
+                  value={formData.firstName}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="name">Last Name</Label>
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  placeholder="Doe"
+                  required
+                  value={formData.lastName}
                   onChange={handleChange}
                 />
               </div>
@@ -73,7 +96,7 @@ export default function Register() {
                   onChange={handleChange}
                 />
               </div>
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
@@ -94,7 +117,7 @@ export default function Register() {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                 />
-              </div>
+              </div> */}
               {error && <p className="text-sm text-red-500">{error}</p>}
               <Button type="submit" className="w-full bg-pink-500 hover:bg-pink-600">
                 Register
@@ -102,9 +125,9 @@ export default function Register() {
             </form>
             <div className="text-center text-sm">
               Already have an account?{" "}
-              <Link to="/login" className="underline">
+              <button onClick={login} className="underline bg-transparent border-none p-0 text-inherit cursor-pointer">
                 Login
-              </Link>
+              </button>
             </div>
           </div>
         </div>
