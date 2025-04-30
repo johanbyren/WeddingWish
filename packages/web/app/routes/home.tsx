@@ -1,8 +1,15 @@
-import { Link } from "react-router-dom"
+import { Link, Navigate } from "react-router-dom"
 import { Button } from "~/components/ui/button"
 import { HeartIcon } from "lucide-react"
+import { useAuth } from "~/context/auth";
 
 export default function Home() {
+  const { user, loaded, login } = useAuth();
+
+  if (user && loaded) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <header className="px-4 lg:px-6 h-14 flex items-center border-b">
@@ -11,9 +18,9 @@ export default function Home() {
           <span>WeddingWish</span>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Link to="/login" className="text-sm font-medium hover:underline underline-offset-4">
+          <Button onClick={login} className="text-sm font-medium hover:underline underline-offset-4">
             Login
-          </Link>
+          </Button>
           <Link to="/register" className="text-sm font-medium hover:underline underline-offset-4">
             Register
           </Link>

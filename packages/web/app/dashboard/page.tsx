@@ -1,22 +1,23 @@
 import { Link, Outlet } from "react-router-dom"
 import { Button } from "~/components/ui/button"
 import { HeartIcon, Gift, Calendar, Settings, LogOut, Plus } from "lucide-react"
+import { useAuth } from "~/context/auth";
 
 export default function Dashboard() {
+  const { user, logout } = useAuth();
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="px-4 lg:px-6 h-14 flex items-center border-b">
         <Link to="/" className="flex items-center gap-2 font-semibold">
           <HeartIcon className="h-6 w-6 text-pink-500" />
-          <span>WeddingWish</span>
+          <span>WeddingWish - {user?.email}</span>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Link to="/">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" onClick={logout}>
               <LogOut className="h-4 w-4 mr-2" />
               Back to Home
             </Button>
-          </Link>
         </nav>
       </header>
       <div className="flex flex-1">

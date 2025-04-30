@@ -1,79 +1,161 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import type { ReactNode } from 'react';
+import {
+  createContext,
+  useState,
+  useContext,
+  type ReactNode,
+  useEffect,
+  useRef,
+} from "react"
+import { createClient } from "@openauthjs/openauth/client"
+import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router";
+import type { UserType } from "@wedding-wish/core/user/types";
 
-interface User {
-  id: string;
-  email: string;
-  name: string;
-}
+const client = createClient({
+  clientID: "web",
+  issuer: import.meta.env.VITE_AUTH_URL,
+})
 
 interface AuthContextType {
-  isAuthenticated: boolean;
-  user: User | null;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-  // Dev helper
-  devLogin: () => void;
+  user?: UserType
+  loaded: boolean
+  loggedIn: boolean
+  logout: () => void
+  login: () => Promise<void>
+  getToken: () => Promise<string | undefined>
 }
 
-// Mock user for development
-const MOCK_USER: User = {
-  id: "mock-user-1",
-  email: "test@example.com",
-  name: "Test User"
-};
+const AuthContext = createContext({} as AuthContextType)
 
-const AuthContext = createContext<AuthContextType | null>(null);
+export function AuthProvider ({ children }: { children: ReactNode }) {
+  const initializing = useRef(true);
+  const [loaded, setLoaded] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const token = useRef<string | undefined>(undefined);
+  const [user, setUser] = useState<UserType | undefined>();
+  const navigate = useNavigate();
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Check for existing auth on mount
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      setIsAuthenticated(true);
-      setUser(MOCK_USER);
+    const hash = new URLSearchParams(location.search.slice(1));
+    const code = hash.get("code");
+    const state = hash.get("state");
+
+    if (!initializing.current) {
+      return;
     }
-    setIsInitialized(true);
+
+    initializing.current = false;
+
+    if (code && state) {
+      callback(code, state);
+      return;
+    }
+
+    auth();
   }, []);
 
-  const login = async (email: string, password: string) => {
-    // Mock login - in dev, accept any credentials
-    localStorage.setItem('auth_token', 'mock-token');
-    setIsAuthenticated(true);
-    setUser(MOCK_USER);
-  };
+  async function auth () {
+    const token = await refreshTokens();
 
-  const logout = () => {
-    localStorage.removeItem('auth_token');
-    setIsAuthenticated(false);
-    setUser(null);
-  };
+    if (token) {
+      const decodedToken = jwtDecode<{ properties: UserType }>(token);
+      setUser(decodedToken.properties);
+      setLoggedIn(true);
+    }
 
-  // Development helper to quickly login
-  const devLogin = () => {
-    login('test@example.com', 'password');
-  };
+    setLoaded(true);
+  }
 
-  // Don't render children until auth state is initialized
-  if (!isInitialized) {
-    return null;
+  async function refreshTokens () {
+    const refresh = localStorage.getItem("refresh");
+    if (!refresh) {
+      return;
+    }
+    const next = await client.refresh(refresh, {
+      access: token.current,
+    });
+    if (next.err) {
+      console.error("refreshTokens: Error refreshing token", next.err);
+      return;
+    }
+    if (!next.tokens) {
+      return token.current;
+    }
+
+    localStorage.setItem("refresh", next.tokens.refresh);
+    token.current = next.tokens.access;
+
+    return next.tokens.access;
+  }
+
+  async function getToken () {
+    const token = await refreshTokens();
+
+    if (!token) {
+      await login();
+      return;
+    }
+
+    return token;
+  }
+
+  async function login () {
+    const { challenge, url } = await client.authorize(location.origin, "code", {
+      pkce: true,
+    });
+    sessionStorage.setItem("challenge", JSON.stringify(challenge));
+    location.href = url;
+  }
+
+  async function callback (code: string, state: string) {
+    const challenge = JSON.parse(sessionStorage.getItem("challenge")!);
+    if (code) {
+      if (state === challenge.state && challenge.verifier) {
+        const exchanged = await client.exchange(
+          code!,
+          location.origin,
+          challenge.verifier,
+        );
+        if (!exchanged.err) {
+          token.current = exchanged.tokens.access;
+          localStorage.setItem("refresh", exchanged.tokens.refresh);
+
+          const decodedToken = jwtDecode<{ properties: UserType }>(exchanged.tokens.access);
+          setUser(decodedToken.properties);
+          setLoggedIn(true);
+        } else {
+          console.error("callback: Token exchange failed", exchanged.err);
+        }
+      }
+      navigate("/");
+    }
+  }
+
+  function logout () {
+    localStorage.removeItem("refresh");
+    token.current = undefined;
+    setUser(undefined);
+    setLoggedIn(false);
+    window.location.replace('/login');
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, devLogin }}>
+    <AuthContext.Provider
+      value={{
+        login,
+        logout,
+        user,
+        loaded,
+        loggedIn,
+        getToken,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-} 
+export function useAuth () {
+  return useContext(AuthContext);
+}

@@ -4,7 +4,10 @@
   "type": "module",
   "dependencies": {
     "@wedding-wish/core": "*",
-    "sst": "*"
+    "sst": "*",
+    "@aws-sdk/client-sesv2": "^3.752.0",
+    "@hono/zod-validator": "^0.4.2",
+    "@openauthjs/openauth": "^0.3.7"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8"

@@ -23,12 +23,15 @@ A template to create a monorepo SST v3 project. [Learn more](https://sst.dev/doc
 
    ```bash
    npm install
-   npx sst deploy
+   npx sst deploy --stage dev|prod
    ```
 
 5. Optionally, enable [_git push to deploy_](https://sst.dev/docs/console/#autodeploy).
 
 ## Usage
+
+To run dev: 
+- npx sst dev
 
 This template uses [npm Workspaces](https://docs.npmjs.com/cli/v8/using-npm/workspaces). It has 3 packages to start with and you can add more it.
 

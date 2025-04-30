@@ -2,7 +2,7 @@ import { useAuth } from "../context/auth";
 import { Button } from "./ui/button";
 
 export function DevToolbar() {
-  const { isAuthenticated, user, devLogin, logout } = useAuth();
+  const { loggedIn, user, login, logout  } = useAuth();
 
   // Check if we're in development mode
   if (import.meta.env.PROD) {
@@ -16,12 +16,12 @@ export function DevToolbar() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => (isAuthenticated ? logout() : devLogin())}
+          onClick={() => (loggedIn ? logout() : login())}
         >
-          {isAuthenticated ? 'Dev Logout' : 'Dev Login'}
+          {loggedIn ? 'Dev Logout' : 'Dev Login'}
         </Button>
       </div>
-      {isAuthenticated && user && (
+      {loggedIn && user && (
         <div className="text-sm">
           Logged in as: {user.email} (Mock User)
         </div>

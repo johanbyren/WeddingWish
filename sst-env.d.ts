@@ -5,14 +5,47 @@
 
 declare module "sst" {
   export interface Resource {
-    "MyApi": {
+    "Api": {
       "name": string
       "type": "sst.aws.Function"
       "url": string
     }
-    "MyBucket": {
+    "AuthApi": {
+      "type": "sst.aws.Auth"
+      "url": string
+    }
+    "ContributionsTable": {
+      "name": string
+      "type": "sst.aws.Dynamo"
+    }
+    "Email": {
+      "configSet": string
+      "sender": string
+      "type": "sst.aws.Email"
+    }
+    "GiftRegistryTable": {
+      "name": string
+      "type": "sst.aws.Dynamo"
+    }
+    "React": {
+      "type": "sst.aws.StaticSite"
+      "url": string
+    }
+    "SettingsTable": {
+      "name": string
+      "type": "sst.aws.Dynamo"
+    }
+    "Users": {
+      "name": string
+      "type": "sst.aws.Dynamo"
+    }
+    "WeddingAssets": {
       "name": string
       "type": "sst.aws.Bucket"
+    }
+    "Weddings": {
+      "name": string
+      "type": "sst.aws.Dynamo"
     }
   }
 }
