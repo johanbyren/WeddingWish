@@ -1,6 +1,7 @@
 export const usersTable = new sst.aws.Dynamo("Users", {
     fields: {
         email: "string",
+        // userId: "string",
         // firstName: "string",
         // lastName: "string",
         // createdAt: "string",

@@ -1,12 +1,12 @@
 import { Link, Navigate } from "react-router-dom"
 import { Button } from "~/components/ui/button"
-import { HeartIcon, LogIn, UserPlus } from "lucide-react"
+import { HeartIcon, LogIn, LogOut, UserPlus } from "lucide-react"
 import { useAuth } from "~/context/auth";
 
 export default function Home() {
-  const { user, loaded, login, logout } = useAuth();
+  const { loggedIn, user, loaded, login, logout } = useAuth();
 
-  if (user && loaded) {
+  if (loggedIn && loaded) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -33,7 +33,7 @@ export default function Home() {
             </>
           ) : (
             <Button variant="ghost" size="sm" onClick={logout}>
-              <LogIn className="h-4 w-4 mr-2" />
+              <LogOut className="h-4 w-4 mr-2" />
               Logout
             </Button>
           )}
