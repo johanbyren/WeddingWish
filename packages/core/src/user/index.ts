@@ -18,14 +18,10 @@ export namespace User {
   export const create = async (user: Omit<UserType, "createdAt" | "updatedAt">) => {
     console.log('create user: ', user);
     const now = new Date().toISOString();
-    const userId = crypto.randomUUID();
     const newUser = {
       ...user,
-      userId,
       createdAt: now,
       updatedAt: now,
-      emailIndex: user.email.toLowerCase(), // For case-insensitive email search
-      listIndex: "USER", // For the GSI to list all users
     };
 
     try {

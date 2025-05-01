@@ -30,14 +30,6 @@ const WEDDINGWISH_THEME: Theme = {
       [data-component="logo"] {
         height: 2rem;
       }
-      [data-component="title"] {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #111827;
-        margin-bottom: 1.5rem;
-        text-align: center;
-        display: block;
-      }
       [data-component="form-footer"] {
         font-size: 0.9em;
       }

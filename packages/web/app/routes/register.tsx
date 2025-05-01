@@ -5,10 +5,10 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { HeartIcon, LogIn } from "lucide-react";
 import { useAuth } from "~/context/auth";
-import { User } from "@wedding-wish/core/user";
 
 
 export default function Register() {
+  const auth = useAuth();
   const { login } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -29,21 +29,39 @@ export default function Register() {
     e.preventDefault();
     setError("");
 
-    // if (formData.password !== formData.confirmPassword) {
-    //   setError("Passwords do not match");
-    //   return;
-    // }
-
-    // Here you would typically call an API to register the user
-    // For demo purposes, we'll just redirect to the dashboard
-    
-    await User.create({
+    const body = {
       firstName: formData.firstName,
       lastName: formData.lastName,
       email: formData.email,
-    });
-    
-    navigate("/dashboard");
+      createdAt: new Date().toISOString().split("T")[0],
+      updatedAt: new Date().toISOString().split("T")[0],
+    };
+
+    console.log('body: ', body);
+    console.log('auth: ', `${import.meta.env.VITE_API_URL}api/user`);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}api/user`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${await auth.getToken()}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to register');
+      }
+
+      console.log('response: ', response);
+
+      // navigate("/dashboard");
+      
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'An error occurred');
+    }
   };
 
   return (
