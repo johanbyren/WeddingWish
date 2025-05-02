@@ -6,7 +6,6 @@ import {
   PutCommand,
   UpdateCommand,
   ScanCommand,
-  QueryCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { Resource } from "sst/resource";
 import { schema, UserType } from "./types";
@@ -15,6 +14,10 @@ const client = new DynamoDBClient({ region: "eu-north-1" });
 const ddb = DynamoDBDocumentClient.from(client);
 
 export namespace User {
+
+  /**
+   * Create a user
+   */
   export const create = async (user: Omit<UserType, "createdAt" | "updatedAt">) => {
     console.log('create user: ', user);
     const now = new Date().toISOString();
@@ -39,6 +42,9 @@ export namespace User {
     }
   };
 
+  /**
+   * Get a user by email
+   */
   export const get = async (email: string) => {
     console.log('get user: ', email);
     console.log('get user resource: ', Resource.Users.name);
@@ -59,44 +65,23 @@ export namespace User {
     return user;
   };
 
-  export const getByEmail = async (email: string) => {
-    const command = new QueryCommand({
-      TableName: Resource.Users.name,
-      IndexName: "emailIndex",
-      KeyConditionExpression: "emailIndex = :email",
-      ExpressionAttributeValues: {
-        ":email": email.toLowerCase(),
-      },
-    });
-
-    const result = await ddb.send(command);
-
-    if (!result.Items?.[0]) {
-      return null;
-    }
-    const user = schema.parse(result.Items[0]);
-
-    return user;
-  };
-
-  export const update = async (userId: string, user: Partial<Omit<UserType, "userId" | "createdAt" | "updatedAt">>) => {
+  /**
+   * Update a user
+   */
+  export const update = async (email: string, user: Partial<Omit<UserType, "email" | "createdAt" | "updatedAt">>) => {
     const now = new Date().toISOString();
     const command = new UpdateCommand({
       TableName: Resource.Users.name,
-      Key: { userId },
-      UpdateExpression: "set #firstName = :firstName, #lastName = :lastName, #email = :email, #emailIndex = :emailIndex, #updatedAt = :updatedAt",
+      Key: { email },
+      UpdateExpression: "set #firstName = :firstName, #lastName = :lastName, #updatedAt = :updatedAt",
       ExpressionAttributeNames: {
         "#firstName": "firstName",
         "#lastName": "lastName",
-        "#email": "email",
-        "#emailIndex": "emailIndex",
         "#updatedAt": "updatedAt",
       },
       ExpressionAttributeValues: {
         ":firstName": user.firstName,
         ":lastName": user.lastName,
-        ":email": user.email,
-        ":emailIndex": user.email?.toLowerCase(),
         ":updatedAt": now,
       },
     });
@@ -105,24 +90,25 @@ export namespace User {
     return result;
   };
 
-  export const remove = async (userId: string) => {
+  /**
+   * Remove a user
+   */
+  export const remove = async (email: string) => {
     const command = new DeleteCommand({
       TableName: Resource.Users.name,
-      Key: { userId },
+      Key: { email },
     });
 
     const result = await ddb.send(command);
     return result;
   };
 
+  /**
+   * List all users
+   */
   export const list = async () => {
-    const command = new QueryCommand({
+    const command = new ScanCommand({
       TableName: Resource.Users.name,
-      IndexName: "listIndex",
-      KeyConditionExpression: "listIndex = :listIndex",
-      ExpressionAttributeValues: {
-        ":listIndex": "USER", // Constant value for the listIndex
-      },
     });
 
     const result = await ddb.send(command);

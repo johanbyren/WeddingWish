@@ -8,6 +8,7 @@ import { createClient } from "@openauthjs/openauth/client";
 import { subjects } from "@wedding-wish/core/subjects";
 
 import userRoute from "./api/user";
+import weddingRoute from "./api/wedding";
 
 const client = createClient({
     clientID: "jwt-api",
@@ -50,7 +51,7 @@ const routes = app
 
 // Protected routes
 const protectedRoutes = protectedApp
-  .route("/api/user/profile", userRoute) // Example of a protected route
+  .route("/api/wedding", weddingRoute)
   // Add other protected routes here
   // .route("/api/wishes", wishesRoute)
   // .route("/api/settings", settingsRoute)

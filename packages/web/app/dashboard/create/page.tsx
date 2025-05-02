@@ -13,8 +13,11 @@ import { HeartIcon, ArrowLeft, ImagePlus } from "lucide-react"
 import { DatePicker } from "../../components/date-picker"
 import { ImageUploader } from "../../components/image-uploader"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
+import { useAuth } from "~/context/auth"
+import { v4 as uuidv4 } from 'uuid'
 
 export default function CreateWeddingPage() {
+  const auth = useAuth();
   const navigate = useNavigate()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [activeTab, setActiveTab] = useState("details")
@@ -67,12 +70,40 @@ export default function CreateWeddingPage() {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // In a real app, you would upload the images and save the wedding details to a database
-    // For this demo, we'll simulate a successful creation and redirect to the dashboard
-    setTimeout(() => {
-      setIsSubmitting(false)
-      navigate("/dashboard")
-    }, 1500)
+    const body = {
+      weddingId: uuidv4(),
+      userId: auth.user?.email,
+      title: weddingDetails.title,
+      date: weddingDetails.date.toISOString(),
+      location: weddingDetails.location,
+      story: weddingDetails.story,
+      createdAt: new Date().toISOString().split("T")[0],
+      updatedAt: new Date().toISOString().split("T")[0],
+    }
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}api/wedding`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${await auth.getToken()}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create wedding');
+      }
+
+      const data = await response.json();
+      console.log('Wedding created:', data);
+      navigate("/dashboard");
+    } catch (error) {
+      console.error('Error creating wedding:', error);
+      // You might want to show an error message to the user here
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   const goToNextTab = () => {

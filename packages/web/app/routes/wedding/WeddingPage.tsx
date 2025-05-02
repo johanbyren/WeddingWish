@@ -7,7 +7,7 @@ import { HeartIcon, Calendar, MapPin } from "lucide-react"
 // This would normally come from a database
 const mockWeddingData = {
   id: "123",
-  title: "John & Jane's Wedding",
+  title: "John & Jane's Wedding 222",
   date: "June 15, 2024",
   location: "Sunset Beach Resort, Miami, FL",
   story:
@@ -16,7 +16,7 @@ const mockWeddingData = {
   gifts: [
     {
       id: "1",
-      name: "Wedding Dress",
+      name: "Wedding Dress test",
       description: "Help us fund the perfect wedding dress",
       price: 1500,
       collected: 750,
