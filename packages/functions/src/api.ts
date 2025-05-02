@@ -26,33 +26,37 @@ const app = new Hono()
       credentials: true,
     }),
   )
-  .use(logger())
-//   .use(async (c, next) => {
-//     console.log('We are here: ', c);
-//     const auth = bearerAuth({
-//       verifyToken: async (token, c) => {
-//         const verified = await client.verify(subjects, token);
-//         if (verified.err) {
-//           console.log('verified.err: ', verified.err);
-//           return false;
-//         }
+  .use(logger());
 
-//         c.set("email", verified.subject.properties.email);
-//         console.log('c.get("email"): ', c.get("email"));
-//         return true;
-//       },
-//     });
-//     return await auth(c, next);
-//   });
+// Create a protected route group
+const protectedApp = new Hono()
+  .use(async (c, next) => {
+    const auth = bearerAuth({
+      verifyToken: async (token, c) => {
+        const verified = await client.verify(subjects, token);
+        if (verified.err) {
+          return false;
+        }
+        c.set("email", verified.subject.properties.email);
+        return true;
+      },
+    });
+    return await auth(c, next);
+  });
 
+// Public routes
 const routes = app
-    .route("/api/user", userRoute);
-  // .route("/api/camp", campRoute)
-  // .route("/api/ledger", ledgerRoute)
-  // .route("/api/member", memberRoute)
-  // .route("/api/membership", membershipRoute)
-  // .route("/api/report", reportRoute)
-  // .route("/api/notification", notificationRoute);
+  .route("/api/user", userRoute);
+
+// Protected routes
+const protectedRoutes = protectedApp
+  .route("/api/user/profile", userRoute) // Example of a protected route
+  // Add other protected routes here
+  // .route("/api/wishes", wishesRoute)
+  // .route("/api/settings", settingsRoute)
+
+// Mount protected routes under the main app
+app.route("/", protectedRoutes);
 
 export type AppType = typeof routes;
 

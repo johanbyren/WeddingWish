@@ -37,9 +37,6 @@ export default function Register() {
       updatedAt: new Date().toISOString().split("T")[0],
     };
 
-    console.log('body: ', body);
-    console.log('auth: ', `${import.meta.env.VITE_API_URL}api/user`);
-
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}api/user`, {
         method: "POST",
