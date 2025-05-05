@@ -9,6 +9,7 @@ import { subjects } from "@wedding-wish/core/subjects";
 
 import userRoute from "./api/user";
 import weddingRoute from "./api/wedding";
+import photoRoute from "./api/photo";
 
 const client = createClient({
     clientID: "jwt-api",
@@ -52,6 +53,7 @@ const routes = app
 // Protected routes
 const protectedRoutes = protectedApp
   .route("/api/wedding", weddingRoute)
+  .route("/api/photo", photoRoute)
   // Add other protected routes here
   // .route("/api/wishes", wishesRoute)
   // .route("/api/settings", settingsRoute)

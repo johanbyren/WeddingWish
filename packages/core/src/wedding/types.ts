@@ -13,6 +13,7 @@ export const schema = z.object({
     customUrl: z.string().optional(),
     theme: z.string().optional(),
     primaryColor: z.string().optional(),
+    photoUrls: z.array(z.string()).optional(),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional()
 });

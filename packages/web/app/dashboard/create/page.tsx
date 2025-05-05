@@ -70,18 +70,88 @@ export default function CreateWeddingPage() {
     e.preventDefault()
     setIsSubmitting(true)
 
-    const body = {
-      weddingId: uuidv4(),
-      userId: auth.user?.email,
-      title: weddingDetails.title,
-      date: weddingDetails.date.toISOString(),
-      location: weddingDetails.location,
-      story: weddingDetails.story,
-      createdAt: new Date().toISOString().split("T")[0],
-      updatedAt: new Date().toISOString().split("T")[0],
-    }
-
     try {
+      const weddingId = uuidv4();
+      const photoUrls: string[] = [];
+
+      // Upload cover photo if exists
+      if (weddingDetails.coverPhoto) {
+        const coverPhotoResponse = await fetch(`${import.meta.env.VITE_API_URL}api/photo/upload-url`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${await auth.getToken()}`,
+          },
+          body: JSON.stringify({
+            weddingId,
+            fileName: `cover-${weddingDetails.coverPhoto.name}`,
+            contentType: weddingDetails.coverPhoto.type,
+          }),
+        });
+
+        if (!coverPhotoResponse.ok) {
+          throw new Error('Failed to get cover photo upload URL');
+        }
+
+        const { signedUrl, key } = await coverPhotoResponse.json();
+        
+        // Upload the file to S3
+        await fetch(signedUrl, {
+          method: 'PUT',
+          body: weddingDetails.coverPhoto,
+          headers: {
+            'Content-Type': weddingDetails.coverPhoto.type,
+          },
+        });
+
+        photoUrls.push(key);
+      }
+
+      // Upload additional photos
+      for (const photo of weddingDetails.additionalPhotos) {
+        const photoResponse = await fetch(`${import.meta.env.VITE_API_URL}api/photo/upload-url`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${await auth.getToken()}`,
+          },
+          body: JSON.stringify({
+            weddingId,
+            fileName: `gallery-${photo.file.name}`,
+            contentType: photo.file.type,
+          }),
+        });
+
+        if (!photoResponse.ok) {
+          throw new Error('Failed to get photo upload URL');
+        }
+
+        const { signedUrl, key } = await photoResponse.json();
+        
+        // Upload the file to S3
+        await fetch(signedUrl, {
+          method: 'PUT',
+          body: photo.file,
+          headers: {
+            'Content-Type': photo.file.type,
+          },
+        });
+
+        photoUrls.push(key);
+      }
+
+      const body = {
+        weddingId,
+        userId: auth.user?.email,
+        title: weddingDetails.title,
+        date: weddingDetails.date.toISOString(),
+        location: weddingDetails.location,
+        story: weddingDetails.story,
+        photoUrls,
+        createdAt: new Date().toISOString().split("T")[0],
+        updatedAt: new Date().toISOString().split("T")[0],
+      }
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}api/wedding`, {
         method: 'POST',
         headers: {

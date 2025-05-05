@@ -8,33 +8,16 @@ const app = new Hono();
 /**
  * Create a wedding
  */
-app.post(
-    "/",
-    zValidator(
-        "json",
-        z.object({
-            weddingId: z.string(),
-            userId: z.string(),
-            title: z.string().optional(),
-            date: z.string().optional(),
-            location: z.string().optional(),
-            story: z.string().optional(),
-            coverPhotoKey: z.string().optional(),
-            additionalPhotoKeys: z.array(z.string()).optional(),
-            visibility: z.string().optional(),
-            customUrl: z.string().optional(),
-            theme: z.string().optional(),
-            primaryColor: z.string().optional(),
-            createdAt: z.string().optional(),
-            updatedAt: z.string().optional(),
-        }),
-    ),
-    async (c) => {
-        const validated = c.req.valid("json");
-        const wedding = await Wedding.create(validated);
-        return c.json(wedding);
-    },
-);
+app.post("/", async (c) => {
+    try {
+        const body = await c.req.json();
+        const result = await Wedding.create(body);
+        return c.json(result);
+    } catch (error) {
+        console.error("Error creating wedding:", error);
+        return c.json({ error: "Failed to create wedding" }, 500);
+    }
+});
 
 /**
  * Get all weddings for a user (userId = email)
