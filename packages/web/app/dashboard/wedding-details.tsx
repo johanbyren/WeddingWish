@@ -90,7 +90,7 @@ export default function WeddingDetails() {
                       </CardContent>
                       <CardFooter className="flex gap-2">
                         <Button variant="outline" size="sm" asChild>
-                          <Link to={`/wedding/${wedding.weddingId}`}>View Page</Link>
+                          <Link to={`/${wedding.weddingId}`}>View Page</Link>
                         </Button>
                         <Button variant="outline" size="sm">
                           Edit

@@ -3,48 +3,129 @@ import { Button } from "~/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card"
 import { Progress } from "~/components/ui/progress"
 import { HeartIcon, Calendar, MapPin } from "lucide-react"
+import { useEffect, useState } from "react"
+import { useAuth } from "~/context/auth"
 
-// This would normally come from a database
-const mockWeddingData = {
-  id: "123",
-  title: "John & Jane's Wedding 222",
-  date: "June 15, 2024",
-  location: "Sunset Beach Resort, Miami, FL",
-  story:
-    "We met 5 years ago at a coffee shop and have been inseparable ever since. We're excited to celebrate our special day with you!",
-  coverPhotoUrl: "/placeholder.svg",
-  gifts: [
-    {
-      id: "1",
-      name: "Wedding Dress test",
-      description: "Help us fund the perfect wedding dress",
-      price: 1500,
-      collected: 750,
-      imageUrl: "/placeholder.svg",
-    },
-    {
-      id: "2",
-      name: "Wedding Rings",
-      description: "Contribute to our wedding rings",
-      price: 1000,
-      collected: 400,
-      imageUrl: "/placeholder.svg",
-    },
-    {
-      id: "3",
-      name: "Honeymoon Trip",
-      description: "Help us have an unforgettable honeymoon in Bali",
-      price: 3000,
-      collected: 1200,
-      imageUrl: "/placeholder.svg",
-    },
-  ],
+// Mock gifts data - we'll implement this later
+const mockGifts = [
+  {
+    id: "1",
+    name: "Wedding Dress",
+    description: "Help us fund the perfect wedding dress",
+    price: 1500,
+    collected: 750,
+    imageUrl: "/placeholder.svg",
+  },
+  {
+    id: "2",
+    name: "Wedding Rings",
+    description: "Contribute to our wedding rings",
+    price: 1000,
+    collected: 400,
+    imageUrl: "/placeholder.svg",
+  },
+  {
+    id: "3",
+    name: "Honeymoon Trip",
+    description: "Help us have an unforgettable honeymoon in Bali",
+    price: 3000,
+    collected: 1200,
+    imageUrl: "/placeholder.svg",
+  },
+]
+
+interface Wedding {
+  weddingId: string
+  userId: string
+  title: string
+  date: string
+  location: string
+  story: string
+  coverPhotoKey?: string
+  additionalPhotoKeys?: string[]
+  visibility?: string
+  customUrl?: string
+  theme?: string
+  primaryColor?: string
+  photoUrls?: string[]
+  createdAt?: string
+  updatedAt?: string
 }
 
 export default function WeddingPage() {
-  const { id } = useParams()
-  // In a real app, you would fetch the wedding data based on the ID
-  const wedding = mockWeddingData
+  const { slug } = useParams()
+  const auth = useAuth()
+  const [wedding, setWedding] = useState<Wedding | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchWedding = async () => {
+      try {
+        // First try to fetch by custom URL
+        // let response = await fetch(`${import.meta.env.VITE_API_URL}api/wedding/url/${slug}`, {
+        //   headers: {
+        //     Authorization: `Bearer ${await auth.getToken()}`,
+        //   },
+        // })
+
+        // If not found, try to fetch by ID
+        // if (response.status === 404) {
+
+        let response = await fetch(`${import.meta.env.VITE_API_URL}api/show-wedding/${slug}`, {
+          method: 'GET'
+        });
+
+        // }
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.log('errorData: ', errorData)
+          throw new Error(errorData.error || 'Failed to fetch wedding data');
+        }
+
+        const data = await response.json();
+        setWedding(data);
+        console.log('wedding details: ', data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (slug) {
+      fetchWedding();
+    } else {
+      setError('Wedding ID is required');
+      setLoading(false);
+    }
+  }, [slug, auth])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading wedding details...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !wedding) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-500">Error</h2>
+          <p className="mt-2 text-gray-600">{error || 'Wedding not found'}</p>
+          <Button asChild className="mt-4">
+            <Link to="/">Back to Home</Link>
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -57,7 +138,7 @@ export default function WeddingPage() {
       <main className="flex-1 flex flex-col">
         <div className="relative h-[300px] md:h-[400px]">
           <img
-            src={wedding.coverPhotoUrl || "/placeholder.svg?height=400&width=1200"}
+            src={wedding.coverPhotoKey ? `${import.meta.env.VITE_API_URL}api/photo/${wedding.coverPhotoKey}` : "/placeholder.svg?height=400&width=1200"}
             alt={wedding.title}
             className="object-cover w-full h-full"
           />
@@ -98,7 +179,7 @@ export default function WeddingPage() {
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
-              {wedding.gifts.map((gift) => (
+              {mockGifts.map((gift) => (
                 <Card key={gift.id}>
                   <div className="aspect-video bg-gray-100">
                     <img
@@ -124,7 +205,7 @@ export default function WeddingPage() {
                   </CardContent>
                   <CardFooter>
                     <Button asChild className="w-full bg-pink-500 hover:bg-pink-600">
-                      <Link to={`/wedding/${wedding.id}/contribute/${gift.id}`}>Contribute</Link>
+                      <Link to={`/${slug}/contribute/${gift.id}`}>Contribute</Link>
                     </Button>
                   </CardFooter>
                 </Card>

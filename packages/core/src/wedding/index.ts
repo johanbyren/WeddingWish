@@ -6,6 +6,7 @@ import {
   PutCommand,
   UpdateCommand,
   ScanCommand,
+  QueryCommand
 } from "@aws-sdk/lib-dynamodb";
 import { Resource } from "sst/resource";
 import { schema, WeddingType } from "./types";
@@ -60,6 +61,57 @@ export namespace Wedding {
       return weddings;
     } catch (error) {
       console.error("Error fetching weddings by user ID", error);
+      throw error;
+    }
+  };
+
+  /**
+   * Get a wedding by ID
+   */
+  export const getById = async (weddingId: string) => {
+    try {
+      const command = new QueryCommand({
+        TableName: Resource.Weddings.name,
+        KeyConditionExpression: "weddingId = :weddingId",
+        ExpressionAttributeValues: {
+          ":weddingId": weddingId
+        }
+      });
+  
+      const result = await ddb.send(command);
+      if (!result.Items || result.Items.length === 0) {
+        console.log("No item found for weddingId:", weddingId);
+        return null;
+      }
+
+      return schema.parse(result.Items[0]);
+    } catch (error) {
+      console.error("Error fetching wedding by ID", error);
+      throw error;
+    }
+  };
+
+  /**
+   * Get a wedding by custom URL
+   */
+  export const getByCustomUrl = async (customUrl: string) => {
+    console.log("Fetching wedding by url:", customUrl, "from table:", Resource.Weddings.name);
+    try {
+      const command = new ScanCommand({
+        TableName: Resource.Weddings.name,
+        FilterExpression: "customUrl = :customUrl",
+        ExpressionAttributeValues: {
+          ":customUrl": customUrl,
+        },
+      });
+
+      const result = await ddb.send(command);
+      if (!result.Items || result.Items.length === 0) {
+        return null;
+      }
+      return schema.parse(result.Items[0]);
+    } catch (error) {
+      console.error("Error fetching wedding by custom URL", error);
       throw error;
     }
   };

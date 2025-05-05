@@ -11,7 +11,7 @@ export default [
       route("settings", "dashboard/settings/page.tsx"),
     ]),
   ]),
-  route("/wedding/:id", "routes/wedding/WeddingPage.tsx"),
-  route("/wedding/:id/contribute/:giftId", "routes/wedding/Contribute.tsx"),
-  route("/wedding/:id/thank-you", "routes/wedding/ThankYou.tsx"),
+  route("/:slug", "routes/wedding/WeddingPage.tsx"),
+  route("/:slug/contribute/:giftId", "routes/wedding/Contribute.tsx"),
+  route("/:slug/thank-you", "routes/wedding/ThankYou.tsx"),
 ] satisfies RouteConfig;
