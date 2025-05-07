@@ -2,9 +2,10 @@ import { Link, useParams } from "react-router-dom"
 import { Button } from "~/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card"
 import { Progress } from "~/components/ui/progress"
-import { HeartIcon, Calendar, MapPin } from "lucide-react"
+import { HeartIcon, Calendar, MapPin, ChevronLeft, ChevronRight } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useAuth } from "~/context/auth"
+import { Dialog, DialogContent } from "~/components/ui/dialog"
 
 // Mock gifts data - we'll implement this later
 const mockGifts = [
@@ -56,6 +57,8 @@ export default function WeddingPage() {
   const [wedding, setWedding] = useState<Wedding | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [currentImageIndex, setCurrentImageIndex] = useState<number>(0)
 
   useEffect(() => {
     const fetchWedding = async () => {
@@ -112,6 +115,25 @@ export default function WeddingPage() {
     )
   }
 
+  const handleImageClick = (photoUrl: string, index: number) => {
+    setSelectedImage(photoUrl)
+    setCurrentImageIndex(index)
+  }
+
+  const handlePreviousImage = () => {
+    if (!wedding) return
+    const newIndex = (currentImageIndex - 1 + wedding.photoUrls.length - 1) % (wedding.photoUrls.length - 1)
+    setCurrentImageIndex(newIndex)
+    setSelectedImage(wedding.photoUrls[newIndex + 1]) // +1 because we skip the first image
+  }
+
+  const handleNextImage = () => {
+    if (!wedding) return
+    const newIndex = (currentImageIndex + 1) % (wedding.photoUrls.length - 1)
+    setCurrentImageIndex(newIndex)
+    setSelectedImage(wedding.photoUrls[newIndex + 1]) // +1 because we skip the first image
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <header className="px-4 lg:px-6 h-14 flex items-center border-b">
@@ -160,7 +182,11 @@ export default function WeddingPage() {
                 <h2 className="text-2xl font-bold mb-6">Photo Gallery</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {wedding.photoUrls.slice(1).map((photoUrl, index) => (
-                    <div key={index} className="aspect-square overflow-hidden rounded-lg">
+                    <div 
+                      key={index} 
+                      className="aspect-square overflow-hidden rounded-lg cursor-pointer"
+                      onClick={() => handleImageClick(photoUrl, index)}
+                    >
                       <img
                         src={`${import.meta.env.VITE_BUCKET_URL}/${photoUrl}`}
                         alt={`Wedding photo ${index + 1}`}
@@ -227,6 +253,36 @@ export default function WeddingPage() {
           </div>
         </div>
       </footer>
+
+      <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 overflow-auto flex items-center justify-center bg-white/20 backdrop-blur-sm">
+          {selectedImage && (
+            <div className="relative w-full h-full flex items-center justify-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/50 hover:bg-white/80 rounded-full"
+                onClick={handlePreviousImage}
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </Button>
+              <img
+                src={`${import.meta.env.VITE_BUCKET_URL}/${selectedImage}`}
+                alt="Full size wedding photo"
+                className="w-auto h-auto max-w-full max-h-[90vh] object-contain"
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/50 hover:bg-white/80 rounded-full"
+                onClick={handleNextImage}
+              >
+                <ChevronRight className="h-6 w-6" />
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
