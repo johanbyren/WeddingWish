@@ -112,12 +112,4 @@ export const settingsTable = new sst.aws.Dynamo("SettingsTable", {
 
 
 // Create S3 bucket for storing wedding assets
-export const weddingAssets = new sst.aws.Bucket("WeddingAssets", {
-  public: true,
-  cors: {
-    allowMethods: ["GET", "PUT", "POST", "DELETE"],
-    allowOrigins: ["*"], // In production, replace with your actual domain
-    allowHeaders: ["*"],
-    exposeHeaders: ["ETag"],
-  },
-});
+export const weddingAssets = new sst.aws.Bucket("WeddingAssets", {});

@@ -11,7 +11,9 @@
     "./user": "./src/user/index.ts",
     "./user/types": "./src/user/types.ts",
     "./wedding": "./src/wedding/index.ts",
-    "./wedding/types": "./src/wedding/types.ts"
+    "./wedding/types": "./src/wedding/types.ts",
+    "./photo": "./src/photo/index.ts",
+    "./photo/types": "./src/photo/types.ts"
   },
   "dependencies": {
     "sst": "*"

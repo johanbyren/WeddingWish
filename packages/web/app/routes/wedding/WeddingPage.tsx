@@ -41,15 +41,18 @@ interface Wedding {
   date: string
   location: string
   story: string
-  coverPhotoKey?: string
-  additionalPhotoKeys?: string[]
+  photoUrls: string[]
   visibility?: string
   customUrl?: string
   theme?: string
   primaryColor?: string
-  photoUrls?: string[]
   createdAt?: string
   updatedAt?: string
+}
+
+interface PhotoUrls {
+  coverPhoto: string | null;
+  gallery: string[];
 }
 
 export default function WeddingPage() {
@@ -58,35 +61,64 @@ export default function WeddingPage() {
   const [wedding, setWedding] = useState<Wedding | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [photoUrls, setPhotoUrls] = useState<PhotoUrls>({
+    coverPhoto: null,
+    gallery: []
+  })
+
+  const fetchPhotoUrl = async (key: string): Promise<string> => {
+    console.log("I weddingPage: Fetching photo URL for key: ", key);
+    const response = await fetch(`${import.meta.env.VITE_API_URL}api/show-photo/${key}`);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error response:", errorText);
+      throw new Error(`Failed to fetch photo URL: ${response.status} ${errorText}`);
+    }
+    
+    const data = await response.json();
+    return data.url;
+  };
+
+  const fetchAllPhotoUrls = async (wedding: Wedding) => {
+    try {
+      console.log("Fetching all photo URLs for wedding:", wedding);
+      const photoPromises: Promise<string>[] = [];
+      
+      // Fetch all photos
+      if (wedding.photoUrls && wedding.photoUrls.length > 0) {
+        wedding.photoUrls.forEach(key => {
+          photoPromises.push(fetchPhotoUrl(key));
+        });
+      }
+
+      const urls = await Promise.all(photoPromises);
+      
+      setPhotoUrls({
+        coverPhoto: urls[0] || null, // First photo is the cover photo
+        gallery: urls.slice(1) // Rest are gallery photos
+      });
+    } catch (error) {
+      console.error("Error fetching photo URLs:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchWedding = async () => {
       try {
-        // First try to fetch by custom URL
-        // let response = await fetch(`${import.meta.env.VITE_API_URL}api/wedding/url/${slug}`, {
-        //   headers: {
-        //     Authorization: `Bearer ${await auth.getToken()}`,
-        //   },
-        // })
-
-        // If not found, try to fetch by ID
-        // if (response.status === 404) {
-
         let response = await fetch(`${import.meta.env.VITE_API_URL}api/show-wedding/${slug}`, {
           method: 'GET'
         });
 
-        // }
-
         if (!response.ok) {
           const errorData = await response.json();
-          console.log('errorData: ', errorData)
           throw new Error(errorData.error || 'Failed to fetch wedding data');
         }
 
         const data = await response.json();
+        console.log("Full wedding data:", data);
         setWedding(data);
-        console.log('wedding details: ', data);
+        await fetchAllPhotoUrls(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -138,7 +170,7 @@ export default function WeddingPage() {
       <main className="flex-1 flex flex-col">
         <div className="relative h-[300px] md:h-[400px]">
           <img
-            src={wedding.coverPhotoKey ? `${import.meta.env.VITE_API_URL}api/photo/${wedding.coverPhotoKey}` : "/placeholder.svg?height=400&width=1200"}
+            src={photoUrls.coverPhoto || "/placeholder.svg?height=400&width=1200"}
             alt={wedding.title}
             className="object-cover w-full h-full"
           />
@@ -167,6 +199,27 @@ export default function WeddingPage() {
             </div>
           </div>
         </section>
+
+        {photoUrls.gallery.length > 0 && (
+          <section className="py-12">
+            <div className="container px-4 md:px-6 mx-auto">
+              <div className="max-w-3xl mx-auto">
+                <h2 className="text-2xl font-bold mb-6">Photo Gallery</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {photoUrls.gallery.map((photoUrl, index) => (
+                    <div key={index} className="aspect-square overflow-hidden rounded-lg">
+                      <img
+                        src={photoUrl}
+                        alt={`Wedding photo ${index + 1}`}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
         <section className="py-12 bg-pink-50">
           <div className="container px-4 md:px-6 mx-auto">

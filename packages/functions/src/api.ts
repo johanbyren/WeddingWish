@@ -11,6 +11,8 @@ import userRoute from "./api/user";
 import weddingRoute from "./api/wedding";
 import photoRoute from "./api/photo";
 import showWeddingRoute from "./api/show-wedding";
+import showPhotoRoute from "./api/show-photo";
+
 const client = createClient({
     clientID: "jwt-api",
     issuer: Resource.AuthApi.url,
@@ -49,6 +51,7 @@ const protectedApp = new Hono()
 // Public routes
 const routes = app
   .route("/api/user", userRoute)
+  .route("/api/show-photo", showPhotoRoute)
   .route("/api/show-wedding", showWeddingRoute)
 
 // Protected routes

@@ -1,9 +1,5 @@
 import { Hono } from "hono";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { Resource } from "sst";
-
-const s3Client = new S3Client({ region: "eu-north-1" });
+import { Photo } from "@wedding-wish/core/photo";
 
 export const photoRoute = new Hono();
 
@@ -11,20 +7,8 @@ photoRoute.post("/upload-url", async (c) => {
   try {
     const { weddingId, fileName, contentType } = await c.req.json();
     
-    const key = `weddings/${weddingId}/${fileName}`;
-    
-    const command = new PutObjectCommand({
-      Bucket: Resource.WeddingAssets.name,
-      Key: key,
-      ContentType: contentType,
-    });
-
-    const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-    
-    return c.json({ 
-      signedUrl,
-      key 
-    });
+    const result = await Photo.generateUploadUrl(weddingId, fileName, contentType);
+    return c.json(result);
   } catch (error) {
     console.error("Error generating upload URL:", error);
     return c.json({ error: "Failed to generate upload URL" }, 500);
