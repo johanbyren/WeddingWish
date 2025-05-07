@@ -61,7 +61,7 @@ export default function WeddingPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0)
 
   useEffect(() => {
-    const fetchWedding = async () => {
+    const fetchWeddingInfo = async () => {
       try {
         let response = await fetch(`${import.meta.env.VITE_API_URL}api/show-wedding/${slug}`, {
           method: 'GET'
@@ -83,7 +83,7 @@ export default function WeddingPage() {
     }
 
     if (slug) {
-      fetchWedding();
+      fetchWeddingInfo();
     } else {
       setError('Wedding ID is required');
       setLoading(false);
@@ -117,21 +117,21 @@ export default function WeddingPage() {
 
   const handleImageClick = (photoUrl: string, index: number) => {
     setSelectedImage(photoUrl)
-    setCurrentImageIndex(index)
+    setCurrentImageIndex(index + 1)
   }
 
   const handlePreviousImage = () => {
     if (!wedding) return
-    const newIndex = (currentImageIndex - 1 + wedding.photoUrls.length - 1) % (wedding.photoUrls.length - 1)
+    const newIndex = (currentImageIndex - 1 + wedding.photoUrls.length) % wedding.photoUrls.length
     setCurrentImageIndex(newIndex)
-    setSelectedImage(wedding.photoUrls[newIndex + 1]) // +1 because we skip the first image
+    setSelectedImage(wedding.photoUrls[newIndex])
   }
 
   const handleNextImage = () => {
     if (!wedding) return
-    const newIndex = (currentImageIndex + 1) % (wedding.photoUrls.length - 1)
+    const newIndex = (currentImageIndex + 1) % wedding.photoUrls.length
     setCurrentImageIndex(newIndex)
-    setSelectedImage(wedding.photoUrls[newIndex + 1]) // +1 because we skip the first image
+    setSelectedImage(wedding.photoUrls[newIndex])
   }
 
   return (
