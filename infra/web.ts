@@ -1,5 +1,6 @@
 import { api } from "./api";
 import { auth } from "./auth";
+import { router } from "./router";
 
 new sst.aws.StaticSite("React", {
   path: "packages/web",
@@ -10,6 +11,7 @@ new sst.aws.StaticSite("React", {
   environment: {
     VITE_API_URL: api.url,
     VITE_AUTH_URL: auth.url,
+    VITE_BUCKET_URL: $interpolate`${router.url}/files`
   },
   assets: {
     fileOptions: [

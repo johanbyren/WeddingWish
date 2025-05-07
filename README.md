@@ -79,6 +79,34 @@ The `infra/` directory allows you to logically split the infrastructure of your 
 
 In the template, we have an `api.ts`, and `storage.ts`. These export the created resources. And are imported in the `sst.config.ts`.
 
+### Image Storage and Delivery
+
+The application uses AWS S3 for storing images and CloudFront for delivering them efficiently. Here's how it works:
+
+1. **Storage Setup**:
+   - Images are stored in an S3 bucket (`WeddingAssets`)
+   - The bucket is configured with CloudFront access for secure and fast delivery
+
+2. **CloudFront Integration**:
+   - A CloudFront distribution is set up to serve the S3 bucket contents
+   - The distribution is accessible through a router endpoint (`/files`)
+   - This setup allows direct access to images through URLs like: `https://[cloudfront-domain]/files/[image-path]`
+
+3. **Usage in Frontend**:
+   ```typescript
+   // Access images directly through the CloudFront URL
+   const imageUrl = `${import.meta.env.VITE_BUCKET_URL}/${imagePath}`;
+   ```
+   - The `VITE_BUCKET_URL` environment variable contains the CloudFront URL
+   - This enables direct image loading without additional API calls
+   - Images are served with proper caching headers for optimal performance
+
+This architecture provides:
+- Fast global content delivery
+- Reduced server load (images served directly from CloudFront)
+- Secure access to S3 contents
+- Cost-effective image delivery
+
 ---
 
 **Join our community** [Discord](https://sst.dev/discord) | [YouTube](https://www.youtube.com/c/sst-dev) | [X.com](https://x.com/SST_dev)

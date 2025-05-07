@@ -14,6 +14,7 @@ export default $config({
     await import("./infra/email");
     await import("./infra/api");
     await import("./infra/auth");
+    await import("./infra/router");
     await import("./infra/web");
   },
 });

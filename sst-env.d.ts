@@ -43,6 +43,10 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Bucket"
     }
+    "WeddingAssetsRouter": {
+      "type": "sst.aws.Router"
+      "url": string
+    }
     "Weddings": {
       "name": string
       "type": "sst.aws.Dynamo"

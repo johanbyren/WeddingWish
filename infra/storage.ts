@@ -1,3 +1,5 @@
+import { router } from "./router";
+
 export const usersTable = new sst.aws.Dynamo("Users", {
     fields: {
         email: "string",
@@ -112,4 +114,13 @@ export const settingsTable = new sst.aws.Dynamo("SettingsTable", {
 
 
 // Create S3 bucket for storing wedding assets
-export const weddingAssets = new sst.aws.Bucket("WeddingAssets", {});
+export const weddingAssets = new sst.aws.Bucket("WeddingAssets", {
+    access: "cloudfront"
+});
+
+router.routeBucket("/files", weddingAssets, {
+  rewrite: {
+    regex: "^/files/(.*)$",
+    to: "/$1",
+  },
+});

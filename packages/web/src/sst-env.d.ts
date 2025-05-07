@@ -5,6 +5,7 @@
 interface ImportMetaEnv {
   readonly VITE_API_URL: string
   readonly VITE_AUTH_URL: string
+  readonly VITE_BUCKET_URL: string
 }
 interface ImportMeta {
   readonly env: ImportMetaEnv
