@@ -37,4 +37,28 @@ app.get(
     },
 );
 
+/**
+ * Delete a wedding
+ */
+app.delete(
+    "/",
+    zValidator(
+        "json",
+        z.object({
+            weddingId: z.string(),
+            userId: z.string(),
+        }),
+    ),
+    async (c) => {
+        try {
+            const { weddingId, userId } = c.req.valid("json");
+            await Wedding.deleteWedding(weddingId, userId);
+            return c.json({ message: "Wedding deleted successfully" });
+        } catch (error) {
+            console.error("Error deleting wedding:", error);
+            return c.json({ error: "Failed to delete wedding" }, 500);
+        }
+    },
+);
+
 export default app;

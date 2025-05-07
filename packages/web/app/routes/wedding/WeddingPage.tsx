@@ -134,12 +134,23 @@ export default function WeddingPage() {
     setSelectedImage(wedding.photoUrls[newIndex])
   }
 
+  const formatWeddingDateTime = (dateString: string) => {
+    const date = new Date(dateString)
+    const formattedDate = date.toISOString().split('T')[0]
+    const hours = date.getHours().toString().padStart(2, '0')
+    const minutes = date.getMinutes().toString().padStart(2, '0')
+    return {
+      date: formattedDate,
+      time: `${hours}:${minutes}`
+    }
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <header className="px-4 lg:px-6 h-14 flex items-center border-b">
         <Link to="/" className="flex items-center gap-2 font-semibold">
-          <HeartIcon className="h-6 w-6 text-pink-500" />
-          <span>WeddingWish</span>
+        <HeartIcon className="h-6 w-6 text-pink-500" />
+        <span>WeddingWish</span>
         </Link>
       </header>
       <main className="flex-1 flex flex-col">
@@ -155,7 +166,7 @@ export default function WeddingPage() {
               <div className="flex flex-wrap gap-4 mt-2 text-white">
                 <div className="flex items-center">
                   <Calendar className="h-4 w-4 mr-2" />
-                  {wedding.date}
+                  {formatWeddingDateTime(wedding.date).date} {formatWeddingDateTime(wedding.date).time}
                 </div>
                 <div className="flex items-center">
                   <MapPin className="h-4 w-4 mr-2" />

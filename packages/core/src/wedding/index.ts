@@ -115,4 +115,26 @@ export namespace Wedding {
       throw error;
     }
   };
+
+    /**
+   * Delete a wedding by weddingId and userId
+   */
+    export const deleteWedding = async (weddingId: string, userId: string) => {
+      try {
+        const command = new DeleteCommand({
+          TableName: Resource.Weddings.name,
+          Key: {
+            weddingId: weddingId,
+            userId: userId
+          }
+        });
+
+        const result = await ddb.send(command);
+        console.log('Delete wedding result:', result);
+        return result;
+      } catch (error) {
+        console.error("Error deleting wedding", error);
+        throw error;
+      }
+    };
 }

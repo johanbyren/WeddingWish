@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
 import { Textarea } from "../../components/ui/textarea"
-import { HeartIcon, ArrowLeft, ImagePlus } from "lucide-react"
+import { HeartIcon, ArrowLeft, ImagePlus, Plus, Trash2 } from "lucide-react"
 import { DatePicker } from "../../components/date-picker"
 import { ImageUploader } from "../../components/image-uploader"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
@@ -29,6 +29,23 @@ export default function CreateWeddingPage() {
     coverPhoto: null as File | null,
     coverPhotoPreview: "",
     additionalPhotos: [] as { file: File; preview: string }[],
+    giftItems: [] as {
+      id: string;
+      name: string;
+      description: string;
+      price: string;
+      imageFile: File | null;
+      imagePreview: string;
+    }[],
+  })
+
+  const [newGiftItem, setNewGiftItem] = useState({
+    id: "",
+    name: "",
+    description: "",
+    price: "",
+    imageFile: null as File | null,
+    imagePreview: "",
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -63,6 +80,45 @@ export default function CreateWeddingPage() {
     setWeddingDetails((prev) => ({
       ...prev,
       additionalPhotos: prev.additionalPhotos.filter((_, i) => i !== index),
+    }))
+  }
+
+  const handleGiftImageSelected = (file: File) => {
+    const preview = URL.createObjectURL(file)
+    setNewGiftItem((prev) => ({
+      ...prev,
+      imageFile: file,
+      imagePreview: preview,
+    }))
+  }
+
+  const handleNewGiftItemChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setNewGiftItem((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const addGiftItem = () => {
+    if (newGiftItem.name && newGiftItem.price) {
+      const id = Date.now().toString()
+      setWeddingDetails((prev) => ({
+        ...prev,
+        giftItems: [...prev.giftItems, { ...newGiftItem, id }],
+      }))
+      setNewGiftItem({
+        id: "",
+        name: "",
+        description: "",
+        price: "",
+        imageFile: null,
+        imagePreview: "",
+      })
+    }
+  }
+
+  const removeGiftItem = (id: string) => {
+    setWeddingDetails((prev) => ({
+      ...prev,
+      giftItems: prev.giftItems.filter((item) => item.id !== id),
     }))
   }
 
@@ -180,6 +236,8 @@ export default function CreateWeddingPage() {
     if (activeTab === "details") {
       setActiveTab("photos")
     } else if (activeTab === "photos") {
+      setActiveTab("gifts")
+    } else if (activeTab === "gifts") {
       setActiveTab("preview")
     }
   }
@@ -187,8 +245,10 @@ export default function CreateWeddingPage() {
   const goToPreviousTab = () => {
     if (activeTab === "photos") {
       setActiveTab("details")
-    } else if (activeTab === "preview") {
+    } else if (activeTab === "gifts") {
       setActiveTab("photos")
+    } else if (activeTab === "preview") {
+      setActiveTab("gifts")
     }
   }
 
@@ -213,9 +273,10 @@ export default function CreateWeddingPage() {
           <h1 className="text-2xl font-bold mb-6">Create Your Wedding Page</h1>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="details">Wedding Details</TabsTrigger>
               <TabsTrigger value="photos">Photos</TabsTrigger>
+              <TabsTrigger value="gifts">Gift Registry</TabsTrigger>
               <TabsTrigger value="preview">Preview</TabsTrigger>
             </TabsList>
 
@@ -351,6 +412,138 @@ export default function CreateWeddingPage() {
                     Back
                   </Button>
                   <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600">
+                    Next: Add Gifts
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="gifts">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Gift Registry</CardTitle>
+                  <CardDescription>Add items to your gift registry that guests can contribute to.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Add New Gift Item</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid md:grid-cols-[1fr_2fr] gap-6">
+                          <div>
+                            {newGiftItem.imagePreview ? (
+                              <div className="relative aspect-square overflow-hidden rounded-lg border">
+                                <img
+                                  src={newGiftItem.imagePreview}
+                                  alt="Gift preview"
+                                  className="w-full h-full object-cover"
+                                />
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  className="absolute top-2 right-2"
+                                  onClick={() => setNewGiftItem((prev) => ({ ...prev, imageFile: null, imagePreview: "" }))}
+                                >
+                                  Remove
+                                </Button>
+                              </div>
+                            ) : (
+                              <ImageUploader onImageSelected={handleGiftImageSelected} />
+                            )}
+                          </div>
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="gift-name">Gift Name</Label>
+                              <Input
+                                id="gift-name"
+                                name="name"
+                                value={newGiftItem.name}
+                                onChange={handleNewGiftItemChange}
+                                placeholder="e.g., Wedding Dress, Honeymoon Fund"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="gift-price">Price ($)</Label>
+                              <Input
+                                id="gift-price"
+                                name="price"
+                                type="number"
+                                value={newGiftItem.price}
+                                onChange={handleNewGiftItemChange}
+                                placeholder="0.00"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="gift-description">Description</Label>
+                              <Textarea
+                                id="gift-description"
+                                name="description"
+                                value={newGiftItem.description}
+                                onChange={handleNewGiftItemChange}
+                                placeholder="Describe this gift and why it's important to you..."
+                                className="min-h-[100px]"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                      <CardFooter>
+                        <Button onClick={addGiftItem} className="flex items-center">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Gift Item
+                        </Button>
+                      </CardFooter>
+                    </Card>
+
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium">Your Gift Registry</h3>
+                      {weddingDetails.giftItems.length === 0 ? (
+                        <Card className="text-center p-6">
+                          <p className="text-gray-500">Your gift registry is empty. Add some items above.</p>
+                        </Card>
+                      ) : (
+                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                          {weddingDetails.giftItems.map((item) => (
+                            <Card key={item.id} className="overflow-hidden">
+                              <div className="aspect-video bg-gray-100 relative">
+                                {item.imagePreview ? (
+                                  <img
+                                    src={item.imagePreview}
+                                    alt={item.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                    No image
+                                  </div>
+                                )}
+                              </div>
+                              <CardContent className="p-4">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <h3 className="font-semibold">{item.name}</h3>
+                                    <p className="text-sm text-gray-500">{item.description}</p>
+                                    <p className="font-medium mt-2">${item.price}</p>
+                                  </div>
+                                  <Button variant="ghost" size="icon" onClick={() => removeGiftItem(item.id)}>
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <Button variant="outline" onClick={goToPreviousTab}>
+                    Back
+                  </Button>
+                  <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600">
                     Next: Preview
                   </Button>
                 </CardFooter>
@@ -425,9 +618,38 @@ export default function CreateWeddingPage() {
 
                       <div>
                         <h3 className="text-xl font-semibold mb-2">Gift Registry</h3>
-                        <p className="text-gray-500 italic">
-                          You can add gift items to your registry after creating your wedding page.
-                        </p>
+                        {weddingDetails.giftItems.length > 0 ? (
+                          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                            {weddingDetails.giftItems.map((item) => (
+                              <Card key={item.id}>
+                                <div className="aspect-video bg-gray-100">
+                                  {item.imagePreview ? (
+                                    <img
+                                      src={item.imagePreview}
+                                      alt={item.name}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                      No image
+                                    </div>
+                                  )}
+                                </div>
+                                <CardHeader>
+                                  <CardTitle>{item.name}</CardTitle>
+                                  <CardDescription>{item.description}</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                  <p className="font-medium">${item.price}</p>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-500 italic">
+                            No gift items added yet.
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
