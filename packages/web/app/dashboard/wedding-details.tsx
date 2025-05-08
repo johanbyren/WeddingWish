@@ -97,75 +97,88 @@ export default function WeddingDetails() {
           <TabsTrigger value="wedding-details">Wedding Details</TabsTrigger>
         </TabsList>
         <TabsContent value="wedding-details" className="space-y-4 mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Wedding Page</CardTitle>
-              <CardDescription>Manage your wedding page details.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4">
-                {loading ? (
-                  <div className="text-center py-4">Loading...</div>
-                ) : weddings.length > 0 ? (
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle>{weddings[0].title || "Untitled Wedding"}</CardTitle>
-                      <CardDescription>
-                        Created on {new Date(weddings[0].createdAt || "").toLocaleDateString()}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pb-2">
-                      {weddings[0].date && (
-                        <p className="text-sm">Wedding Date: {new Date(weddings[0].date).toLocaleDateString()}</p>
-                      )}
-                      {weddings[0].location && <p className="text-sm">Location: {weddings[0].location}</p>}
-                    </CardContent>
-                    <CardFooter className="flex gap-2 justify-between">
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" asChild>
-                          <Link to={`/${weddings[0].weddingId}`}>View Page</Link>
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          Edit
-                        </Button>
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleDeleteWedding(weddings[0].weddingId)}
-                        className="text-gray-500 hover:text-red-500"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ) : (
-                  <Card className="border-dashed border-2">
-                    <CardHeader className="text-center">
-                      <CardTitle className="text-xl">No Wedding Page Yet</CardTitle>
-                      <CardDescription className="mt-2">
-                        Create your wedding page to get started
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex justify-center">
-                      <div className="text-center">
-                        <p className="text-muted-foreground mb-4">
-                          Start by creating your wedding page to share with your guests
-                        </p>
-                        <Button asChild>
-                          <Link to="/dashboard/create" className="flex items-center">
-                            <PlusCircle className="h-4 w-4 mr-2" />
-                            <span>Create Wedding Page</span>
-                          </Link>
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+          <div className="relative">
+            {loading && (
+              <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center z-50">
+                <div className="flex flex-col items-center gap-4">
+                  <svg className="animate-spin h-8 w-8 text-pink-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <p className="text-pink-500 font-medium">Loading wedding details...</p>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            )}
+            <div className={loading ? "opacity-50 pointer-events-none" : ""}>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your Wedding Page</CardTitle>
+                  <CardDescription>Manage your wedding page details.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4">
+                    {!loading && (weddings.length > 0 ? (
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle>{weddings[0].title || "Untitled Wedding"}</CardTitle>
+                          <CardDescription>
+                            Created on {new Date(weddings[0].createdAt || "").toLocaleDateString()}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="pb-2">
+                          {weddings[0].date && (
+                            <p className="text-sm">Wedding Date: {new Date(weddings[0].date).toLocaleDateString()}</p>
+                          )}
+                          {weddings[0].location && <p className="text-sm">Location: {weddings[0].location}</p>}
+                        </CardContent>
+                        <CardFooter className="flex gap-2 justify-between">
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm" asChild>
+                              <Link to={`/${weddings[0].weddingId}`}>View Page</Link>
+                            </Button>
+                            <Button variant="outline" size="sm">
+                              Edit
+                            </Button>
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleDeleteWedding(weddings[0].weddingId)}
+                            className="text-gray-500 hover:text-red-500"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    ) : (
+                      <Card className="border-dashed border-2">
+                        <CardHeader className="text-center">
+                          <CardTitle className="text-xl">No Wedding Page Yet</CardTitle>
+                          <CardDescription className="mt-2">
+                            Create your wedding page to get started
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex justify-center">
+                          <div className="text-center">
+                            <p className="text-muted-foreground mb-4">
+                              Start by creating your wedding page to share with your guests
+                            </p>
+                            <Button asChild>
+                              <Link to="/dashboard/create" className="flex items-center">
+                                <PlusCircle className="h-4 w-4 mr-2" />
+                                <span>Create Wedding Page</span>
+                              </Link>
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

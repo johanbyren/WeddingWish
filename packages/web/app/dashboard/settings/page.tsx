@@ -20,6 +20,7 @@ export default function Settings() {
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [countrySearch, setCountrySearch] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState({
     account: false,
     weddingPage: false,
@@ -85,6 +86,7 @@ export default function Settings() {
   useEffect(() => {
     const loadSettings = async () => {
       if (!auth.user?.email) return;
+      setIsLoading(true);
 
       try {
         const userEmail = auth.user.email
@@ -148,6 +150,8 @@ export default function Settings() {
         setTimeout(() => {
           setSaveError(null);
         }, 5000);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -423,7 +427,7 @@ export default function Settings() {
         <Button 
           onClick={saveAllSettings} 
           className="bg-pink-500 hover:bg-pink-600"
-          disabled={isSaving.all}
+          disabled={isSaving.all || isLoading}
         >
           {isSaving.all ? (
             <>
@@ -464,600 +468,616 @@ export default function Settings() {
           <TabsTrigger value="privacy">Privacy</TabsTrigger>
         </TabsList>
 
-        {/* Account Settings */}
-        <TabsContent value="account">
-          <Card>
-            <CardHeader>
-              <CardTitle>Account Settings</CardTitle>
-              <CardDescription>Manage your account details and password</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Profile Information</h3>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" name="name" value={accountSettings.name} onChange={handleAccountChange} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={accountSettings.email}
-                      onChange={handleAccountChange}
-                      disabled
-                    />
-                    <p className="text-xs text-gray-500">Email address cannot be changed as it is used as your account identifier</p>
-                  </div>
-                </div>
+        <div className="relative">
+          {isLoading && (
+            <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center z-50">
+              <div className="flex flex-col items-center gap-4">
+                <svg className="animate-spin h-8 w-8 text-pink-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p className="text-pink-500 font-medium">Loading settings...</p>
+              </div>
+            </div>
+          )}
 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="partner1Name">First Partner</Label>
-                    <Input 
-                      id="partner1Name" 
-                      name="partner1Name" 
-                      value={accountSettings.partner1Name} 
-                      onChange={handleAccountChange} 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="partner2Name">Second Partner</Label>
-                    <Input 
-                      id="partner2Name" 
-                      name="partner2Name" 
-                      value={accountSettings.partner2Name} 
-                      onChange={handleAccountChange} 
-                    />
-                  </div>
-                </div>
+          <div className={isLoading ? "opacity-50 pointer-events-none" : ""}>
+            {/* Account Settings */}
+            <TabsContent value="account">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Account Settings</CardTitle>
+                  <CardDescription>Manage your account details and password</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Profile Information</h3>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Full Name</Label>
+                        <Input id="name" name="name" value={accountSettings.name} onChange={handleAccountChange} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email Address</Label>
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          value={accountSettings.email}
+                          onChange={handleAccountChange}
+                          disabled
+                        />
+                        <p className="text-xs text-gray-500">Email address cannot be changed as it is used as your account identifier</p>
+                      </div>
+                    </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="weddingDate">Wedding Date</Label>
-                  <DatePicker 
-                    date={accountSettings.weddingDate} 
-                    setDate={(date) => {
-                      if (date) {
-                        setAccountSettings(prev => ({
-                          ...prev,
-                          weddingDate: date
-                        }))
-                      }
-                    }} 
-                  />
-                </div>
-
-                <div className="space-y-4">
-                  <h4 className="text-md font-medium">Shipping Address</h4>
-                  <div className="space-y-2">
-                    <Label htmlFor="street">Street Address</Label>
-                    <Input 
-                      id="street" 
-                      name="shippingAddress.street" 
-                      value={accountSettings.shippingAddress.street} 
-                      onChange={(e) => setAccountSettings(prev => ({
-                        ...prev,
-                        shippingAddress: { ...prev.shippingAddress, street: e.target.value }
-                      }))} 
-                    />
-                  </div>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="city">City</Label>
-                      <Input 
-                        id="city" 
-                        name="shippingAddress.city" 
-                        value={accountSettings.shippingAddress.city} 
-                        onChange={(e) => setAccountSettings(prev => ({
-                          ...prev,
-                          shippingAddress: { ...prev.shippingAddress, city: e.target.value }
-                        }))} 
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="state">State</Label>
-                      <Input 
-                        id="state" 
-                        name="shippingAddress.state" 
-                        value={accountSettings.shippingAddress.state} 
-                        onChange={(e) => setAccountSettings(prev => ({
-                          ...prev,
-                          shippingAddress: { ...prev.shippingAddress, state: e.target.value }
-                        }))} 
-                      />
-                    </div>
-                  </div>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="zipCode">ZIP Code</Label>
-                      <Input 
-                        id="zipCode" 
-                        name="shippingAddress.zipCode" 
-                        value={accountSettings.shippingAddress.zipCode} 
-                        onChange={(e) => setAccountSettings(prev => ({
-                          ...prev,
-                          shippingAddress: { ...prev.shippingAddress, zipCode: e.target.value }
-                        }))} 
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="country">Country</Label>
-                      <div className="relative">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="partner1Name">First Partner</Label>
                         <Input 
-                          id="country" 
-                          name="shippingAddress.country" 
-                          value={accountSettings.shippingAddress.country}
-                          onChange={(e) => {
-                            setCountrySearch(e.target.value);
+                          id="partner1Name" 
+                          name="partner1Name" 
+                          value={accountSettings.partner1Name} 
+                          onChange={handleAccountChange} 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="partner2Name">Second Partner</Label>
+                        <Input 
+                          id="partner2Name" 
+                          name="partner2Name" 
+                          value={accountSettings.partner2Name} 
+                          onChange={handleAccountChange} 
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="weddingDate">Wedding Date</Label>
+                      <DatePicker 
+                        date={accountSettings.weddingDate} 
+                        setDate={(date) => {
+                          if (date) {
                             setAccountSettings(prev => ({
                               ...prev,
-                              shippingAddress: { ...prev.shippingAddress, country: e.target.value }
-                            }));
-                          }}
-                          placeholder="Search country..."
+                              weddingDate: date
+                            }))
+                          }
+                        }} 
+                      />
+                    </div>
+
+                    <div className="space-y-4">
+                      <h4 className="text-md font-medium">Shipping Address</h4>
+                      <div className="space-y-2">
+                        <Label htmlFor="street">Street Address</Label>
+                        <Input 
+                          id="street" 
+                          name="shippingAddress.street" 
+                          value={accountSettings.shippingAddress.street} 
+                          onChange={(e) => setAccountSettings(prev => ({
+                            ...prev,
+                            shippingAddress: { ...prev.shippingAddress, street: e.target.value }
+                          }))} 
                         />
-                        {countrySearch && (
-                          <div className="absolute top-full left-0 w-full mt-1 bg-popover border rounded-md shadow-md max-h-[200px] overflow-y-auto z-10">
-                            {countryCodes
-                              .filter(country => 
-                                country.country.toLowerCase().includes(countrySearch.toLowerCase())
-                              )
-                              .map((country) => (
-                                <div
-                                  key={country.code}
-                                  className="flex items-center gap-2 px-3 py-2 hover:bg-accent cursor-pointer"
-                                  onClick={() => {
-                                    setAccountSettings(prev => ({
-                                      ...prev,
-                                      shippingAddress: { ...prev.shippingAddress, country: country.country }
-                                    }));
-                                    setCountrySearch("");
-                                  }}
-                                >
+                      </div>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="city">City</Label>
+                          <Input 
+                            id="city" 
+                            name="shippingAddress.city" 
+                            value={accountSettings.shippingAddress.city} 
+                            onChange={(e) => setAccountSettings(prev => ({
+                              ...prev,
+                              shippingAddress: { ...prev.shippingAddress, city: e.target.value }
+                            }))} 
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="state">State</Label>
+                          <Input 
+                            id="state" 
+                            name="shippingAddress.state" 
+                            value={accountSettings.shippingAddress.state} 
+                            onChange={(e) => setAccountSettings(prev => ({
+                              ...prev,
+                              shippingAddress: { ...prev.shippingAddress, state: e.target.value }
+                            }))} 
+                          />
+                        </div>
+                      </div>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="zipCode">ZIP Code</Label>
+                          <Input 
+                            id="zipCode" 
+                            name="shippingAddress.zipCode" 
+                            value={accountSettings.shippingAddress.zipCode} 
+                            onChange={(e) => setAccountSettings(prev => ({
+                              ...prev,
+                              shippingAddress: { ...prev.shippingAddress, zipCode: e.target.value }
+                            }))} 
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="country">Country</Label>
+                          <div className="relative">
+                            <Input 
+                              id="country" 
+                              name="shippingAddress.country" 
+                              value={accountSettings.shippingAddress.country}
+                              onChange={(e) => {
+                                setCountrySearch(e.target.value);
+                                setAccountSettings(prev => ({
+                                  ...prev,
+                                  shippingAddress: { ...prev.shippingAddress, country: e.target.value }
+                                }));
+                              }}
+                              placeholder="Search country..."
+                            />
+                            {countrySearch && (
+                              <div className="absolute top-full left-0 w-full mt-1 bg-popover border rounded-md shadow-md max-h-[200px] overflow-y-auto z-10">
+                                {countryCodes
+                                  .filter(country => 
+                                    country.country.toLowerCase().includes(countrySearch.toLowerCase())
+                                  )
+                                  .map((country) => (
+                                    <div
+                                      key={country.code}
+                                      className="flex items-center gap-2 px-3 py-2 hover:bg-accent cursor-pointer"
+                                      onClick={() => {
+                                        setAccountSettings(prev => ({
+                                          ...prev,
+                                          shippingAddress: { ...prev.shippingAddress, country: country.country }
+                                        }));
+                                        setCountrySearch("");
+                                      }}
+                                    >
+                                      {React.createElement(country.flag, {
+                                        className: "w-4 h-4"
+                                      })}
+                                      <span>{country.country}</span>
+                                    </div>
+                                  ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="phoneNumber">Phone Number</Label>
+                      <div className="flex gap-2">
+                        <Select
+                          value={accountSettings.phoneNumber.countryCode}
+                          onValueChange={(value) => setAccountSettings(prev => ({
+                            ...prev,
+                            phoneNumber: { ...prev.phoneNumber, countryCode: value }
+                          }))}
+                        >
+                          <SelectTrigger className="w-[140px]">
+                            <SelectValue placeholder="Select country">
+                              {accountSettings.phoneNumber.countryCode && (
+                                <div className="flex items-center gap-2">
+                                  {countryCodes.find(c => c.code === accountSettings.phoneNumber.countryCode)?.flag && 
+                                    React.createElement(countryCodes.find(c => c.code === accountSettings.phoneNumber.countryCode)!.flag, {
+                                      className: "w-4 h-4"
+                                    })
+                                  }
+                                  <span>{accountSettings.phoneNumber.countryCode}</span>
+                                </div>
+                              )}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {countryCodes.map((country) => (
+                              <SelectItem key={country.code} value={country.code}>
+                                <div className="flex items-center gap-2">
                                   {React.createElement(country.flag, {
                                     className: "w-4 h-4"
                                   })}
-                                  <span>{country.country}</span>
+                                  <span>{country.country} ({country.code})</span>
                                 </div>
-                              ))}
-                          </div>
-                        )}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Input 
+                          id="phoneNumber" 
+                          name="phoneNumber" 
+                          type="tel" 
+                          value={accountSettings.phoneNumber.number}
+                          onChange={(e) => {
+                            // Only allow numbers
+                            const value = e.target.value.replace(/[^\d]/g, '');
+                            setAccountSettings(prev => ({
+                              ...prev,
+                              phoneNumber: { ...prev.phoneNumber, number: value }
+                            }))
+                          }}
+                          placeholder="Phone number"
+                          className="w-[200px]"
+                          pattern="[0-9]*"
+                          inputMode="numeric"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500">For shipping notifications and important updates</p>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button 
+                    onClick={saveAccountSettings}
+                    disabled={isSaving.account}
+                  >
+                    {isSaving.account ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Saving...
+                      </>
+                    ) : (
+                      'Update Account'
+                    )}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+
+            {/* Wedding Page Settings */}
+            <TabsContent value="wedding-page">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Wedding Page Settings</CardTitle>
+                  <CardDescription>Customize how your wedding page appears</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Page Visibility</h3>
+                    <RadioGroup defaultValue={pageSettings.visibility} className="grid gap-2">
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="public" id="public" />
+                        <Label htmlFor="public">Public - Anyone with the link can view</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="password" id="password" />
+                        <Label htmlFor="password">Password Protected - Guests need a password</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="private" id="private" />
+                        <Label htmlFor="private">Private - Only you can view</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="customUrl">Custom URL</Label>
+                    <div className="flex items-center">
+                      <span className="text-sm text-gray-500 mr-2">weddingwish.com/wedding/</span>
+                      <Input
+                        id="customUrl"
+                        value={pageSettings.customUrl}
+                        className="max-w-[200px]"
+                        onChange={(e) => setPageSettings((prev) => ({ ...prev, customUrl: e.target.value }))}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500">Choose a unique URL for your wedding page</p>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="theme">Page Theme</Label>
+                      <Select
+                        defaultValue={pageSettings.theme}
+                        onValueChange={(value: "classic" | "modern" | "rustic" | "elegant" | "minimalist") => 
+                          setPageSettings((prev) => ({ ...prev, theme: value }))
+                        }
+                      >
+                        <SelectTrigger id="theme">
+                          <SelectValue placeholder="Select theme" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="classic">Classic</SelectItem>
+                          <SelectItem value="modern">Modern</SelectItem>
+                          <SelectItem value="rustic">Rustic</SelectItem>
+                          <SelectItem value="elegant">Elegant</SelectItem>
+                          <SelectItem value="minimalist">Minimalist</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="primaryColor">Primary Color</Label>
+                      <Select
+                        defaultValue={pageSettings.primaryColor}
+                        onValueChange={(value: "pink" | "blue" | "green" | "purple" | "gold") => 
+                          setPageSettings((prev) => ({ ...prev, primaryColor: value }))
+                        }
+                      >
+                        <SelectTrigger id="primaryColor">
+                          <SelectValue placeholder="Select color" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pink">Pink</SelectItem>
+                          <SelectItem value="blue">Blue</SelectItem>
+                          <SelectItem value="green">Green</SelectItem>
+                          <SelectItem value="purple">Purple</SelectItem>
+                          <SelectItem value="gold">Gold</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button 
+                    onClick={saveWeddingPageSettings}
+                    disabled={isSaving.weddingPage}
+                  >
+                    {isSaving.weddingPage ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Saving...
+                      </>
+                    ) : (
+                      'Update Page Settings'
+                    )}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+
+            {/* Payment Settings */}
+            <TabsContent value="payment">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Payment Settings</CardTitle>
+                  <CardDescription>Manage how you receive contributions from guests</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Payment Method</h3>
+                    <RadioGroup 
+                      value={paymentSettings.paymentMethod} 
+                      onValueChange={(value) => setPaymentSettings(prev => ({ ...prev, paymentMethod: value }))}
+                      className="grid gap-2"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="klarna" id="klarna" />
+                        <Label htmlFor="klarna">Klarna</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="swish" id="swish" />
+                        <Label htmlFor="swish">Swish</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="stripe" id="stripe" />
+                        <Label htmlFor="stripe">Stripe</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="paypal" id="paypal" />
+                        <Label htmlFor="paypal">PayPal</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="accountEmail">Payment Account Email</Label>
+                    <Input
+                      id="accountEmail"
+                      value={paymentSettings.accountEmail}
+                      onChange={(e) => setPaymentSettings((prev) => ({ ...prev, accountEmail: e.target.value }))}
+                    />
+                    <p className="text-xs text-gray-500">Email associated with your payment account</p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Contribution Settings</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="notifyOnContribution">Notify on contribution</Label>
+                          <p className="text-xs text-gray-500">Receive an email when someone contributes</p>
+                        </div>
+                        <Switch
+                          id="notifyOnContribution"
+                          checked={paymentSettings.notifyOnContribution}
+                          onCheckedChange={() => handleSwitchChange("notifyOnContribution", "payment")}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="autoThankYou">Automatic thank you emails</Label>
+                          <p className="text-xs text-gray-500">Send automatic thank you emails to contributors</p>
+                        </div>
+                        <Switch
+                          id="autoThankYou"
+                          checked={paymentSettings.autoThankYou}
+                          onCheckedChange={() => handleSwitchChange("autoThankYou", "payment")}
+                        />
                       </div>
                     </div>
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="phoneNumber">Phone Number</Label>
-                  <div className="flex gap-2">
-                    <Select
-                      value={accountSettings.phoneNumber.countryCode}
-                      onValueChange={(value) => setAccountSettings(prev => ({
-                        ...prev,
-                        phoneNumber: { ...prev.phoneNumber, countryCode: value }
-                      }))}
-                    >
-                      <SelectTrigger className="w-[140px]">
-                        <SelectValue placeholder="Select country">
-                          {accountSettings.phoneNumber.countryCode && (
-                            <div className="flex items-center gap-2">
-                              {countryCodes.find(c => c.code === accountSettings.phoneNumber.countryCode)?.flag && 
-                                React.createElement(countryCodes.find(c => c.code === accountSettings.phoneNumber.countryCode)!.flag, {
-                                  className: "w-4 h-4"
-                                })
-                              }
-                              <span>{accountSettings.phoneNumber.countryCode}</span>
-                            </div>
-                          )}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {countryCodes.map((country) => (
-                          <SelectItem key={country.code} value={country.code}>
-                            <div className="flex items-center gap-2">
-                              {React.createElement(country.flag, {
-                                className: "w-4 h-4"
-                              })}
-                              <span>{country.country} ({country.code})</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Input 
-                      id="phoneNumber" 
-                      name="phoneNumber" 
-                      type="tel" 
-                      value={accountSettings.phoneNumber.number}
-                      onChange={(e) => {
-                        // Only allow numbers
-                        const value = e.target.value.replace(/[^\d]/g, '');
-                        setAccountSettings(prev => ({
-                          ...prev,
-                          phoneNumber: { ...prev.phoneNumber, number: value }
-                        }))
-                      }}
-                      placeholder="Phone number"
-                      className="w-[200px]"
-                      pattern="[0-9]*"
-                      inputMode="numeric"
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500">For shipping notifications and important updates</p>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button 
-                onClick={saveAccountSettings}
-                disabled={isSaving.account}
-              >
-                {isSaving.account ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Saving...
-                  </>
-                ) : (
-                  'Update Account'
-                )}
-              </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-
-        {/* Wedding Page Settings */}
-        <TabsContent value="wedding-page">
-          <Card>
-            <CardHeader>
-              <CardTitle>Wedding Page Settings</CardTitle>
-              <CardDescription>Customize how your wedding page appears</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Page Visibility</h3>
-                <RadioGroup defaultValue={pageSettings.visibility} className="grid gap-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="public" id="public" />
-                    <Label htmlFor="public">Public - Anyone with the link can view</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="password" id="password" />
-                    <Label htmlFor="password">Password Protected - Guests need a password</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="private" id="private" />
-                    <Label htmlFor="private">Private - Only you can view</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="customUrl">Custom URL</Label>
-                <div className="flex items-center">
-                  <span className="text-sm text-gray-500 mr-2">weddingwish.com/wedding/</span>
-                  <Input
-                    id="customUrl"
-                    value={pageSettings.customUrl}
-                    className="max-w-[200px]"
-                    onChange={(e) => setPageSettings((prev) => ({ ...prev, customUrl: e.target.value }))}
-                  />
-                </div>
-                <p className="text-xs text-gray-500">Choose a unique URL for your wedding page</p>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="theme">Page Theme</Label>
-                  <Select
-                    defaultValue={pageSettings.theme}
-                    onValueChange={(value: "classic" | "modern" | "rustic" | "elegant" | "minimalist") => 
-                      setPageSettings((prev) => ({ ...prev, theme: value }))
-                    }
+                </CardContent>
+                <CardFooter>
+                  <Button 
+                    onClick={savePaymentSettings}
+                    disabled={isSaving.payment}
                   >
-                    <SelectTrigger id="theme">
-                      <SelectValue placeholder="Select theme" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="classic">Classic</SelectItem>
-                      <SelectItem value="modern">Modern</SelectItem>
-                      <SelectItem value="rustic">Rustic</SelectItem>
-                      <SelectItem value="elegant">Elegant</SelectItem>
-                      <SelectItem value="minimalist">Minimalist</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="primaryColor">Primary Color</Label>
-                  <Select
-                    defaultValue={pageSettings.primaryColor}
-                    onValueChange={(value: "pink" | "blue" | "green" | "purple" | "gold") => 
-                      setPageSettings((prev) => ({ ...prev, primaryColor: value }))
-                    }
+                    {isSaving.payment ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Saving...
+                      </>
+                    ) : (
+                      'Update Payment Settings'
+                    )}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+
+            {/* Notification Settings */}
+            <TabsContent value="notifications">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Notification Settings</CardTitle>
+                  <CardDescription>Manage how and when you receive notifications</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="emailNotifications">Email Notifications</Label>
+                        <p className="text-xs text-gray-500">Receive notifications via email</p>
+                      </div>
+                      <Switch
+                        id="emailNotifications"
+                        checked={notificationSettings.emailNotifications}
+                        onCheckedChange={() => handleSwitchChange("emailNotifications", "notification")}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="contributionAlerts">Contribution Alerts</Label>
+                        <p className="text-xs text-gray-500">Get notified when someone contributes to your registry</p>
+                      </div>
+                      <Switch
+                        id="contributionAlerts"
+                        checked={notificationSettings.contributionAlerts}
+                        onCheckedChange={() => handleSwitchChange("contributionAlerts", "notification")}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="weeklyDigest">Weekly Digest</Label>
+                        <p className="text-xs text-gray-500">Receive a weekly summary of activity</p>
+                      </div>
+                      <Switch
+                        id="weeklyDigest"
+                        checked={notificationSettings.weeklyDigest}
+                        onCheckedChange={() => handleSwitchChange("weeklyDigest", "notification")}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="marketingEmails">Marketing Emails</Label>
+                        <p className="text-xs text-gray-500">Receive updates and offers from WeddingWish</p>
+                      </div>
+                      <Switch
+                        id="marketingEmails"
+                        checked={notificationSettings.marketingEmails}
+                        onCheckedChange={() => handleSwitchChange("marketingEmails", "notification")}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button 
+                    onClick={saveNotificationSettings}
+                    disabled={isSaving.notification}
                   >
-                    <SelectTrigger id="primaryColor">
-                      <SelectValue placeholder="Select color" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pink">Pink</SelectItem>
-                      <SelectItem value="blue">Blue</SelectItem>
-                      <SelectItem value="green">Green</SelectItem>
-                      <SelectItem value="purple">Purple</SelectItem>
-                      <SelectItem value="gold">Gold</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button 
-                onClick={saveWeddingPageSettings}
-                disabled={isSaving.weddingPage}
-              >
-                {isSaving.weddingPage ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Saving...
-                  </>
-                ) : (
-                  'Update Page Settings'
-                )}
-              </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
+                    {isSaving.notification ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Saving...
+                      </>
+                    ) : (
+                      'Update Notification Settings'
+                    )}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
 
-        {/* Payment Settings */}
-        <TabsContent value="payment">
-          <Card>
-            <CardHeader>
-              <CardTitle>Payment Settings</CardTitle>
-              <CardDescription>Manage how you receive contributions from guests</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Payment Method</h3>
-                <RadioGroup 
-                  value={paymentSettings.paymentMethod} 
-                  onValueChange={(value) => setPaymentSettings(prev => ({ ...prev, paymentMethod: value }))}
-                  className="grid gap-2"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="klarna" id="klarna" />
-                    <Label htmlFor="klarna">Klarna</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="swish" id="swish" />
-                    <Label htmlFor="swish">Swish</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="stripe" id="stripe" />
-                    <Label htmlFor="stripe">Stripe</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="paypal" id="paypal" />
-                    <Label htmlFor="paypal">PayPal</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="accountEmail">Payment Account Email</Label>
-                <Input
-                  id="accountEmail"
-                  value={paymentSettings.accountEmail}
-                  onChange={(e) => setPaymentSettings((prev) => ({ ...prev, accountEmail: e.target.value }))}
-                />
-                <p className="text-xs text-gray-500">Email associated with your payment account</p>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Contribution Settings</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="notifyOnContribution">Notify on contribution</Label>
-                      <p className="text-xs text-gray-500">Receive an email when someone contributes</p>
+            {/* Privacy Settings */}
+            <TabsContent value="privacy">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Privacy Settings</CardTitle>
+                  <CardDescription>Control what information is visible to your guests</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="showContributorNames">Show Contributor Names</Label>
+                        <p className="text-xs text-gray-500">Display the names of people who contribute to your registry</p>
+                      </div>
+                      <Switch
+                        id="showContributorNames"
+                        checked={privacySettings.showContributorNames}
+                        onCheckedChange={() => handleSwitchChange("showContributorNames", "privacy")}
+                      />
                     </div>
-                    <Switch
-                      id="notifyOnContribution"
-                      checked={paymentSettings.notifyOnContribution}
-                      onCheckedChange={() => handleSwitchChange("notifyOnContribution", "payment")}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="autoThankYou">Automatic thank you emails</Label>
-                      <p className="text-xs text-gray-500">Send automatic thank you emails to contributors</p>
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="showContributionAmounts">Show Contribution Amounts</Label>
+                        <p className="text-xs text-gray-500">Display how much each person contributed</p>
+                      </div>
+                      <Switch
+                        id="showContributionAmounts"
+                        checked={privacySettings.showContributionAmounts}
+                        onCheckedChange={() => handleSwitchChange("showContributionAmounts", "privacy")}
+                      />
                     </div>
-                    <Switch
-                      id="autoThankYou"
-                      checked={paymentSettings.autoThankYou}
-                      onCheckedChange={() => handleSwitchChange("autoThankYou", "payment")}
-                    />
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="allowGuestComments">Allow Guest Comments</Label>
+                        <p className="text-xs text-gray-500">Let guests leave comments on your wedding page</p>
+                      </div>
+                      <Switch
+                        id="allowGuestComments"
+                        checked={privacySettings.allowGuestComments}
+                        onCheckedChange={() => handleSwitchChange("allowGuestComments", "privacy")}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="showRegistry">Show Registry</Label>
+                        <p className="text-xs text-gray-500">Make your gift registry visible to guests</p>
+                      </div>
+                      <Switch
+                        id="showRegistry"
+                        checked={privacySettings.showRegistry}
+                        onCheckedChange={() => handleSwitchChange("showRegistry", "privacy")}
+                      />
+                    </div>
                   </div>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button 
-                onClick={savePaymentSettings}
-                disabled={isSaving.payment}
-              >
-                {isSaving.payment ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Saving...
-                  </>
-                ) : (
-                  'Update Payment Settings'
-                )}
-              </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-
-        {/* Notification Settings */}
-        <TabsContent value="notifications">
-          <Card>
-            <CardHeader>
-              <CardTitle>Notification Settings</CardTitle>
-              <CardDescription>Manage how and when you receive notifications</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="emailNotifications">Email Notifications</Label>
-                    <p className="text-xs text-gray-500">Receive notifications via email</p>
-                  </div>
-                  <Switch
-                    id="emailNotifications"
-                    checked={notificationSettings.emailNotifications}
-                    onCheckedChange={() => handleSwitchChange("emailNotifications", "notification")}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="contributionAlerts">Contribution Alerts</Label>
-                    <p className="text-xs text-gray-500">Get notified when someone contributes to your registry</p>
-                  </div>
-                  <Switch
-                    id="contributionAlerts"
-                    checked={notificationSettings.contributionAlerts}
-                    onCheckedChange={() => handleSwitchChange("contributionAlerts", "notification")}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="weeklyDigest">Weekly Digest</Label>
-                    <p className="text-xs text-gray-500">Receive a weekly summary of activity</p>
-                  </div>
-                  <Switch
-                    id="weeklyDigest"
-                    checked={notificationSettings.weeklyDigest}
-                    onCheckedChange={() => handleSwitchChange("weeklyDigest", "notification")}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="marketingEmails">Marketing Emails</Label>
-                    <p className="text-xs text-gray-500">Receive updates and offers from WeddingWish</p>
-                  </div>
-                  <Switch
-                    id="marketingEmails"
-                    checked={notificationSettings.marketingEmails}
-                    onCheckedChange={() => handleSwitchChange("marketingEmails", "notification")}
-                  />
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button 
-                onClick={saveNotificationSettings}
-                disabled={isSaving.notification}
-              >
-                {isSaving.notification ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Saving...
-                  </>
-                ) : (
-                  'Update Notification Settings'
-                )}
-              </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-
-        {/* Privacy Settings */}
-        <TabsContent value="privacy">
-          <Card>
-            <CardHeader>
-              <CardTitle>Privacy Settings</CardTitle>
-              <CardDescription>Control what information is visible to your guests</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="showContributorNames">Show Contributor Names</Label>
-                    <p className="text-xs text-gray-500">Display the names of people who contribute to your registry</p>
-                  </div>
-                  <Switch
-                    id="showContributorNames"
-                    checked={privacySettings.showContributorNames}
-                    onCheckedChange={() => handleSwitchChange("showContributorNames", "privacy")}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="showContributionAmounts">Show Contribution Amounts</Label>
-                    <p className="text-xs text-gray-500">Display how much each person contributed</p>
-                  </div>
-                  <Switch
-                    id="showContributionAmounts"
-                    checked={privacySettings.showContributionAmounts}
-                    onCheckedChange={() => handleSwitchChange("showContributionAmounts", "privacy")}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="allowGuestComments">Allow Guest Comments</Label>
-                    <p className="text-xs text-gray-500">Let guests leave comments on your wedding page</p>
-                  </div>
-                  <Switch
-                    id="allowGuestComments"
-                    checked={privacySettings.allowGuestComments}
-                    onCheckedChange={() => handleSwitchChange("allowGuestComments", "privacy")}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="showRegistry">Show Registry</Label>
-                    <p className="text-xs text-gray-500">Make your gift registry visible to guests</p>
-                  </div>
-                  <Switch
-                    id="showRegistry"
-                    checked={privacySettings.showRegistry}
-                    onCheckedChange={() => handleSwitchChange("showRegistry", "privacy")}
-                  />
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button 
-                onClick={savePrivacySettings}
-                disabled={isSaving.privacy}
-              >
-                {isSaving.privacy ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Saving...
-                  </>
-                ) : (
-                  'Update Privacy Settings'
-                )}
-              </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
+                </CardContent>
+                <CardFooter>
+                  <Button 
+                    onClick={savePrivacySettings}
+                    disabled={isSaving.privacy}
+                  >
+                    {isSaving.privacy ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Saving...
+                      </>
+                    ) : (
+                      'Update Privacy Settings'
+                    )}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+          </div>
+        </div>
       </Tabs>
     </div>
   )
