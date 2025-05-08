@@ -18,7 +18,16 @@ import { DatePicker } from "~/components/date-picker"
 export default function Settings() {
   const auth = useAuth();
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [countrySearch, setCountrySearch] = useState("")
+  const [isSaving, setIsSaving] = useState({
+    account: false,
+    weddingPage: false,
+    payment: false,
+    notification: false,
+    privacy: false,
+    all: false
+  })
   
   // Account settings
   const [accountSettings, setAccountSettings] = useState({
@@ -110,6 +119,8 @@ export default function Settings() {
 
   const saveAccountSettings = async () => {
     try {
+      setIsSaving(prev => ({ ...prev, account: true }));
+      setSaveError(null);
       const response = await fetch(`${import.meta.env.VITE_API_URL}api/settings`, {
         method: "POST",
         headers: {
@@ -136,12 +147,19 @@ export default function Settings() {
       }, 5000);
     } catch (error) {
       console.error("Error saving account settings:", error);
-      // You might want to show an error message to the user here
+      setSaveError("Failed to save account settings. Please try again.");
+      setTimeout(() => {
+        setSaveError(null);
+      }, 5000);
+    } finally {
+      setIsSaving(prev => ({ ...prev, account: false }));
     }
   };
 
   const saveAllSettings = async () => {
     try {
+      setIsSaving(prev => ({ ...prev, all: true }));
+      setSaveError(null);
       const response = await fetch(`${import.meta.env.VITE_API_URL}api/settings`, {
         method: "POST",
         headers: {
@@ -172,12 +190,19 @@ export default function Settings() {
       }, 5000);
     } catch (error) {
       console.error("Error saving all settings:", error);
-      // You might want to show an error message to the user here
+      setSaveError("Failed to save settings. Please try again.");
+      setTimeout(() => {
+        setSaveError(null);
+      }, 5000);
+    } finally {
+      setIsSaving(prev => ({ ...prev, all: false }));
     }
   };
 
   const saveWeddingPageSettings = async () => {
     try {
+      setIsSaving(prev => ({ ...prev, weddingPage: true }));
+      setSaveError(null);
       const response = await fetch(`${import.meta.env.VITE_API_URL}api/settings`, {
         method: "POST",
         headers: {
@@ -201,12 +226,19 @@ export default function Settings() {
       }, 5000);
     } catch (error) {
       console.error("Error saving wedding page settings:", error);
-      // You might want to show an error message to the user here
+      setSaveError("Failed to save wedding page settings. Please try again.");
+      setTimeout(() => {
+        setSaveError(null);
+      }, 5000);
+    } finally {
+      setIsSaving(prev => ({ ...prev, weddingPage: false }));
     }
   };
 
   const savePaymentSettings = async () => {
     try {
+      setIsSaving(prev => ({ ...prev, payment: true }));
+      setSaveError(null);
       const response = await fetch(`${import.meta.env.VITE_API_URL}api/settings`, {
         method: "POST",
         headers: {
@@ -230,12 +262,19 @@ export default function Settings() {
       }, 5000);
     } catch (error) {
       console.error("Error saving payment settings:", error);
-      // You might want to show an error message to the user here
+      setSaveError("Failed to save payment settings. Please try again.");
+      setTimeout(() => {
+        setSaveError(null);
+      }, 5000);
+    } finally {
+      setIsSaving(prev => ({ ...prev, payment: false }));
     }
   };
 
   const saveNotificationSettings = async () => {
     try {
+      setIsSaving(prev => ({ ...prev, notification: true }));
+      setSaveError(null);
       const response = await fetch(`${import.meta.env.VITE_API_URL}api/settings`, {
         method: "POST",
         headers: {
@@ -259,12 +298,19 @@ export default function Settings() {
       }, 5000);
     } catch (error) {
       console.error("Error saving notification settings:", error);
-      // You might want to show an error message to the user here
+      setSaveError("Failed to save notification settings. Please try again.");
+      setTimeout(() => {
+        setSaveError(null);
+      }, 5000);
+    } finally {
+      setIsSaving(prev => ({ ...prev, notification: false }));
     }
   };
 
   const savePrivacySettings = async () => {
     try {
+      setIsSaving(prev => ({ ...prev, privacy: true }));
+      setSaveError(null);
       const response = await fetch(`${import.meta.env.VITE_API_URL}api/settings`, {
         method: "POST",
         headers: {
@@ -288,7 +334,12 @@ export default function Settings() {
       }, 5000);
     } catch (error) {
       console.error("Error saving privacy settings:", error);
-      // You might want to show an error message to the user here
+      setSaveError("Failed to save privacy settings. Please try again.");
+      setTimeout(() => {
+        setSaveError(null);
+      }, 5000);
+    } finally {
+      setIsSaving(prev => ({ ...prev, privacy: false }));
     }
   };
 
@@ -296,8 +347,22 @@ export default function Settings() {
     <div className="p-4 md:p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Settings</h1>
-        <Button onClick={saveAllSettings} className="bg-pink-500 hover:bg-pink-600">
-          Save All Settings
+        <Button 
+          onClick={saveAllSettings} 
+          className="bg-pink-500 hover:bg-pink-600"
+          disabled={isSaving.all}
+        >
+          {isSaving.all ? (
+            <>
+              <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Saving...
+            </>
+          ) : (
+            'Save All Settings'
+          )}
         </Button>
       </div>
 
@@ -305,6 +370,15 @@ export default function Settings() {
         <Alert className="mb-6 bg-green-50 text-green-800 border-green-200">
           <Check className="h-4 w-4 mr-2" />
           <AlertDescription>Settings saved successfully!</AlertDescription>
+        </Alert>
+      )}
+
+      {saveError && (
+        <Alert className="mb-6 bg-red-50 text-red-800 border-red-200">
+          <svg className="h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+          </svg>
+          <AlertDescription>{saveError}</AlertDescription>
         </Alert>
       )}
 
@@ -543,7 +617,22 @@ export default function Settings() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={saveAccountSettings}>Update Account</Button>
+              <Button 
+                onClick={saveAccountSettings}
+                disabled={isSaving.account}
+              >
+                {isSaving.account ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                  </>
+                ) : (
+                  'Update Account'
+                )}
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -632,7 +721,22 @@ export default function Settings() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={saveWeddingPageSettings}>Update Page Settings</Button>
+              <Button 
+                onClick={saveWeddingPageSettings}
+                disabled={isSaving.weddingPage}
+              >
+                {isSaving.weddingPage ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                  </>
+                ) : (
+                  'Update Page Settings'
+                )}
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -710,7 +814,22 @@ export default function Settings() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={savePaymentSettings}>Update Payment Settings</Button>
+              <Button 
+                onClick={savePaymentSettings}
+                disabled={isSaving.payment}
+              >
+                {isSaving.payment ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                  </>
+                ) : (
+                  'Update Payment Settings'
+                )}
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -771,7 +890,22 @@ export default function Settings() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={saveNotificationSettings}>Update Notification Settings</Button>
+              <Button 
+                onClick={saveNotificationSettings}
+                disabled={isSaving.notification}
+              >
+                {isSaving.notification ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                  </>
+                ) : (
+                  'Update Notification Settings'
+                )}
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -832,7 +966,22 @@ export default function Settings() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={savePrivacySettings}>Update Privacy Settings</Button>
+              <Button 
+                onClick={savePrivacySettings}
+                disabled={isSaving.privacy}
+              >
+                {isSaving.privacy ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                  </>
+                ) : (
+                  'Update Privacy Settings'
+                )}
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
