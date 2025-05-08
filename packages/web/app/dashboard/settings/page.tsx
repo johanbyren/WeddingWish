@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { useState } from "react"
 import { Button } from "~/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card"
@@ -8,21 +9,47 @@ import { Label } from "~/components/ui/label"
 import { Check } from "lucide-react"
 import { Alert, AlertDescription } from "~/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
-import { Switch } from "../../components/ui/switch"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
-import { RadioGroup, RadioGroupItem } from "../../components/ui/radio-group"
+import { Switch } from "~/components/ui/switch"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
+import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group"
+import { SE, NO, DK, FI, GB, US, DE, FR } from 'country-flag-icons/react/3x2'
+import { DatePicker } from "~/components/date-picker"
+//import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "~/components/ui/command"
 
 export default function Settings() {
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [countrySearch, setCountrySearch] = useState("")
   
   // Account settings
   const [accountSettings, setAccountSettings] = useState({
     name: "John & Jane Doe",
     email: "johnjane@example.com",
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
+    partner1Name: "John Doe",
+    partner2Name: "Jane Doe",
+    weddingDate: new Date(),
+    shippingAddress: {
+      street: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      country: "Sweden"
+    },
+    phoneNumber: {
+      countryCode: "+46",
+      number: ""
+    },
   })
+
+  const countryCodes = [
+    { country: "Sweden", code: "+46", flag: SE },
+    { country: "Norway", code: "+47", flag: NO },
+    { country: "Denmark", code: "+45", flag: DK },
+    { country: "Finland", code: "+358", flag: FI },
+    { country: "United Kingdom", code: "+44", flag: GB },
+    { country: "United States", code: "+1", flag: US },
+    { country: "Germany", code: "+49", flag: DE },
+    { country: "France", code: "+33", flag: FR },
+  ]
 
   // Wedding page settings
   const [pageSettings, setPageSettings] = useState({
@@ -127,46 +154,205 @@ export default function Settings() {
                       type="email"
                       value={accountSettings.email}
                       onChange={handleAccountChange}
+                      disabled
+                    />
+                    <p className="text-xs text-gray-500">Email address cannot be changed as it is used as your account identifier</p>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="partner1Name">First Partner</Label>
+                    <Input 
+                      id="partner1Name" 
+                      name="partner1Name" 
+                      value={accountSettings.partner1Name} 
+                      onChange={handleAccountChange} 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="partner2Name">Second Partner</Label>
+                    <Input 
+                      id="partner2Name" 
+                      name="partner2Name" 
+                      value={accountSettings.partner2Name} 
+                      onChange={handleAccountChange} 
                     />
                   </div>
                 </div>
-              </div>
 
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Change Password</h3>
-                <div className="grid gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="weddingDate">Wedding Date</Label>
+                  <DatePicker 
+                    date={accountSettings.weddingDate} 
+                    setDate={(date) => {
+                      if (date) {
+                        setAccountSettings(prev => ({
+                          ...prev,
+                          weddingDate: date
+                        }))
+                      }
+                    }} 
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="text-md font-medium">Shipping Address</h4>
                   <div className="space-y-2">
-                    <Label htmlFor="currentPassword">Current Password</Label>
-                    <Input
-                      id="currentPassword"
-                      name="currentPassword"
-                      type="password"
-                      value={accountSettings.currentPassword}
-                      onChange={handleAccountChange}
+                    <Label htmlFor="street">Street Address</Label>
+                    <Input 
+                      id="street" 
+                      name="shippingAddress.street" 
+                      value={accountSettings.shippingAddress.street} 
+                      onChange={(e) => setAccountSettings(prev => ({
+                        ...prev,
+                        shippingAddress: { ...prev.shippingAddress, street: e.target.value }
+                      }))} 
                     />
                   </div>
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="newPassword">New Password</Label>
-                      <Input
-                        id="newPassword"
-                        name="newPassword"
-                        type="password"
-                        value={accountSettings.newPassword}
-                        onChange={handleAccountChange}
+                      <Label htmlFor="city">City</Label>
+                      <Input 
+                        id="city" 
+                        name="shippingAddress.city" 
+                        value={accountSettings.shippingAddress.city} 
+                        onChange={(e) => setAccountSettings(prev => ({
+                          ...prev,
+                          shippingAddress: { ...prev.shippingAddress, city: e.target.value }
+                        }))} 
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                      <Input
-                        id="confirmPassword"
-                        name="confirmPassword"
-                        type="password"
-                        value={accountSettings.confirmPassword}
-                        onChange={handleAccountChange}
+                      <Label htmlFor="state">State</Label>
+                      <Input 
+                        id="state" 
+                        name="shippingAddress.state" 
+                        value={accountSettings.shippingAddress.state} 
+                        onChange={(e) => setAccountSettings(prev => ({
+                          ...prev,
+                          shippingAddress: { ...prev.shippingAddress, state: e.target.value }
+                        }))} 
                       />
                     </div>
                   </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="zipCode">ZIP Code</Label>
+                      <Input 
+                        id="zipCode" 
+                        name="shippingAddress.zipCode" 
+                        value={accountSettings.shippingAddress.zipCode} 
+                        onChange={(e) => setAccountSettings(prev => ({
+                          ...prev,
+                          shippingAddress: { ...prev.shippingAddress, zipCode: e.target.value }
+                        }))} 
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="country">Country</Label>
+                      <div className="relative">
+                        <Input 
+                          id="country" 
+                          name="shippingAddress.country" 
+                          value={accountSettings.shippingAddress.country}
+                          onChange={(e) => {
+                            setCountrySearch(e.target.value);
+                            setAccountSettings(prev => ({
+                              ...prev,
+                              shippingAddress: { ...prev.shippingAddress, country: e.target.value }
+                            }));
+                          }}
+                          placeholder="Search country..."
+                        />
+                        {countrySearch && (
+                          <div className="absolute top-full left-0 w-full mt-1 bg-popover border rounded-md shadow-md max-h-[200px] overflow-y-auto z-10">
+                            {countryCodes
+                              .filter(country => 
+                                country.country.toLowerCase().includes(countrySearch.toLowerCase())
+                              )
+                              .map((country) => (
+                                <div
+                                  key={country.code}
+                                  className="flex items-center gap-2 px-3 py-2 hover:bg-accent cursor-pointer"
+                                  onClick={() => {
+                                    setAccountSettings(prev => ({
+                                      ...prev,
+                                      shippingAddress: { ...prev.shippingAddress, country: country.country }
+                                    }));
+                                    setCountrySearch("");
+                                  }}
+                                >
+                                  {React.createElement(country.flag, {
+                                    className: "w-4 h-4"
+                                  })}
+                                  <span>{country.country}</span>
+                                </div>
+                              ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phoneNumber">Phone Number</Label>
+                  <div className="flex gap-2">
+                    <Select
+                      value={accountSettings.phoneNumber.countryCode}
+                      onValueChange={(value) => setAccountSettings(prev => ({
+                        ...prev,
+                        phoneNumber: { ...prev.phoneNumber, countryCode: value }
+                      }))}
+                    >
+                      <SelectTrigger className="w-[140px]">
+                        <SelectValue placeholder="Select country">
+                          {accountSettings.phoneNumber.countryCode && (
+                            <div className="flex items-center gap-2">
+                              {countryCodes.find(c => c.code === accountSettings.phoneNumber.countryCode)?.flag && 
+                                React.createElement(countryCodes.find(c => c.code === accountSettings.phoneNumber.countryCode)!.flag, {
+                                  className: "w-4 h-4"
+                                })
+                              }
+                              <span>{accountSettings.phoneNumber.countryCode}</span>
+                            </div>
+                          )}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {countryCodes.map((country) => (
+                          <SelectItem key={country.code} value={country.code}>
+                            <div className="flex items-center gap-2">
+                              {React.createElement(country.flag, {
+                                className: "w-4 h-4"
+                              })}
+                              <span>{country.country} ({country.code})</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Input 
+                      id="phoneNumber" 
+                      name="phoneNumber" 
+                      type="tel" 
+                      value={accountSettings.phoneNumber.number}
+                      onChange={(e) => {
+                        // Only allow numbers
+                        const value = e.target.value.replace(/[^\d]/g, '');
+                        setAccountSettings(prev => ({
+                          ...prev,
+                          phoneNumber: { ...prev.phoneNumber, number: value }
+                        }))
+                      }}
+                      placeholder="Phone number"
+                      className="w-[200px]"
+                      pattern="[0-9]*"
+                      inputMode="numeric"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500">For shipping notifications and important updates</p>
                 </div>
               </div>
             </CardContent>
