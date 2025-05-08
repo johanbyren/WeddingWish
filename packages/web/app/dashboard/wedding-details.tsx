@@ -8,46 +8,15 @@ import { PlusCircle, Trash2 } from "lucide-react"
 import { useEffect, useState, useCallback, useRef } from "react"
 import type { WeddingType } from "@wedding-wish/core/wedding"
 import { useAuth } from "~/context/auth"
+import { getCache, setCache, clearCache, isCacheValid } from "~/utils/cache"
 
 const CACHE_KEY = 'wedding_details_cache';
-const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
 
 export default function WeddingDetails() {
   const auth = useAuth()
   const [weddings, setWeddings] = useState<WeddingType[]>([])
   const [loading, setLoading] = useState(true)
   const isFetchingRef = useRef(false);
-
-  const getCache = () => {
-    try {
-      const cached = sessionStorage.getItem(CACHE_KEY);
-      if (cached) {
-        return JSON.parse(cached);
-      }
-    } catch (error) {
-      console.error('Error reading cache:', error);
-    }
-    return null;
-  };
-
-  const setCache = (data: WeddingType[]) => {
-    try {
-      sessionStorage.setItem(CACHE_KEY, JSON.stringify({
-        data,
-        lastFetched: Date.now()
-      }));
-    } catch (error) {
-      console.error('Error setting cache:', error);
-    }
-  };
-
-  const clearCache = () => {
-    try {
-      sessionStorage.removeItem(CACHE_KEY);
-    } catch (error) {
-      console.error('Error clearing cache:', error);
-    }
-  };
 
   const handleDeleteWedding = async (weddingId: string) => {
     if (!confirm('Are you sure you want to delete this wedding page? This action cannot be undone.')) {
@@ -71,7 +40,7 @@ export default function WeddingDetails() {
         throw new Error('Failed to delete wedding');
       }
 
-      clearCache();
+      clearCache(CACHE_KEY);
       setWeddings([]);
     } catch (error) {
       console.error("Error deleting wedding:", error);
@@ -86,28 +55,21 @@ export default function WeddingDetails() {
     }
 
     // Check cache first
-    const cache = getCache();
-    const now = Date.now();
-    console.log('Now: ', now);
-    console.log('Cache:', cache);
+    const cache = getCache<WeddingType[]>(CACHE_KEY);
     
-    if (cache && cache.lastFetched && (now - cache.lastFetched < CACHE_DURATION) && cache.data) {
-      console.log('Using cached weddings');
-      setWeddings(cache.data);
+    if (isCacheValid(cache) && cache!.data) {
+      setWeddings(cache!.data);
       setLoading(false);
       return;
     }
 
     // Prevent multiple simultaneous fetches
     if (isFetchingRef.current) {
-      console.log('Fetch already in progress, skipping');
       return;
     }
 
     try {
-      isFetchingRef.current = true;
-      console.log('Fetching weddings from API');
-      
+      isFetchingRef.current = true;      
       const userEmail = auth.user.email
       const response = await fetch(`${import.meta.env.VITE_API_URL}api/wedding/${userEmail}`, {
         method: 'GET',
@@ -122,10 +84,9 @@ export default function WeddingDetails() {
       }
 
       const data = await response.json();
-      console.log('Weddings fetched:', data);
       
       // Update cache with new data
-      setCache(data);
+      setCache(CACHE_KEY, data);
       setWeddings(data);
     } catch (error) {
       console.error("Error fetching weddings:", error)

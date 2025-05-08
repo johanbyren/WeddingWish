@@ -14,9 +14,54 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group"
 import { SE, NO, DK, FI, GB, US, DE, FR } from 'country-flag-icons/react/3x2'
 import { DatePicker } from "~/components/date-picker"
+import { getCache, setCache, clearCache, isCacheValid } from "~/utils/cache"
+
+interface SettingsData {
+  accountSettings?: {
+    name: string;
+    email: string;
+    partner1Name: string;
+    partner2Name: string;
+    weddingDate: string;
+    shippingAddress: {
+      street: string;
+      city: string;
+      state: string;
+      zipCode: string;
+      country: string;
+    };
+    phoneNumber: {
+      countryCode: string;
+      number: string;
+    };
+  };
+  pageSettings?: {
+    visibility: string;
+    customUrl: string;
+    theme: string;
+    primaryColor: string;
+  };
+  paymentSettings?: {
+    paymentMethod: string;
+    accountEmail: string;
+    notifyOnContribution: boolean;
+    autoThankYou: boolean;
+  };
+  notificationSettings?: {
+    emailNotifications: boolean;
+    contributionAlerts: boolean;
+    weeklyDigest: boolean;
+    marketingEmails: boolean;
+  };
+  privacySettings?: {
+    showContributorNames: boolean;
+    showContributionAmounts: boolean;
+    allowGuestComments: boolean;
+    showRegistry: boolean;
+  };
+}
 
 const CACHE_KEY = 'settings_cache';
-const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
 
 export default function Settings() {
   const auth = useAuth();
@@ -86,37 +131,6 @@ export default function Settings() {
     showRegistry: true,
   })
 
-  const getCache = () => {
-    try {
-      const cached = sessionStorage.getItem(CACHE_KEY);
-      if (cached) {
-        return JSON.parse(cached);
-      }
-    } catch (error) {
-      console.error('Error reading cache:', error);
-    }
-    return null;
-  };
-
-  const setCache = (data: any) => {
-    try {
-      sessionStorage.setItem(CACHE_KEY, JSON.stringify({
-        data,
-        lastFetched: Date.now()
-      }));
-    } catch (error) {
-      console.error('Error setting cache:', error);
-    }
-  };
-
-  const clearCache = () => {
-    try {
-      sessionStorage.removeItem(CACHE_KEY);
-    } catch (error) {
-      console.error('Error clearing cache:', error);
-    }
-  };
-
   // Load settings when component mounts
   useEffect(() => {
     const loadSettings = async () => {
@@ -125,21 +139,17 @@ export default function Settings() {
 
       try {
         // Check cache first
-        const cache = getCache();
-        const now = Date.now();
-        console.log('Now: ', now);
-        console.log('Cache:', cache);
+        const cache = getCache<SettingsData>(CACHE_KEY);
         
-        if (cache && cache.lastFetched && (now - cache.lastFetched < CACHE_DURATION) && cache.data) {
-          console.log('Using cached settings');
-          const data = cache.data;
+        if (isCacheValid(cache) && cache!.data) {
+          const data = cache!.data;
           
           // Update account settings
           if (data.accountSettings) {
             setAccountSettings(prev => ({
               ...prev,
-              ...data.accountSettings,
-              weddingDate: data.accountSettings.weddingDate ? new Date(data.accountSettings.weddingDate) : prev.weddingDate,
+              ...data.accountSettings!,
+              weddingDate: data.accountSettings!.weddingDate ? new Date(data.accountSettings!.weddingDate) : prev.weddingDate,
             }));
           }
 
@@ -147,7 +157,7 @@ export default function Settings() {
           if (data.pageSettings) {
             setPageSettings(prev => ({
               ...prev,
-              ...data.pageSettings,
+              ...data.pageSettings!,
             }));
           }
 
@@ -155,7 +165,7 @@ export default function Settings() {
           if (data.paymentSettings) {
             setPaymentSettings(prev => ({
               ...prev,
-              ...data.paymentSettings,
+              ...data.paymentSettings!,
             }));
           }
 
@@ -163,7 +173,7 @@ export default function Settings() {
           if (data.notificationSettings) {
             setNotificationSettings(prev => ({
               ...prev,
-              ...data.notificationSettings,
+              ...data.notificationSettings!,
             }));
           }
 
@@ -171,7 +181,7 @@ export default function Settings() {
           if (data.privacySettings) {
             setPrivacySettings(prev => ({
               ...prev,
-              ...data.privacySettings,
+              ...data.privacySettings!,
             }));
           }
           
@@ -181,12 +191,10 @@ export default function Settings() {
 
         // Prevent multiple simultaneous fetches
         if (isFetchingRef.current) {
-          console.log('Fetch already in progress, skipping');
           return;
         }
 
         isFetchingRef.current = true;
-        console.log('Fetching settings from API');
 
         const userEmail = auth.user.email
         const userId = auth.user.email
@@ -203,7 +211,7 @@ export default function Settings() {
         const data = await response.json();
         if (data.success && data.settings) {
           // Update cache
-          setCache(data.settings);
+          setCache(CACHE_KEY, data.settings);
 
           // Update account settings
           if (data.settings.accountSettings) {
@@ -321,7 +329,7 @@ export default function Settings() {
         throw new Error("Failed to save account settings");
       }
 
-      clearCache();
+      clearCache(CACHE_KEY);
       setSaveSuccess(true);
       setTimeout(() => {
         setSaveSuccess(false);
@@ -365,7 +373,7 @@ export default function Settings() {
         throw new Error("Failed to save all settings");
       }
 
-      clearCache();
+      clearCache(CACHE_KEY);
       setSaveSuccess(true);
       setTimeout(() => {
         setSaveSuccess(false);
@@ -402,7 +410,7 @@ export default function Settings() {
         throw new Error("Failed to save wedding page settings");
       }
 
-      clearCache();
+      clearCache(CACHE_KEY);
       setSaveSuccess(true);
       setTimeout(() => {
         setSaveSuccess(false);
@@ -439,7 +447,7 @@ export default function Settings() {
         throw new Error("Failed to save payment settings");
       }
 
-      clearCache();
+      clearCache(CACHE_KEY);
       setSaveSuccess(true);
       setTimeout(() => {
         setSaveSuccess(false);
@@ -476,7 +484,7 @@ export default function Settings() {
         throw new Error("Failed to save notification settings");
       }
 
-      clearCache();
+      clearCache(CACHE_KEY);
       setSaveSuccess(true);
       setTimeout(() => {
         setSaveSuccess(false);
@@ -513,7 +521,7 @@ export default function Settings() {
         throw new Error("Failed to save privacy settings");
       }
 
-      clearCache();
+      clearCache(CACHE_KEY);
       setSaveSuccess(true);
       setTimeout(() => {
         setSaveSuccess(false);
