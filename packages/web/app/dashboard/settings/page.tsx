@@ -1,7 +1,7 @@
 "use client"
 
-import React from "react"
-import { useState } from "react"
+import React, { useState, useEffect } from "react"
+import { useAuth } from "~/context/auth"
 import { Button } from "~/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
@@ -14,16 +14,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group"
 import { SE, NO, DK, FI, GB, US, DE, FR } from 'country-flag-icons/react/3x2'
 import { DatePicker } from "~/components/date-picker"
-//import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "~/components/ui/command"
 
 export default function Settings() {
+  const auth = useAuth();
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [countrySearch, setCountrySearch] = useState("")
   
   // Account settings
   const [accountSettings, setAccountSettings] = useState({
     name: "John & Jane Doe",
-    email: "johnjane@example.com",
+    email: "",
     partner1Name: "John Doe",
     partner2Name: "Jane Doe",
     weddingDate: new Date(),
@@ -39,6 +39,16 @@ export default function Settings() {
       number: ""
     },
   })
+
+  // Update email when auth is loaded
+  useEffect(() => {
+    if (auth.user && auth.user.email) {
+      setAccountSettings(prev => ({
+        ...prev,
+        email: auth.user!.email
+      }));
+    }
+  }, [auth.user]);
 
   const countryCodes = [
     { country: "Sweden", code: "+46", flag: SE },
@@ -98,19 +108,195 @@ export default function Settings() {
     }
   }
 
-  const saveSettings = () => {
-    // In a real app, you would save the settings to a database
-    setSaveSuccess(true)
-    setTimeout(() => {
-      setSaveSuccess(false)
-    }, 3000)
-  }
+  const saveAccountSettings = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}api/settings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${await auth.getToken()}`,
+        },
+        body: JSON.stringify({
+          userId: auth.user!.email,
+          email: auth.user!.email,
+          accountSettings: {
+            ...accountSettings,
+            weddingDate: accountSettings.weddingDate.toISOString(),
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save account settings");
+      }
+
+      setSaveSuccess(true);
+      setTimeout(() => {
+        setSaveSuccess(false);
+      }, 5000);
+    } catch (error) {
+      console.error("Error saving account settings:", error);
+      // You might want to show an error message to the user here
+    }
+  };
+
+  const saveAllSettings = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}api/settings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${await auth.getToken()}`,
+        },
+        body: JSON.stringify({
+          userId: auth.user!.email,
+          email: auth.user!.email,
+          accountSettings: {
+            ...accountSettings,
+            weddingDate: accountSettings.weddingDate.toISOString(),
+          },
+          pageSettings,
+          paymentSettings,
+          notificationSettings,
+          privacySettings,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save all settings");
+      }
+
+      setSaveSuccess(true);
+      setTimeout(() => {
+        setSaveSuccess(false);
+      }, 5000);
+    } catch (error) {
+      console.error("Error saving all settings:", error);
+      // You might want to show an error message to the user here
+    }
+  };
+
+  const saveWeddingPageSettings = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}api/settings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${await auth.getToken()}`,
+        },
+        body: JSON.stringify({
+          userId: auth.user!.email,
+          email: auth.user!.email,
+          pageSettings,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save wedding page settings");
+      }
+
+      setSaveSuccess(true);
+      setTimeout(() => {
+        setSaveSuccess(false);
+      }, 5000);
+    } catch (error) {
+      console.error("Error saving wedding page settings:", error);
+      // You might want to show an error message to the user here
+    }
+  };
+
+  const savePaymentSettings = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}api/settings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${await auth.getToken()}`,
+        },
+        body: JSON.stringify({
+          userId: auth.user!.email,
+          email: auth.user!.email,
+          paymentSettings,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save payment settings");
+      }
+
+      setSaveSuccess(true);
+      setTimeout(() => {
+        setSaveSuccess(false);
+      }, 5000);
+    } catch (error) {
+      console.error("Error saving payment settings:", error);
+      // You might want to show an error message to the user here
+    }
+  };
+
+  const saveNotificationSettings = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}api/settings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${await auth.getToken()}`,
+        },
+        body: JSON.stringify({
+          userId: auth.user!.email,
+          email: auth.user!.email,
+          notificationSettings,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save notification settings");
+      }
+
+      setSaveSuccess(true);
+      setTimeout(() => {
+        setSaveSuccess(false);
+      }, 5000);
+    } catch (error) {
+      console.error("Error saving notification settings:", error);
+      // You might want to show an error message to the user here
+    }
+  };
+
+  const savePrivacySettings = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}api/settings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${await auth.getToken()}`,
+        },
+        body: JSON.stringify({
+          userId: auth.user!.email,
+          email: auth.user!.email,
+          privacySettings,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save privacy settings");
+      }
+
+      setSaveSuccess(true);
+      setTimeout(() => {
+        setSaveSuccess(false);
+      }, 5000);
+    } catch (error) {
+      console.error("Error saving privacy settings:", error);
+      // You might want to show an error message to the user here
+    }
+  };
 
   return (
     <div className="p-4 md:p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Settings</h1>
-        <Button onClick={saveSettings} className="bg-pink-500 hover:bg-pink-600">
+        <Button onClick={saveAllSettings} className="bg-pink-500 hover:bg-pink-600">
           Save All Settings
         </Button>
       </div>
@@ -357,7 +543,7 @@ export default function Settings() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button>Update Account</Button>
+              <Button onClick={saveAccountSettings}>Update Account</Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -446,7 +632,7 @@ export default function Settings() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button>Update Page Settings</Button>
+              <Button onClick={saveWeddingPageSettings}>Update Page Settings</Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -461,7 +647,19 @@ export default function Settings() {
             <CardContent className="space-y-6">
               <div className="space-y-4">
                 <h3 className="text-lg font-medium">Payment Method</h3>
-                <RadioGroup defaultValue={paymentSettings.paymentMethod} className="grid gap-2">
+                <RadioGroup 
+                  value={paymentSettings.paymentMethod} 
+                  onValueChange={(value) => setPaymentSettings(prev => ({ ...prev, paymentMethod: value }))}
+                  className="grid gap-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="klarna" id="klarna" />
+                    <Label htmlFor="klarna">Klarna</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="swish" id="swish" />
+                    <Label htmlFor="swish">Swish</Label>
+                  </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="stripe" id="stripe" />
                     <Label htmlFor="stripe">Stripe</Label>
@@ -512,7 +710,7 @@ export default function Settings() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button>Update Payment Settings</Button>
+              <Button onClick={savePaymentSettings}>Update Payment Settings</Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -573,7 +771,7 @@ export default function Settings() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button>Update Notification Settings</Button>
+              <Button onClick={saveNotificationSettings}>Update Notification Settings</Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -634,7 +832,7 @@ export default function Settings() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button>Update Privacy Settings</Button>
+              <Button onClick={savePrivacySettings}>Update Privacy Settings</Button>
             </CardFooter>
           </Card>
         </TabsContent>

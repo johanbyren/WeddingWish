@@ -13,7 +13,9 @@
     "./wedding": "./src/wedding/index.ts",
     "./wedding/types": "./src/wedding/types.ts",
     "./photo": "./src/photo/index.ts",
-    "./photo/types": "./src/photo/types.ts"
+    "./photo/types": "./src/photo/types.ts",
+    "./settings": "./src/settings/index.ts",
+    "./settings/types": "./src/settings/types.ts"
   },
   "dependencies": {
     "sst": "*"
