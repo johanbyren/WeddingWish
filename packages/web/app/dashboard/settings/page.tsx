@@ -15,6 +15,9 @@ import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group"
 import { SE, NO, DK, FI, GB, US, DE, FR } from 'country-flag-icons/react/3x2'
 import { DatePicker } from "~/components/date-picker"
 
+const CACHE_KEY = 'settings_cache';
+const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
+
 export default function Settings() {
   const auth = useAuth();
   const [saveSuccess, setSaveSuccess] = useState(false)
@@ -29,6 +32,7 @@ export default function Settings() {
     privacy: false,
     all: false
   })
+  const isFetchingRef = React.useRef(false);
   
   // Account settings
   const [accountSettings, setAccountSettings] = useState({
@@ -82,6 +86,37 @@ export default function Settings() {
     showRegistry: true,
   })
 
+  const getCache = () => {
+    try {
+      const cached = sessionStorage.getItem(CACHE_KEY);
+      if (cached) {
+        return JSON.parse(cached);
+      }
+    } catch (error) {
+      console.error('Error reading cache:', error);
+    }
+    return null;
+  };
+
+  const setCache = (data: any) => {
+    try {
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+        data,
+        lastFetched: Date.now()
+      }));
+    } catch (error) {
+      console.error('Error setting cache:', error);
+    }
+  };
+
+  const clearCache = () => {
+    try {
+      sessionStorage.removeItem(CACHE_KEY);
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+    }
+  };
+
   // Load settings when component mounts
   useEffect(() => {
     const loadSettings = async () => {
@@ -89,6 +124,70 @@ export default function Settings() {
       setIsLoading(true);
 
       try {
+        // Check cache first
+        const cache = getCache();
+        const now = Date.now();
+        console.log('Now: ', now);
+        console.log('Cache:', cache);
+        
+        if (cache && cache.lastFetched && (now - cache.lastFetched < CACHE_DURATION) && cache.data) {
+          console.log('Using cached settings');
+          const data = cache.data;
+          
+          // Update account settings
+          if (data.accountSettings) {
+            setAccountSettings(prev => ({
+              ...prev,
+              ...data.accountSettings,
+              weddingDate: data.accountSettings.weddingDate ? new Date(data.accountSettings.weddingDate) : prev.weddingDate,
+            }));
+          }
+
+          // Update page settings
+          if (data.pageSettings) {
+            setPageSettings(prev => ({
+              ...prev,
+              ...data.pageSettings,
+            }));
+          }
+
+          // Update payment settings
+          if (data.paymentSettings) {
+            setPaymentSettings(prev => ({
+              ...prev,
+              ...data.paymentSettings,
+            }));
+          }
+
+          // Update notification settings
+          if (data.notificationSettings) {
+            setNotificationSettings(prev => ({
+              ...prev,
+              ...data.notificationSettings,
+            }));
+          }
+
+          // Update privacy settings
+          if (data.privacySettings) {
+            setPrivacySettings(prev => ({
+              ...prev,
+              ...data.privacySettings,
+            }));
+          }
+          
+          setIsLoading(false);
+          return;
+        }
+
+        // Prevent multiple simultaneous fetches
+        if (isFetchingRef.current) {
+          console.log('Fetch already in progress, skipping');
+          return;
+        }
+
+        isFetchingRef.current = true;
+        console.log('Fetching settings from API');
+
         const userEmail = auth.user.email
         const userId = auth.user.email
         const response = await fetch(`${import.meta.env.VITE_API_URL}api/settings/${userId}/${userEmail}`, {
@@ -103,6 +202,9 @@ export default function Settings() {
 
         const data = await response.json();
         if (data.success && data.settings) {
+          // Update cache
+          setCache(data.settings);
+
           // Update account settings
           if (data.settings.accountSettings) {
             setAccountSettings(prev => ({
@@ -152,6 +254,7 @@ export default function Settings() {
         }, 5000);
       } finally {
         setIsLoading(false);
+        isFetchingRef.current = false;
       }
     };
 
@@ -218,6 +321,7 @@ export default function Settings() {
         throw new Error("Failed to save account settings");
       }
 
+      clearCache();
       setSaveSuccess(true);
       setTimeout(() => {
         setSaveSuccess(false);
@@ -261,6 +365,7 @@ export default function Settings() {
         throw new Error("Failed to save all settings");
       }
 
+      clearCache();
       setSaveSuccess(true);
       setTimeout(() => {
         setSaveSuccess(false);
@@ -297,6 +402,7 @@ export default function Settings() {
         throw new Error("Failed to save wedding page settings");
       }
 
+      clearCache();
       setSaveSuccess(true);
       setTimeout(() => {
         setSaveSuccess(false);
@@ -333,6 +439,7 @@ export default function Settings() {
         throw new Error("Failed to save payment settings");
       }
 
+      clearCache();
       setSaveSuccess(true);
       setTimeout(() => {
         setSaveSuccess(false);
@@ -369,6 +476,7 @@ export default function Settings() {
         throw new Error("Failed to save notification settings");
       }
 
+      clearCache();
       setSaveSuccess(true);
       setTimeout(() => {
         setSaveSuccess(false);
@@ -405,6 +513,7 @@ export default function Settings() {
         throw new Error("Failed to save privacy settings");
       }
 
+      clearCache();
       setSaveSuccess(true);
       setTimeout(() => {
         setSaveSuccess(false);

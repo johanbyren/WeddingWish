@@ -5,14 +5,49 @@ import { Button } from "~/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
 import { PlusCircle, Trash2 } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import type { WeddingType } from "@wedding-wish/core/wedding"
 import { useAuth } from "~/context/auth"
+
+const CACHE_KEY = 'wedding_details_cache';
+const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
 
 export default function WeddingDetails() {
   const auth = useAuth()
   const [weddings, setWeddings] = useState<WeddingType[]>([])
   const [loading, setLoading] = useState(true)
+  const isFetchingRef = useRef(false);
+
+  const getCache = () => {
+    try {
+      const cached = sessionStorage.getItem(CACHE_KEY);
+      if (cached) {
+        return JSON.parse(cached);
+      }
+    } catch (error) {
+      console.error('Error reading cache:', error);
+    }
+    return null;
+  };
+
+  const setCache = (data: WeddingType[]) => {
+    try {
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+        data,
+        lastFetched: Date.now()
+      }));
+    } catch (error) {
+      console.error('Error setting cache:', error);
+    }
+  };
+
+  const clearCache = () => {
+    try {
+      sessionStorage.removeItem(CACHE_KEY);
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+    }
+  };
 
   const handleDeleteWedding = async (weddingId: string) => {
     if (!confirm('Are you sure you want to delete this wedding page? This action cannot be undone.')) {
@@ -36,6 +71,7 @@ export default function WeddingDetails() {
         throw new Error('Failed to delete wedding');
       }
 
+      clearCache();
       setWeddings([]);
     } catch (error) {
       console.error("Error deleting wedding:", error);
@@ -43,40 +79,65 @@ export default function WeddingDetails() {
     }
   };
 
-  useEffect(() => {
-    const fetchWeddings = async () => {
-      // Wait for auth to be ready
-      if (!auth.user?.email) {
-        return;
-      }
-
-      try {
-        console.log('fetchWeddings: ', auth)
-        const userEmail = auth.user.email
-        const response = await fetch(`${import.meta.env.VITE_API_URL}api/wedding/${userEmail}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${await auth.getToken()}`,
-          }
-        });
-  
-        if (!response.ok) {
-          throw new Error('Failed to fetch weddings');
-        }
-  
-        const data = await response.json();
-        console.log('Weddings fetched:', data);
-        setWeddings(data)
-      } catch (error) {
-        console.error("Error fetching weddings:", error)
-      } finally {
-        setLoading(false)
-      }
+  const fetchWeddings = useCallback(async () => {
+    // Wait for auth to be ready
+    if (!auth.user?.email) {
+      return;
     }
 
-    fetchWeddings()
-  }, [auth.user?.email]) // Add auth.user?.email as dependency
+    // Check cache first
+    const cache = getCache();
+    const now = Date.now();
+    console.log('Now: ', now);
+    console.log('Cache:', cache);
+    
+    if (cache && cache.lastFetched && (now - cache.lastFetched < CACHE_DURATION) && cache.data) {
+      console.log('Using cached weddings');
+      setWeddings(cache.data);
+      setLoading(false);
+      return;
+    }
+
+    // Prevent multiple simultaneous fetches
+    if (isFetchingRef.current) {
+      console.log('Fetch already in progress, skipping');
+      return;
+    }
+
+    try {
+      isFetchingRef.current = true;
+      console.log('Fetching weddings from API');
+      
+      const userEmail = auth.user.email
+      const response = await fetch(`${import.meta.env.VITE_API_URL}api/wedding/${userEmail}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${await auth.getToken()}`,
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch weddings');
+      }
+
+      const data = await response.json();
+      console.log('Weddings fetched:', data);
+      
+      // Update cache with new data
+      setCache(data);
+      setWeddings(data);
+    } catch (error) {
+      console.error("Error fetching weddings:", error)
+    } finally {
+      setLoading(false)
+      isFetchingRef.current = false;
+    }
+  }, [auth.user?.email, auth.getToken]);
+
+  useEffect(() => {
+    fetchWeddings();
+  }, [fetchWeddings]);
 
   return (
     <div className="p-4 md:p-6">
