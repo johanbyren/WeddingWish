@@ -5,6 +5,27 @@ import { zValidator } from "@hono/zod-validator";
 
 const app = new Hono();
 
+app.get(
+    "/:userId/:email",
+    zValidator(
+        "param",
+        z.object({
+            userId: z.string(),
+        }),
+    ),
+    async (c) => {
+        try {
+            const userId = c.req.param("userId");
+            const userEmail = c.req.param("email");
+            const settings = await Settings.get(userId, userEmail);
+            return c.json({ success: true, settings });
+        } catch (error) {
+            console.error("Error fetching settings:", error);
+            return c.json({ error: "Failed to fetch settings" }, 500);
+        }
+    }
+);
+
 app.post("/", 
     zValidator(
         "json",

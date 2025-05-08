@@ -31,10 +31,10 @@ export default function Settings() {
   
   // Account settings
   const [accountSettings, setAccountSettings] = useState({
-    name: "John & Jane Doe",
+    name: "",
     email: "",
-    partner1Name: "John Doe",
-    partner2Name: "Jane Doe",
+    partner1Name: "",
+    partner2Name: "",
     weddingDate: new Date(),
     shippingAddress: {
       street: "",
@@ -48,6 +48,111 @@ export default function Settings() {
       number: ""
     },
   })
+
+  // Wedding page settings
+  const [pageSettings, setPageSettings] = useState({
+    visibility: "public",
+    customUrl: "",
+    theme: "classic",
+    primaryColor: "pink",
+  })
+
+  // Payment settings
+  const [paymentSettings, setPaymentSettings] = useState({
+    paymentMethod: "swish",
+    accountEmail: auth.user?.email || "",
+    notifyOnContribution: true,
+    autoThankYou: true,
+  })
+
+  // Notification settings
+  const [notificationSettings, setNotificationSettings] = useState({
+    emailNotifications: true,
+    contributionAlerts: true,
+    weeklyDigest: true,
+    marketingEmails: true,
+  })
+
+  // Privacy settings
+  const [privacySettings, setPrivacySettings] = useState({
+    showContributorNames: true,
+    showContributionAmounts: true,
+    allowGuestComments: true,
+    showRegistry: true,
+  })
+
+  // Load settings when component mounts
+  useEffect(() => {
+    const loadSettings = async () => {
+      if (!auth.user?.email) return;
+
+      try {
+        const userEmail = auth.user.email
+        const userId = auth.user.email
+        const response = await fetch(`${import.meta.env.VITE_API_URL}api/settings/${userId}/${userEmail}`, {
+          headers: {
+            Authorization: `Bearer ${await auth.getToken()}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch settings");
+        }
+
+        const data = await response.json();
+        if (data.success && data.settings) {
+          // Update account settings
+          if (data.settings.accountSettings) {
+            setAccountSettings(prev => ({
+              ...prev,
+              ...data.settings.accountSettings,
+              weddingDate: data.settings.accountSettings.weddingDate ? new Date(data.settings.accountSettings.weddingDate) : prev.weddingDate,
+            }));
+          }
+
+          // Update page settings
+          if (data.settings.pageSettings) {
+            setPageSettings(prev => ({
+              ...prev,
+              ...data.settings.pageSettings,
+            }));
+          }
+
+          // Update payment settings
+          if (data.settings.paymentSettings) {
+            setPaymentSettings(prev => ({
+              ...prev,
+              ...data.settings.paymentSettings,
+            }));
+          }
+
+          // Update notification settings
+          if (data.settings.notificationSettings) {
+            setNotificationSettings(prev => ({
+              ...prev,
+              ...data.settings.notificationSettings,
+            }));
+          }
+
+          // Update privacy settings
+          if (data.settings.privacySettings) {
+            setPrivacySettings(prev => ({
+              ...prev,
+              ...data.settings.privacySettings,
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Error loading settings:", error);
+        setSaveError("Failed to load settings. Please try again.");
+        setTimeout(() => {
+          setSaveError(null);
+        }, 5000);
+      }
+    };
+
+    loadSettings();
+  }, [auth.user]);
 
   // Update email when auth is loaded
   useEffect(() => {
@@ -69,38 +174,6 @@ export default function Settings() {
     { country: "Germany", code: "+49", flag: DE },
     { country: "France", code: "+33", flag: FR },
   ]
-
-  // Wedding page settings
-  const [pageSettings, setPageSettings] = useState({
-    visibility: "public",
-    customUrl: "john-and-jane",
-    theme: "classic",
-    primaryColor: "pink",
-  })
-
-  // Payment settings
-  const [paymentSettings, setPaymentSettings] = useState({
-    paymentMethod: "stripe",
-    accountEmail: "johnjane@example.com",
-    notifyOnContribution: true,
-    autoThankYou: true,
-  })
-
-  // Notification settings
-  const [notificationSettings, setNotificationSettings] = useState({
-    emailNotifications: true,
-    contributionAlerts: true,
-    weeklyDigest: false,
-    marketingEmails: false,
-  })
-
-  // Privacy settings
-  const [privacySettings, setPrivacySettings] = useState({
-    showContributorNames: true,
-    showContributionAmounts: false,
-    allowGuestComments: true,
-    showRegistry: true,
-  })
 
   const handleAccountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
