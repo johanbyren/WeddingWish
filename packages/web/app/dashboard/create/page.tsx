@@ -219,6 +219,14 @@ export default function CreateWeddingPage() {
             return `weddings/${weddingId}/${fileName}`;
           });
 
+        // Add cover photo if it exists and hasn't been changed
+        if (weddingDetails.coverPhotoPreview && !weddingDetails.coverPhoto) {
+          const coverPhotoUrl = currentPhotoUrls.find(url => url.includes('cover-'));
+          if (coverPhotoUrl) {
+            existingPhotoUrls.push(coverPhotoUrl);
+          }
+        }
+
         // 4. Find and delete removed photos
         const photosToDelete = currentPhotoUrls.filter(url => 
           ![...newPhotoUrls, ...existingPhotoUrls].includes(url)

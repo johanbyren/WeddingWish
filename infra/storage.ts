@@ -19,6 +19,7 @@ export const weddingsTable = new sst.aws.Dynamo("Weddings", {
     fields: {
         weddingId: "string",
         userId: "string",
+        customUrl: "string",
         // title: "string",
         // date: "string",
         // location: "string",
@@ -26,7 +27,6 @@ export const weddingsTable = new sst.aws.Dynamo("Weddings", {
         // coverPhotoUrl: "string",
         // additionalPhotos: "string",
         // visibility: "string",
-        // customUrl: "string",
         // theme: "string",
         // primaryColor: "string",
         // createdAt: "string",
@@ -35,6 +35,12 @@ export const weddingsTable = new sst.aws.Dynamo("Weddings", {
     primaryIndex: { 
         hashKey: "weddingId",
         rangeKey: "userId"
+    },
+    globalIndexes: {
+        "CustomUrlIndex": {
+            hashKey: "customUrl",
+            projection: "all"
+        }
     }
 });
 

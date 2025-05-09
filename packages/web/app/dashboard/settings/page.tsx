@@ -107,6 +107,18 @@ export default function Settings() {
     primaryColor: "pink",
   })
 
+  const [urlValidation, setUrlValidation] = useState<{
+    isValid: boolean;
+    message: string;
+    isChecking: boolean;
+  }>({
+    isValid: true,
+    message: "",
+    isChecking: false,
+  });
+
+  const [userWeddings, setUserWeddings] = useState<Array<{ weddingId: string; customUrl?: string }>>([]);
+
   // Payment settings
   const [paymentSettings, setPaymentSettings] = useState({
     paymentMethod: "swish",
@@ -279,6 +291,73 @@ export default function Settings() {
     }
   }, [auth.user]);
 
+  // Load user's weddings when component mounts
+  useEffect(() => {
+    const loadUserWeddings = async () => {
+      if (!auth.user?.email) return;
+      
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}api/wedding/${auth.user.email}`, {
+          headers: {
+            Authorization: `Bearer ${await auth.getToken()}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch user's weddings");
+        }
+
+        const data = await response.json();
+        setUserWeddings(data);
+      } catch (error) {
+        console.error("Error loading user's weddings:", error);
+      }
+    };
+
+    loadUserWeddings();
+  }, [auth.user]);
+
+  // Add debounced URL validation
+  useEffect(() => {
+    const checkUrlUniqueness = async () => {
+      if (!pageSettings.customUrl) {
+        setUrlValidation({
+          isValid: true,
+          message: "",
+          isChecking: false,
+        });
+        return;
+      }
+
+      setUrlValidation(prev => ({ ...prev, isChecking: true }));
+      
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}api/show-wedding/custom-url/${pageSettings.customUrl}`, {
+          method: 'GET'
+        });
+        const exists = response.status === 200;
+        
+        // Check if the URL belongs to one of the user's weddings
+        const isUserWedding = userWeddings.some(wedding => wedding.customUrl === pageSettings.customUrl);
+        
+        setUrlValidation({
+          isValid: !exists || isUserWedding,
+          message: exists && !isUserWedding ? "This URL is already taken" : "URL is available",
+          isChecking: false,
+        });
+      } catch (error) {
+        setUrlValidation({
+          isValid: false,
+          message: "Error checking URL availability",
+          isChecking: false,
+        });
+      }
+    };
+
+    const timeoutId = setTimeout(checkUrlUniqueness, 500);
+    return () => clearTimeout(timeoutId);
+  }, [pageSettings.customUrl, userWeddings]);
+
   const countryCodes = [
     { country: "Sweden", code: "+46", flag: SE },
     { country: "Norway", code: "+47", flag: NO },
@@ -349,7 +428,9 @@ export default function Settings() {
     try {
       setIsSaving(prev => ({ ...prev, all: true }));
       setSaveError(null);
-      const response = await fetch(`${import.meta.env.VITE_API_URL}api/settings`, {
+
+      // First update all settings
+      const settingsResponse = await fetch(`${import.meta.env.VITE_API_URL}api/settings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -369,8 +450,30 @@ export default function Settings() {
         }),
       });
 
-      if (!response.ok) {
+      if (!settingsResponse.ok) {
         throw new Error("Failed to save all settings");
+      }
+
+      // If we have a customUrl, update the wedding table as well
+      if (pageSettings.customUrl && userWeddings.length > 0) {
+        const weddingResponse = await fetch(`${import.meta.env.VITE_API_URL}api/wedding/update`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${await auth.getToken()}`,
+          },
+          body: JSON.stringify({
+            weddingId: userWeddings[0].weddingId,
+            userId: auth.user!.email,
+            customUrl: pageSettings.customUrl,
+          }),
+        });
+
+        if (!weddingResponse.ok) {
+          throw new Error("Failed to update wedding custom URL");
+        }
+      } else if (pageSettings.customUrl && userWeddings.length === 0) {
+        throw new Error("No wedding found to update with custom URL");
       }
 
       clearCache(CACHE_KEY);
@@ -380,7 +483,7 @@ export default function Settings() {
       }, 5000);
     } catch (error) {
       console.error("Error saving all settings:", error);
-      setSaveError("Failed to save settings. Please try again.");
+      setSaveError(error instanceof Error ? error.message : "Failed to save settings. Please try again.");
       setTimeout(() => {
         setSaveError(null);
       }, 5000);
@@ -393,7 +496,9 @@ export default function Settings() {
     try {
       setIsSaving(prev => ({ ...prev, weddingPage: true }));
       setSaveError(null);
-      const response = await fetch(`${import.meta.env.VITE_API_URL}api/settings`, {
+
+      // First update the settings
+      const settingsResponse = await fetch(`${import.meta.env.VITE_API_URL}api/settings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -406,8 +511,30 @@ export default function Settings() {
         }),
       });
 
-      if (!response.ok) {
+      if (!settingsResponse.ok) {
         throw new Error("Failed to save wedding page settings");
+      }
+
+      // If we have a customUrl, update the wedding table as well
+      if (pageSettings.customUrl && userWeddings.length > 0) {
+        const weddingResponse = await fetch(`${import.meta.env.VITE_API_URL}api/wedding/update`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${await auth.getToken()}`,
+          },
+          body: JSON.stringify({
+            weddingId: userWeddings[0].weddingId,
+            userId: auth.user!.email,
+            customUrl: pageSettings.customUrl,
+          }),
+        });
+
+        if (!weddingResponse.ok) {
+          throw new Error("Failed to update wedding custom URL");
+        }
+      } else if (pageSettings.customUrl && userWeddings.length === 0) {
+        throw new Error("No wedding found to update with custom URL");
       }
 
       clearCache(CACHE_KEY);
@@ -417,7 +544,7 @@ export default function Settings() {
       }, 5000);
     } catch (error) {
       console.error("Error saving wedding page settings:", error);
-      setSaveError("Failed to save wedding page settings. Please try again.");
+      setSaveError(error instanceof Error ? error.message : "Failed to save wedding page settings. Please try again.");
       setTimeout(() => {
         setSaveError(null);
       }, 5000);
@@ -873,14 +1000,21 @@ export default function Settings() {
 
                   <div className="space-y-2">
                     <Label htmlFor="customUrl">Custom URL</Label>
-                    <div className="flex items-center">
-                      <span className="text-sm text-gray-500 mr-2">weddingwish.com/wedding/</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-500">weddingwish.com/wedding/</span>
                       <Input
                         id="customUrl"
                         value={pageSettings.customUrl}
                         className="max-w-[200px]"
                         onChange={(e) => setPageSettings((prev) => ({ ...prev, customUrl: e.target.value }))}
                       />
+                      {urlValidation.isChecking ? (
+                        <span className="text-sm text-gray-500">Checking...</span>
+                      ) : urlValidation.message && (
+                        <span className={`text-sm ${urlValidation.isValid ? 'text-green-500' : 'text-red-500'}`}>
+                          {urlValidation.message}
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-gray-500">Choose a unique URL for your wedding page</p>
                   </div>

@@ -97,9 +97,10 @@ export namespace Wedding {
   export const getByCustomUrl = async (customUrl: string) => {
     console.log("Fetching wedding by url:", customUrl, "from table:", Resource.Weddings.name);
     try {
-      const command = new ScanCommand({
+      const command = new QueryCommand({
         TableName: Resource.Weddings.name,
-        FilterExpression: "customUrl = :customUrl",
+        IndexName: "CustomUrlIndex",
+        KeyConditionExpression: "customUrl = :customUrl",
         ExpressionAttributeValues: {
           ":customUrl": customUrl,
         },
@@ -141,27 +142,49 @@ export namespace Wedding {
     /**
      * Update a wedding
      */
-    export const update = async (wedding: WeddingType) => {
+    export const update = async (wedding: Partial<WeddingType> & { weddingId: string; userId: string }) => {
         try {
+            // Build update expression and attribute values dynamically
+            const updateExpressions: string[] = [];
+            const expressionAttributeValues: Record<string, any> = {};
+            const expressionAttributeNames: Record<string, string> = {};
+
+            // Handle date field separately
+            if (wedding.date !== undefined) {
+                updateExpressions.push("#weddingDate = :weddingDate");
+                expressionAttributeValues[":weddingDate"] = wedding.date;
+                expressionAttributeNames["#weddingDate"] = "date";
+            }
+
+            // Handle updatedAt separately
+            updateExpressions.push("#lastUpdated = :lastUpdated");
+            expressionAttributeValues[":lastUpdated"] = new Date().toISOString();
+            expressionAttributeNames["#lastUpdated"] = "updatedAt";
+
+            // Add each provided field to the update, excluding date and updatedAt
+            Object.entries(wedding).forEach(([key, value]) => {
+                if (key !== "weddingId" && key !== "userId" && key !== "date" && key !== "updatedAt" && value !== undefined) {
+                    if (key === "location") {
+                        const attributeName = `#${key}`;
+                        updateExpressions.push(`${attributeName} = :${key}`);
+                        expressionAttributeValues[`:${key}`] = value;
+                        expressionAttributeNames[attributeName] = key;
+                    } else {
+                        updateExpressions.push(`${key} = :${key}`);
+                        expressionAttributeValues[`:${key}`] = value;
+                    }
+                }
+            });
+
             const command = new UpdateCommand({
                 TableName: Resource.Weddings.name,
                 Key: {
                     weddingId: wedding.weddingId,
                     userId: wedding.userId,
                 },
-                UpdateExpression: "set title = :title, #date = :date, #location = :location, story = :story, photoUrls = :photoUrls, updatedAt = :updatedAt",
-                ExpressionAttributeValues: {
-                    ":title": wedding.title,
-                    ":date": wedding.date,
-                    ":location": wedding.location,
-                    ":story": wedding.story,
-                    ":photoUrls": wedding.photoUrls,
-                    ":updatedAt": new Date().toISOString(),
-                },
-                ExpressionAttributeNames: {
-                    "#date": "date",
-                    "#location": "location"
-                },
+                UpdateExpression: `set ${updateExpressions.join(", ")}`,
+                ExpressionAttributeValues: expressionAttributeValues,
+                ExpressionAttributeNames: expressionAttributeNames,
                 ReturnValues: "ALL_NEW",
             });
 

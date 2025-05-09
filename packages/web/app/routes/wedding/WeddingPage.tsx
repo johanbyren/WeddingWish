@@ -63,9 +63,17 @@ export default function WeddingPage() {
   useEffect(() => {
     const fetchWeddingInfo = async () => {
       try {
-        let response = await fetch(`${import.meta.env.VITE_API_URL}api/show-wedding/${slug}`, {
+        // First try to get the wedding by custom URL
+        let response = await fetch(`${import.meta.env.VITE_API_URL}api/show-wedding/custom-url/${slug}`, {
           method: 'GET'
         });
+
+        // If not found by custom URL, try getting it by ID
+        if (response.status === 404) {
+          response = await fetch(`${import.meta.env.VITE_API_URL}api/show-wedding/${slug}`, {
+            method: 'GET'
+          });
+        }
 
         if (!response.ok) {
           const errorData = await response.json();
