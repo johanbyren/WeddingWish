@@ -2,8 +2,8 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { useState, useEffect } from "react"
+import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { Button } from "../../components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/ui/card"
 import { Input } from "../../components/ui/input"
@@ -18,9 +18,12 @@ import { v4 as uuidv4 } from 'uuid'
 
 export default function CreateWeddingPage() {
   const auth = useAuth();
-  const navigate = useNavigate()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [activeTab, setActiveTab] = useState("details")
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const weddingId = searchParams.get('weddingId');
+  const isEditMode = !!weddingId;
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState("details");
   const [weddingDetails, setWeddingDetails] = useState({
     title: "",
     date: new Date(),
@@ -37,7 +40,7 @@ export default function CreateWeddingPage() {
       imageFile: File | null;
       imagePreview: string;
     }[],
-  })
+  });
 
   const [newGiftItem, setNewGiftItem] = useState({
     id: "",
@@ -122,115 +125,229 @@ export default function CreateWeddingPage() {
     }))
   }
 
+  useEffect(() => {
+    const fetchWeddingDetails = async () => {
+      if (!isEditMode || !weddingId) return;
+
+      try {
+        // Fetch wedding details
+        const weddingResponse = await fetch(`${import.meta.env.VITE_API_URL}api/wedding/id/${weddingId}`, {
+          headers: {
+            Authorization: `Bearer ${await auth.getToken()}`,
+          },
+        });
+
+        if (!weddingResponse.ok) {
+          throw new Error('Failed to fetch wedding details');
+        }
+
+        const weddingData = await weddingResponse.json();
+        
+        // Fetch photos
+        const photosResponse = await fetch(`${import.meta.env.VITE_API_URL}api/photo/wedding/${weddingId}`, {
+          headers: {
+            Authorization: `Bearer ${await auth.getToken()}`,
+          },
+        });
+
+        if (!photosResponse.ok) {
+          throw new Error('Failed to fetch photos');
+        }
+
+        const photosData = await photosResponse.json();
+        
+        // Update form with existing data
+        setWeddingDetails(prev => ({
+          ...prev,
+          title: weddingData.title || "",
+          date: weddingData.date ? new Date(weddingData.date.split('T')[0]) : new Date(),
+          location: weddingData.location || "",
+          story: weddingData.story || "",
+          coverPhotoPreview: photosData.find((photo: { key: string }) => photo.key.includes('cover-'))?.url || "",
+          additionalPhotos: photosData
+            .filter((photo: { key: string }) => photo.key.includes('gallery-'))
+            .map((photo: { key: string; url: string }) => ({
+              file: null as File | null,
+              preview: photo.url,
+            })),
+        }));
+      } catch (error) {
+        console.error('Error fetching wedding details:', error);
+        alert('Failed to load wedding details. Please try again.');
+      }
+    };
+
+    fetchWeddingDetails();
+  }, [isEditMode, weddingId]);
+
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
     try {
-      const weddingId = uuidv4();
+      const weddingId = searchParams.get('weddingId') || uuidv4();
       const photoUrls: string[] = [];
 
-      // Upload cover photo if exists
-      if (weddingDetails.coverPhoto) {
-        const coverPhotoResponse = await fetch(`${import.meta.env.VITE_API_URL}api/photo/upload-url`, {
-          method: 'POST',
+      if (isEditMode) {
+        // 1. Get current wedding data and photos
+        const currentWeddingResponse = await fetch(`${import.meta.env.VITE_API_URL}api/wedding/id/${weddingId}`, {
           headers: {
-            'Content-Type': 'application/json',
             Authorization: `Bearer ${await auth.getToken()}`,
           },
-          body: JSON.stringify({
-            weddingId,
-            fileName: `cover-${weddingDetails.coverPhoto.name}`,
-            contentType: weddingDetails.coverPhoto.type,
-          }),
         });
 
-        if (!coverPhotoResponse.ok) {
-          throw new Error('Failed to get cover photo upload URL');
+        if (!currentWeddingResponse.ok) {
+          throw new Error('Failed to fetch current wedding data');
         }
 
-        const { signedUrl, key } = await coverPhotoResponse.json();
-        
-        // Upload the file to S3
-        await fetch(signedUrl, {
-          method: 'PUT',
-          body: weddingDetails.coverPhoto,
-          headers: {
-            'Content-Type': weddingDetails.coverPhoto.type,
-          },
-        });
+        const currentWedding = await currentWeddingResponse.json();
+        const currentPhotoUrls: string[] = (currentWedding.photoUrls || []).map((url: string) => 
+          url.startsWith('weddings/') ? url : `weddings/${weddingId}/${url}`
+        );
 
-        photoUrls.push(key);
+        // 2. Process new photos (both cover and gallery)
+        const newPhotoUrls = await processNewPhotos(weddingId);
+        photoUrls.push(...newPhotoUrls);
+
+        // 3. Get existing photos that should be kept
+        const existingPhotoUrls = weddingDetails.additionalPhotos
+          .filter(photo => !photo.file)
+          .map(photo => {
+            const urlParts = photo.preview.split('/');
+            const keyWithParams = urlParts[urlParts.length - 1];
+            const fileName = keyWithParams.split('?')[0];
+            return `weddings/${weddingId}/${fileName}`;
+          });
+
+        // 4. Find and delete removed photos
+        const photosToDelete = currentPhotoUrls.filter(url => 
+          ![...newPhotoUrls, ...existingPhotoUrls].includes(url)
+        );
+
+        await deletePhotos(photosToDelete);
+
+        // 5. Update wedding with all photos (new + existing)
+        await updateWedding(weddingId, [...newPhotoUrls, ...existingPhotoUrls]);
+      } else {
+        // Create mode - simply process all new photos and create wedding
+        const newPhotoUrls = await processNewPhotos(weddingId);
+        await updateWedding(weddingId, newPhotoUrls);
       }
 
-      // Upload additional photos
-      for (const photo of weddingDetails.additionalPhotos) {
-        const photoResponse = await fetch(`${import.meta.env.VITE_API_URL}api/photo/upload-url`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${await auth.getToken()}`,
-          },
-          body: JSON.stringify({
-            weddingId,
-            fileName: `gallery-${photo.file.name}`,
-            contentType: photo.file.type,
-          }),
-        });
+      navigate("/dashboard");
+    } catch (error) {
+      console.error(`Error ${isEditMode ? 'updating' : 'creating'} wedding:`, error);
+      alert(`Failed to ${isEditMode ? 'update' : 'create'} wedding. Please try again.`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-        if (!photoResponse.ok) {
-          throw new Error('Failed to get photo upload URL');
-        }
+  // Helper function to process new photos (both cover and gallery)
+  const processNewPhotos = async (weddingId: string): Promise<string[]> => {
+    const photoUrls: string[] = [];
 
-        const { signedUrl, key } = await photoResponse.json();
-        
-        // Upload the file to S3
-        await fetch(signedUrl, {
-          method: 'PUT',
-          body: photo.file,
-          headers: {
-            'Content-Type': photo.file.type,
-          },
-        });
-
-        photoUrls.push(key);
-      }
-
-      const body = {
+    // Process cover photo
+    if (weddingDetails.coverPhoto) {
+      const coverPhotoUrl = await uploadPhoto(
         weddingId,
-        userId: auth.user?.email,
-        title: weddingDetails.title,
-        date: weddingDetails.date.toISOString(),
-        location: weddingDetails.location,
-        story: weddingDetails.story,
-        photoUrls,
-        createdAt: new Date().toISOString().split("T")[0],
-        updatedAt: new Date().toISOString().split("T")[0],
-      }
+        weddingDetails.coverPhoto,
+        `cover-${weddingDetails.coverPhoto.name}`
+      );
+      photoUrls.push(coverPhotoUrl);
+    }
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}api/wedding`, {
-        method: 'POST',
+    // Process gallery photos
+    for (const photo of weddingDetails.additionalPhotos) {
+      if (!photo.file) continue;
+
+      const galleryPhotoUrl = await uploadPhoto(
+        weddingId,
+        photo.file,
+        `gallery-${photo.file.name}`
+      );
+      photoUrls.push(galleryPhotoUrl);
+    }
+
+    return photoUrls;
+  };
+
+  // Helper function to upload a single photo
+  const uploadPhoto = async (weddingId: string, file: File, fileName: string): Promise<string> => {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}api/photo/upload-url`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${await auth.getToken()}`,
+      },
+      body: JSON.stringify({
+        weddingId,
+        fileName,
+        contentType: file.type,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to get photo upload URL');
+    }
+
+    const { signedUrl, key } = await response.json();
+    
+    await fetch(signedUrl, {
+      method: 'PUT',
+      body: file,
+      headers: {
+        'Content-Type': file.type,
+      },
+    });
+
+    return key;
+  };
+
+  // Helper function to delete photos
+  const deletePhotos = async (photoKeys: string[]): Promise<void> => {
+    for (const key of photoKeys) {
+      await fetch(`${import.meta.env.VITE_API_URL}api/photo/delete`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${await auth.getToken()}`,
+        },
+        body: JSON.stringify({ key }),
+      });
+    }
+  };
+
+  // Helper function to update/create wedding in DynamoDB
+  const updateWedding = async (weddingId: string, photoUrls: string[]): Promise<void> => {
+    const body = {
+      weddingId,
+      userId: auth.user?.email,
+      title: weddingDetails.title,
+      date: weddingDetails.date.toISOString(),
+      location: weddingDetails.location,
+      story: weddingDetails.story,
+      photoUrls,
+      updatedAt: new Date().toISOString().split("T")[0],
+      ...(isEditMode ? {} : { createdAt: new Date().toISOString().split("T")[0] }),
+    };
+
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}api/wedding/${isEditMode ? 'update' : 'create'}`,
+      {
+        method: isEditMode ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${await auth.getToken()}`,
         },
         body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create wedding');
       }
+    );
 
-      const data = await response.json();
-      console.log('Wedding created:', data);
-      navigate("/dashboard");
-    } catch (error) {
-      console.error('Error creating wedding:', error);
-      // You might want to show an error message to the user here
-    } finally {
-      setIsSubmitting(false);
+    if (!response.ok) {
+      throw new Error(`Failed to ${isEditMode ? 'update' : 'create'} wedding`);
     }
-  }
+  };
 
   const goToNextTab = () => {
     if (activeTab === "details") {
@@ -270,7 +387,7 @@ export default function CreateWeddingPage() {
       </header>
       <main className="flex-1 p-4 md:p-6">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-2xl font-bold mb-6">Create Your Wedding Page</h1>
+          <h1 className="text-2xl font-bold mb-6">{isEditMode ? 'Edit Your Wedding Page' : 'Create Your Wedding Page'}</h1>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
             <TabsList className="grid w-full grid-cols-4">
@@ -659,7 +776,7 @@ export default function CreateWeddingPage() {
                     Back
                   </Button>
                   <Button onClick={handleSubmit} className="bg-pink-500 hover:bg-pink-600" disabled={isSubmitting}>
-                    {isSubmitting ? "Creating..." : "Create Wedding Page"}
+                    {isSubmitting ? (isEditMode ? "Updating..." : "Creating...") : (isEditMode ? "Update Wedding Page" : "Create Wedding Page")}
                   </Button>
                 </CardFooter>
               </Card>

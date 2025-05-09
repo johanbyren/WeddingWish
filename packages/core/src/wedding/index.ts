@@ -137,4 +137,39 @@ export namespace Wedding {
         throw error;
       }
     };
+
+    /**
+     * Update a wedding
+     */
+    export const update = async (wedding: WeddingType) => {
+        try {
+            const command = new UpdateCommand({
+                TableName: Resource.Weddings.name,
+                Key: {
+                    weddingId: wedding.weddingId,
+                    userId: wedding.userId,
+                },
+                UpdateExpression: "set title = :title, #date = :date, #location = :location, story = :story, photoUrls = :photoUrls, updatedAt = :updatedAt",
+                ExpressionAttributeValues: {
+                    ":title": wedding.title,
+                    ":date": wedding.date,
+                    ":location": wedding.location,
+                    ":story": wedding.story,
+                    ":photoUrls": wedding.photoUrls,
+                    ":updatedAt": new Date().toISOString(),
+                },
+                ExpressionAttributeNames: {
+                    "#date": "date",
+                    "#location": "location"
+                },
+                ReturnValues: "ALL_NEW",
+            });
+
+            const result = await ddb.send(command);
+            return result.Attributes;
+        } catch (error) {
+            console.error("Error updating wedding", error);
+            throw error;
+        }
+    };
 }

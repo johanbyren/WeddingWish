@@ -1,4 +1,4 @@
-import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand, S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { Resource } from "sst";
 
@@ -11,8 +11,6 @@ export namespace Photo {
      * Get a photo by fileName (key)
      */
     export const getByFileName = async (fileName: string): Promise<{ url: string }> => {
-        console.log("Detta är key: ", fileName);
-        console.log("Detta är bucket: ", Resource.WeddingAssets.name);
         try {
             const command = new GetObjectCommand({
                 Bucket: Resource.WeddingAssets.name,
@@ -50,6 +48,35 @@ export namespace Photo {
             };
         } catch (error) {
             console.error("Error generating upload URL:", error);
+            throw error;
+        }
+    };
+
+    /**
+     * List all photos for a wedding
+     */
+    export const listPhotosByWeddingId = async (weddingId: string) => {
+        try {
+            const command = new ListObjectsV2Command({
+                Bucket: Resource.WeddingAssets.name,
+                Prefix: `weddings/${weddingId}/`,
+            });
+
+            const response = await s3.send(command);
+            const photos = await Promise.all(
+                (response.Contents || []).map(async (item) => {
+                    if (!item.Key) return null;
+                    const { url } = await Photo.getByFileName(item.Key);
+                    return {
+                        key: item.Key,
+                        url,
+                    };
+                })
+            );
+
+            return photos.filter((photo): photo is { key: string; url: string } => photo !== null);
+        } catch (error) {
+            console.error("Error listing photos:", error);
             throw error;
         }
     };

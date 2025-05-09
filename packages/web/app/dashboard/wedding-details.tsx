@@ -158,8 +158,8 @@ export default function WeddingDetails() {
                             <Button variant="outline" size="sm" asChild>
                               <Link to={`/${weddings[0].weddingId}`}>View Page</Link>
                             </Button>
-                            <Button variant="outline" size="sm">
-                              Edit
+                            <Button variant="outline" size="sm" asChild>
+                              <Link to={`/dashboard/create?weddingId=${weddings[0].weddingId}`}>Edit</Link>
                             </Button>
                           </div>
                           <Button 

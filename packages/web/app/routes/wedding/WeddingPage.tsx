@@ -5,7 +5,7 @@ import { Progress } from "~/components/ui/progress"
 import { HeartIcon, Calendar, MapPin, ChevronLeft, ChevronRight } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useAuth } from "~/context/auth"
-import { Dialog, DialogContent } from "~/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "~/components/ui/dialog"
 
 // Mock gifts data - we'll implement this later
 const mockGifts = [
@@ -73,7 +73,6 @@ export default function WeddingPage() {
         }
 
         const data = await response.json();
-        console.log("Full wedding data:", data);
         setWedding(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -115,23 +114,26 @@ export default function WeddingPage() {
     )
   }
 
-  const handleImageClick = (photoUrl: string, index: number) => {
+  const handleImageClick = (photoUrl: string) => {
     setSelectedImage(photoUrl)
-    setCurrentImageIndex(index + 1)
+    const galleryPhotos = wedding.photoUrls.filter(url => url.includes('gallery-'))
+    setCurrentImageIndex(galleryPhotos.indexOf(photoUrl))
   }
 
   const handlePreviousImage = () => {
     if (!wedding) return
-    const newIndex = (currentImageIndex - 1 + wedding.photoUrls.length) % wedding.photoUrls.length
+    const galleryPhotos = wedding.photoUrls.filter(url => url.includes('gallery-'))
+    const newIndex = (currentImageIndex - 1 + galleryPhotos.length) % galleryPhotos.length
     setCurrentImageIndex(newIndex)
-    setSelectedImage(wedding.photoUrls[newIndex])
+    setSelectedImage(galleryPhotos[newIndex])
   }
 
   const handleNextImage = () => {
     if (!wedding) return
-    const newIndex = (currentImageIndex + 1) % wedding.photoUrls.length
+    const galleryPhotos = wedding.photoUrls.filter(url => url.includes('gallery-'))
+    const newIndex = (currentImageIndex + 1) % galleryPhotos.length
     setCurrentImageIndex(newIndex)
-    setSelectedImage(wedding.photoUrls[newIndex])
+    setSelectedImage(galleryPhotos[newIndex])
   }
 
   const formatWeddingDateTime = (dateString: string) => {
@@ -156,7 +158,7 @@ export default function WeddingPage() {
       <main className="flex-1 flex flex-col">
         <div className="relative h-[300px] md:h-[400px]">
           <img
-            src={`${import.meta.env.VITE_BUCKET_URL}/${wedding.photoUrls[0]}` || "/placeholder.svg?height=400&width=1200"}
+            src={`${import.meta.env.VITE_BUCKET_URL}/${wedding.photoUrls.find(url => url.includes('cover-'))}` || "/placeholder.svg?height=400&width=1200"}
             alt={wedding.title}
             className="object-cover w-full h-full"
           />
@@ -192,15 +194,17 @@ export default function WeddingPage() {
               <div className="max-w-3xl mx-auto">
                 <h2 className="text-2xl font-bold mb-6">Photo Gallery</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {wedding.photoUrls.slice(1).map((photoUrl, index) => (
+                  {wedding.photoUrls
+                    .filter(url => url.includes('gallery-'))
+                    .map((photoUrl, index) => (
                     <div 
                       key={index} 
                       className="aspect-square overflow-hidden rounded-lg cursor-pointer"
-                      onClick={() => handleImageClick(photoUrl, index)}
+                      onClick={() => handleImageClick(photoUrl)}
                     >
                       <img
                         src={`${import.meta.env.VITE_BUCKET_URL}/${photoUrl}`}
-                        alt={`Wedding photo ${index + 1}`}
+                        alt={`Wedding photo ${index}`}
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                       />
                     </div>
@@ -267,6 +271,10 @@ export default function WeddingPage() {
 
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
         <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 overflow-auto flex items-center justify-center bg-white/20 backdrop-blur-sm">
+          <DialogTitle className="sr-only">Wedding Photo Gallery</DialogTitle>
+          <DialogDescription className="sr-only">
+            View full size wedding photos. Use the arrow buttons to navigate between photos.
+          </DialogDescription>
           {selectedImage && (
             <div className="relative w-full h-full flex items-center justify-center">
               <Button
