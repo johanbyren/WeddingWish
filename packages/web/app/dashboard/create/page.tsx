@@ -15,6 +15,8 @@ import { ImageUploader } from "../../components/image-uploader"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
 import { useAuth } from "~/context/auth"
 import { v4 as uuidv4 } from 'uuid'
+import { RadioGroup, RadioGroupItem } from "../../components/ui/radio-group"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
 
 export default function CreateWeddingPage() {
   const auth = useAuth();
@@ -40,6 +42,10 @@ export default function CreateWeddingPage() {
       imageFile: File | null;
       imagePreview: string;
     }[],
+    theme: "default",
+    primaryColor: "#FF5733",
+    visibility: "public",
+    customUrl: ""
   });
 
   const [newGiftItem, setNewGiftItem] = useState({
@@ -336,6 +342,10 @@ export default function CreateWeddingPage() {
       location: weddingDetails.location,
       story: weddingDetails.story,
       photoUrls,
+      theme: weddingDetails.theme,
+      primaryColor: weddingDetails.primaryColor,
+      visibility: weddingDetails.visibility,
+      customUrl: weddingDetails.customUrl,
       updatedAt: new Date().toISOString().split("T")[0],
       ...(isEditMode ? {} : { createdAt: new Date().toISOString().split("T")[0] }),
     };
@@ -359,6 +369,8 @@ export default function CreateWeddingPage() {
 
   const goToNextTab = () => {
     if (activeTab === "details") {
+      setActiveTab("settings")
+    } else if (activeTab === "settings") {
       setActiveTab("photos")
     } else if (activeTab === "photos") {
       setActiveTab("gifts")
@@ -368,8 +380,10 @@ export default function CreateWeddingPage() {
   }
 
   const goToPreviousTab = () => {
-    if (activeTab === "photos") {
+    if (activeTab === "settings") {
       setActiveTab("details")
+    } else if (activeTab === "photos") {
+      setActiveTab("settings")
     } else if (activeTab === "gifts") {
       setActiveTab("photos")
     } else if (activeTab === "preview") {
@@ -398,8 +412,9 @@ export default function CreateWeddingPage() {
           <h1 className="text-2xl font-bold mb-6">{isEditMode ? 'Edit Your Wedding Page' : 'Create Your Wedding Page'}</h1>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="details">Wedding Details</TabsTrigger>
+              <TabsTrigger value="settings">Wedding Settings</TabsTrigger>
               <TabsTrigger value="photos">Photos</TabsTrigger>
               <TabsTrigger value="gifts">Gift Registry</TabsTrigger>
               <TabsTrigger value="preview">Preview</TabsTrigger>
@@ -458,6 +473,103 @@ export default function CreateWeddingPage() {
                   <Link to="/dashboard">
                     <Button variant="outline">Cancel</Button>
                   </Link>
+                  <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600">
+                    Next: Add Photos
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="settings">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Wedding Settings</CardTitle>
+                  <CardDescription>Customize how your wedding page appears</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Page Visibility</h3>
+                    <RadioGroup 
+                      value={weddingDetails.visibility} 
+                      onValueChange={(value) => setWeddingDetails(prev => ({ ...prev, visibility: value }))}
+                      className="grid gap-2"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="public" id="public" />
+                        <Label htmlFor="public">Public - Anyone with the link can view</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="password" id="password" />
+                        <Label htmlFor="password">Password Protected - Guests need a password</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="private" id="private" />
+                        <Label htmlFor="private">Private - Only you can view</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="customUrl">Custom URL</Label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-500">weddingwish.com/wedding/</span>
+                      <Input
+                        id="customUrl"
+                        value={weddingDetails.customUrl}
+                        className="max-w-[200px]"
+                        onChange={(e) => {
+                          // Only allow lowercase letters, numbers, and hyphens
+                          const value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+                          setWeddingDetails(prev => ({ ...prev, customUrl: value }));
+                        }}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500">Choose a unique URL for your wedding page</p>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="theme">Page Theme</Label>
+                      <Select
+                        value={weddingDetails.theme}
+                        onValueChange={(value) => setWeddingDetails(prev => ({ ...prev, theme: value }))}
+                      >
+                        <SelectTrigger id="theme">
+                          <SelectValue placeholder="Select theme" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="classic">Classic</SelectItem>
+                          <SelectItem value="modern">Modern</SelectItem>
+                          <SelectItem value="rustic">Rustic</SelectItem>
+                          <SelectItem value="elegant">Elegant</SelectItem>
+                          <SelectItem value="minimalist">Minimalist</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="primaryColor">Primary Color</Label>
+                      <Select
+                        value={weddingDetails.primaryColor}
+                        onValueChange={(value) => setWeddingDetails(prev => ({ ...prev, primaryColor: value }))}
+                      >
+                        <SelectTrigger id="primaryColor">
+                          <SelectValue placeholder="Select color" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pink">Pink</SelectItem>
+                          <SelectItem value="blue">Blue</SelectItem>
+                          <SelectItem value="green">Green</SelectItem>
+                          <SelectItem value="purple">Purple</SelectItem>
+                          <SelectItem value="gold">Gold</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <Button variant="outline" onClick={goToPreviousTab}>
+                    Back
+                  </Button>
                   <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600">
                     Next: Add Photos
                   </Button>
