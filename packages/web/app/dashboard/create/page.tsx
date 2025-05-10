@@ -57,6 +57,18 @@ export default function CreateWeddingPage() {
     imagePreview: "",
   })
 
+  const [urlValidation, setUrlValidation] = useState<{
+    isValid: boolean;
+    message: string;
+    isChecking: boolean;
+  }>({
+    isValid: true,
+    message: "",
+    isChecking: false,
+  });
+
+  const [userWeddings, setUserWeddings] = useState<Array<{ weddingId: string; customUrl?: string }>>([]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setWeddingDetails((prev) => ({ ...prev, [name]: value }))
@@ -176,6 +188,10 @@ export default function CreateWeddingPage() {
               file: null as File | null,
               preview: photo.url,
             })),
+          customUrl: weddingData.customUrl || "",
+          visibility: weddingData.visibility || "public",
+          theme: weddingData.theme || "default",
+          primaryColor: weddingData.primaryColor || "#FF5733",
         }));
       } catch (error) {
         console.error('Error fetching wedding details:', error);
@@ -185,6 +201,73 @@ export default function CreateWeddingPage() {
 
     fetchWeddingDetails();
   }, [isEditMode, weddingId]);
+
+  // Load user's weddings when component mounts
+  useEffect(() => {
+    const loadUserWeddings = async () => {
+      if (!auth.user?.email) return;
+      
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}api/wedding/${auth.user.email}`, {
+          headers: {
+            Authorization: `Bearer ${await auth.getToken()}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch user's weddings");
+        }
+
+        const data = await response.json();
+        setUserWeddings(data);
+      } catch (error) {
+        console.error("Error loading user's weddings:", error);
+      }
+    };
+
+    loadUserWeddings();
+  }, [auth.user]);
+
+  // Add debounced URL validation
+  useEffect(() => {
+    const checkUrlUniqueness = async () => {
+      if (!weddingDetails.customUrl) {
+        setUrlValidation({
+          isValid: true,
+          message: "",
+          isChecking: false,
+        });
+        return;
+      }
+
+      setUrlValidation(prev => ({ ...prev, isChecking: true }));
+      
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}api/show-wedding/custom-url/${weddingDetails.customUrl}`, {
+          method: 'GET'
+        });
+        const exists = response.status === 200;
+        
+        // Check if the URL belongs to one of the user's weddings
+        const isUserWedding = userWeddings.some(wedding => wedding.customUrl === weddingDetails.customUrl);
+        
+        setUrlValidation({
+          isValid: !exists || isUserWedding,
+          message: exists && !isUserWedding ? "This URL is already taken" : "URL is available",
+          isChecking: false,
+        });
+      } catch (error) {
+        setUrlValidation({
+          isValid: false,
+          message: "Error checking URL availability",
+          isChecking: false,
+        });
+      }
+    };
+
+    const timeoutId = setTimeout(checkUrlUniqueness, 500);
+    return () => clearTimeout(timeoutId);
+  }, [weddingDetails.customUrl, userWeddings]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -523,6 +606,13 @@ export default function CreateWeddingPage() {
                           setWeddingDetails(prev => ({ ...prev, customUrl: value }));
                         }}
                       />
+                      {urlValidation.isChecking ? (
+                        <span className="text-sm text-gray-500">Checking...</span>
+                      ) : urlValidation.message && (
+                        <span className={`text-sm ${urlValidation.isValid ? 'text-green-500' : 'text-red-500'}`}>
+                          {urlValidation.message}
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-gray-500">Choose a unique URL for your wedding page</p>
                   </div>

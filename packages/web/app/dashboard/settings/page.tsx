@@ -35,12 +35,6 @@ interface SettingsData {
       number: string;
     };
   };
-  pageSettings?: {
-    visibility: string;
-    customUrl: string;
-    theme: string;
-    primaryColor: string;
-  };
   paymentSettings?: {
     paymentMethod: string;
     accountEmail: string;
@@ -71,7 +65,6 @@ export default function Settings() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState({
     account: false,
-    weddingPage: false,
     payment: false,
     notification: false,
     privacy: false,
@@ -98,26 +91,6 @@ export default function Settings() {
       number: ""
     },
   })
-
-  // Wedding page settings
-  const [pageSettings, setPageSettings] = useState({
-    visibility: "public",
-    customUrl: "",
-    theme: "classic",
-    primaryColor: "pink",
-  })
-
-  const [urlValidation, setUrlValidation] = useState<{
-    isValid: boolean;
-    message: string;
-    isChecking: boolean;
-  }>({
-    isValid: true,
-    message: "",
-    isChecking: false,
-  });
-
-  const [userWeddings, setUserWeddings] = useState<Array<{ weddingId: string; customUrl?: string }>>([]);
 
   // Payment settings
   const [paymentSettings, setPaymentSettings] = useState({
@@ -162,14 +135,6 @@ export default function Settings() {
               ...prev,
               ...data.accountSettings!,
               weddingDate: data.accountSettings!.weddingDate ? new Date(data.accountSettings!.weddingDate) : prev.weddingDate,
-            }));
-          }
-
-          // Update page settings
-          if (data.pageSettings) {
-            setPageSettings(prev => ({
-              ...prev,
-              ...data.pageSettings!,
             }));
           }
 
@@ -234,14 +199,6 @@ export default function Settings() {
             }));
           }
 
-          // Update page settings
-          if (data.settings.pageSettings) {
-            setPageSettings(prev => ({
-              ...prev,
-              ...data.settings.pageSettings,
-            }));
-          }
-
           // Update payment settings
           if (data.settings.paymentSettings) {
             setPaymentSettings(prev => ({
@@ -290,73 +247,6 @@ export default function Settings() {
       }));
     }
   }, [auth.user]);
-
-  // Load user's weddings when component mounts
-  useEffect(() => {
-    const loadUserWeddings = async () => {
-      if (!auth.user?.email) return;
-      
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}api/wedding/${auth.user.email}`, {
-          headers: {
-            Authorization: `Bearer ${await auth.getToken()}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch user's weddings");
-        }
-
-        const data = await response.json();
-        setUserWeddings(data);
-      } catch (error) {
-        console.error("Error loading user's weddings:", error);
-      }
-    };
-
-    loadUserWeddings();
-  }, [auth.user]);
-
-  // Add debounced URL validation
-  useEffect(() => {
-    const checkUrlUniqueness = async () => {
-      if (!pageSettings.customUrl) {
-        setUrlValidation({
-          isValid: true,
-          message: "",
-          isChecking: false,
-        });
-        return;
-      }
-
-      setUrlValidation(prev => ({ ...prev, isChecking: true }));
-      
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}api/show-wedding/custom-url/${pageSettings.customUrl}`, {
-          method: 'GET'
-        });
-        const exists = response.status === 200;
-        
-        // Check if the URL belongs to one of the user's weddings
-        const isUserWedding = userWeddings.some(wedding => wedding.customUrl === pageSettings.customUrl);
-        
-        setUrlValidation({
-          isValid: !exists || isUserWedding,
-          message: exists && !isUserWedding ? "This URL is already taken" : "URL is available",
-          isChecking: false,
-        });
-      } catch (error) {
-        setUrlValidation({
-          isValid: false,
-          message: "Error checking URL availability",
-          isChecking: false,
-        });
-      }
-    };
-
-    const timeoutId = setTimeout(checkUrlUniqueness, 500);
-    return () => clearTimeout(timeoutId);
-  }, [pageSettings.customUrl, userWeddings]);
 
   const countryCodes = [
     { country: "Sweden", code: "+46", flag: SE },
@@ -429,7 +319,6 @@ export default function Settings() {
       setIsSaving(prev => ({ ...prev, all: true }));
       setSaveError(null);
 
-      // First update all settings
       const settingsResponse = await fetch(`${import.meta.env.VITE_API_URL}api/settings`, {
         method: "POST",
         headers: {
@@ -443,7 +332,6 @@ export default function Settings() {
             ...accountSettings,
             weddingDate: accountSettings.weddingDate.toISOString(),
           },
-          pageSettings,
           paymentSettings,
           notificationSettings,
           privacySettings,
@@ -452,28 +340,6 @@ export default function Settings() {
 
       if (!settingsResponse.ok) {
         throw new Error("Failed to save all settings");
-      }
-
-      // If we have a customUrl, update the wedding table as well
-      if (pageSettings.customUrl && userWeddings.length > 0) {
-        const weddingResponse = await fetch(`${import.meta.env.VITE_API_URL}api/wedding/update`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${await auth.getToken()}`,
-          },
-          body: JSON.stringify({
-            weddingId: userWeddings[0].weddingId,
-            userId: auth.user!.email,
-            customUrl: pageSettings.customUrl,
-          }),
-        });
-
-        if (!weddingResponse.ok) {
-          throw new Error("Failed to update wedding custom URL");
-        }
-      } else if (pageSettings.customUrl && userWeddings.length === 0) {
-        throw new Error("No wedding found to update with custom URL");
       }
 
       clearCache(CACHE_KEY);
@@ -489,67 +355,6 @@ export default function Settings() {
       }, 5000);
     } finally {
       setIsSaving(prev => ({ ...prev, all: false }));
-    }
-  };
-
-  const saveWeddingPageSettings = async () => {
-    try {
-      setIsSaving(prev => ({ ...prev, weddingPage: true }));
-      setSaveError(null);
-
-      // First update the settings
-      const settingsResponse = await fetch(`${import.meta.env.VITE_API_URL}api/settings`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${await auth.getToken()}`,
-        },
-        body: JSON.stringify({
-          userId: auth.user!.email,
-          email: auth.user!.email,
-          pageSettings,
-        }),
-      });
-
-      if (!settingsResponse.ok) {
-        throw new Error("Failed to save wedding page settings");
-      }
-
-      // If we have a customUrl, update the wedding table as well
-      if (pageSettings.customUrl && userWeddings.length > 0) {
-        const weddingResponse = await fetch(`${import.meta.env.VITE_API_URL}api/wedding/update`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${await auth.getToken()}`,
-          },
-          body: JSON.stringify({
-            weddingId: userWeddings[0].weddingId,
-            userId: auth.user!.email,
-            customUrl: pageSettings.customUrl,
-          }),
-        });
-
-        if (!weddingResponse.ok) {
-          throw new Error("Failed to update wedding custom URL");
-        }
-      } else if (pageSettings.customUrl && userWeddings.length === 0) {
-        throw new Error("No wedding found to update with custom URL");
-      }
-
-      clearCache(CACHE_KEY);
-      setSaveSuccess(true);
-      setTimeout(() => {
-        setSaveSuccess(false);
-      }, 5000);
-    } catch (error) {
-      console.error("Error saving wedding page settings:", error);
-      setSaveError(error instanceof Error ? error.message : "Failed to save wedding page settings. Please try again.");
-      setTimeout(() => {
-        setSaveError(null);
-      }, 5000);
-    } finally {
-      setIsSaving(prev => ({ ...prev, weddingPage: false }));
     }
   };
 
@@ -704,9 +509,8 @@ export default function Settings() {
       )}
 
       <Tabs defaultValue="account" className="space-y-4">
-        <TabsList className="grid grid-cols-2 md:grid-cols-5 gap-2">
+        <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-2">
           <TabsTrigger value="account">Account</TabsTrigger>
-          <TabsTrigger value="wedding-page">Wedding Page</TabsTrigger>
           <TabsTrigger value="payment">Payment</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="privacy">Privacy</TabsTrigger>
@@ -966,117 +770,6 @@ export default function Settings() {
                       </>
                     ) : (
                       'Update Account'
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
-            </TabsContent>
-
-            {/* Wedding Page Settings */}
-            <TabsContent value="wedding-page">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Wedding Page Settings</CardTitle>
-                  <CardDescription>Customize how your wedding page appears</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Page Visibility</h3>
-                    <RadioGroup defaultValue={pageSettings.visibility} className="grid gap-2">
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="public" id="public" />
-                        <Label htmlFor="public">Public - Anyone with the link can view</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="password" id="password" />
-                        <Label htmlFor="password">Password Protected - Guests need a password</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="private" id="private" />
-                        <Label htmlFor="private">Private - Only you can view</Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="customUrl">Custom URL</Label>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500">weddingwish.com/wedding/</span>
-                      <Input
-                        id="customUrl"
-                        value={pageSettings.customUrl}
-                        className="max-w-[200px]"
-                        onChange={(e) => setPageSettings((prev) => ({ ...prev, customUrl: e.target.value }))}
-                      />
-                      {urlValidation.isChecking ? (
-                        <span className="text-sm text-gray-500">Checking...</span>
-                      ) : urlValidation.message && (
-                        <span className={`text-sm ${urlValidation.isValid ? 'text-green-500' : 'text-red-500'}`}>
-                          {urlValidation.message}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-gray-500">Choose a unique URL for your wedding page</p>
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="theme">Page Theme</Label>
-                      <Select
-                        defaultValue={pageSettings.theme}
-                        onValueChange={(value: "classic" | "modern" | "rustic" | "elegant" | "minimalist") => 
-                          setPageSettings((prev) => ({ ...prev, theme: value }))
-                        }
-                      >
-                        <SelectTrigger id="theme">
-                          <SelectValue placeholder="Select theme" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="classic">Classic</SelectItem>
-                          <SelectItem value="modern">Modern</SelectItem>
-                          <SelectItem value="rustic">Rustic</SelectItem>
-                          <SelectItem value="elegant">Elegant</SelectItem>
-                          <SelectItem value="minimalist">Minimalist</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="primaryColor">Primary Color</Label>
-                      <Select
-                        defaultValue={pageSettings.primaryColor}
-                        onValueChange={(value: "pink" | "blue" | "green" | "purple" | "gold") => 
-                          setPageSettings((prev) => ({ ...prev, primaryColor: value }))
-                        }
-                      >
-                        <SelectTrigger id="primaryColor">
-                          <SelectValue placeholder="Select color" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pink">Pink</SelectItem>
-                          <SelectItem value="blue">Blue</SelectItem>
-                          <SelectItem value="green">Green</SelectItem>
-                          <SelectItem value="purple">Purple</SelectItem>
-                          <SelectItem value="gold">Gold</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    onClick={saveWeddingPageSettings}
-                    disabled={isSaving.weddingPage}
-                  >
-                    {isSaving.weddingPage ? (
-                      <>
-                        <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Saving...
-                      </>
-                    ) : (
-                      'Update Page Settings'
                     )}
                   </Button>
                 </CardFooter>
