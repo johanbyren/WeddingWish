@@ -15,7 +15,9 @@
     "./photo": "./src/photo/index.ts",
     "./photo/types": "./src/photo/types.ts",
     "./settings": "./src/settings/index.ts",
-    "./settings/types": "./src/settings/types.ts"
+    "./settings/types": "./src/settings/types.ts",
+    "./gift-registry": "./src/gift-registry/index.ts",
+    "./gift-registry/types": "./src/gift-registry/types.ts"
   },
   "dependencies": {
     "sst": "*"

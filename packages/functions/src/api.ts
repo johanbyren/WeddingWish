@@ -13,6 +13,7 @@ import photoRoute from "./api/photo";
 import showWeddingRoute from "./api/show-wedding";
 import showPhotoRoute from "./api/show-photo";
 import settingsRoute from "./api/settings";
+import giftRegistryRoute from "./api/gift-registry";
 
 const client = createClient({
     clientID: "jwt-api",
@@ -60,8 +61,7 @@ const protectedRoutes = protectedApp
   .route("/api/wedding", weddingRoute)
   .route("/api/photo", photoRoute)
   .route("/api/settings", settingsRoute)
-  // Add other protected routes here
-  // .route("/api/wishes", wishesRoute)
+  .route("/api/giftRegistry", giftRegistryRoute)
 
 // Mount protected routes under the main app
 app.route("/", protectedRoutes);
