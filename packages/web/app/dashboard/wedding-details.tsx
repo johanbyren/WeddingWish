@@ -57,7 +57,8 @@ export default function WeddingDetails() {
     // Check cache first
     const cache = getCache<WeddingType[]>(CACHE_KEY);
     
-    if (isCacheValid(cache) && cache!.data) {
+    // Only use cache if it exists and has data
+    if (isCacheValid(cache) && cache!.data && cache!.data.length > 0) {
       setWeddings(cache!.data);
       setLoading(false);
       return;
@@ -85,8 +86,14 @@ export default function WeddingDetails() {
 
       const data = await response.json();
       
-      // Update cache with new data
-      setCache(CACHE_KEY, data);
+      // Only cache if we have actual data
+      if (data && data.length > 0) {
+        setCache(CACHE_KEY, data);
+      } else {
+        // Clear cache if we got an empty array
+        clearCache(CACHE_KEY);
+      }
+      
       setWeddings(data);
     } catch (error) {
       console.error("Error fetching weddings:", error)
