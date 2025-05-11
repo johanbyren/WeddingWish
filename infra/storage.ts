@@ -59,6 +59,12 @@ export const giftRegistryTable = new sst.aws.Dynamo("GiftRegistryTable", {
     primaryIndex: { 
         hashKey: "giftId",
         rangeKey: "weddingId"
+    },
+    globalIndexes: {
+        "WeddingGiftsIndex": {
+            hashKey: "weddingId",
+            rangeKey: "giftId"
+        }
     }
 });
 

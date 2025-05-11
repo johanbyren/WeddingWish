@@ -61,7 +61,7 @@ const protectedRoutes = protectedApp
   .route("/api/wedding", weddingRoute)
   .route("/api/photo", photoRoute)
   .route("/api/settings", settingsRoute)
-  .route("/api/giftRegistry", giftRegistryRoute)
+  .route("/api/gift-registry", giftRegistryRoute)
 
 // Mount protected routes under the main app
 app.route("/", protectedRoutes);

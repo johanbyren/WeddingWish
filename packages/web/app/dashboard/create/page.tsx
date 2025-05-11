@@ -174,25 +174,73 @@ export default function CreateWeddingPage() {
 
         const photosData = await photosResponse.json();
         
-        // Update form with existing data
-        setWeddingDetails(prev => ({
-          ...prev,
-          title: weddingData.title || "",
-          date: weddingData.date ? new Date(weddingData.date.split('T')[0]) : new Date(),
-          location: weddingData.location || "",
-          story: weddingData.story || "",
-          coverPhotoPreview: photosData.find((photo: { key: string }) => photo.key.includes('cover-'))?.url || "",
-          additionalPhotos: photosData
-            .filter((photo: { key: string }) => photo.key.includes('gallery-'))
-            .map((photo: { key: string; url: string }) => ({
-              file: null as File | null,
-              preview: photo.url,
-            })),
-          customUrl: weddingData.customUrl || "",
-          visibility: weddingData.visibility || "public",
-          theme: weddingData.theme || "default",
-          primaryColor: weddingData.primaryColor || "#FF5733",
-        }));
+        // Fetch gifts if they exist
+        const giftsResponse = await fetch(`${import.meta.env.VITE_API_URL}api/gift-registry/wedding/${weddingId}`, {
+          headers: {
+            Authorization: `Bearer ${await auth.getToken()}`,
+          },
+        });
+
+        if (giftsResponse.ok) {
+          const giftsData = await giftsResponse.json();
+          
+          // Get signed URLs for gift images
+          const giftsWithUrls = await Promise.all(
+            giftsData.map(async (gift: any) => {
+              let imagePreview = "";
+              if (gift.imageUrl) {
+                try {
+                  imagePreview = await getGiftImageUrl(gift.imageUrl);
+                } catch (error) {
+                  console.error('Error getting gift image URL:', error);
+                }
+              }
+              return {
+                ...gift,
+                imagePreview
+              };
+            })
+          );
+
+          setWeddingDetails(prev => ({
+            ...prev,
+            title: weddingData.title || "",
+            date: weddingData.date ? new Date(weddingData.date.split('T')[0]) : new Date(),
+            location: weddingData.location || "",
+            story: weddingData.story || "",
+            coverPhotoPreview: photosData.find((photo: { key: string }) => photo.key.includes('cover-'))?.url || "",
+            additionalPhotos: photosData
+              .filter((photo: { key: string }) => photo.key.includes('gallery-'))
+              .map((photo: { key: string; url: string }) => ({
+                file: null as File | null,
+                preview: photo.url,
+              })),
+            customUrl: weddingData.customUrl || "",
+            visibility: weddingData.visibility || "public",
+            theme: weddingData.theme || "default",
+            primaryColor: weddingData.primaryColor || "#FF5733",
+            giftItems: giftsWithUrls
+          }));
+        } else {
+          setWeddingDetails(prev => ({
+            ...prev,
+            title: weddingData.title || "",
+            date: weddingData.date ? new Date(weddingData.date.split('T')[0]) : new Date(),
+            location: weddingData.location || "",
+            story: weddingData.story || "",
+            coverPhotoPreview: photosData.find((photo: { key: string }) => photo.key.includes('cover-'))?.url || "",
+            additionalPhotos: photosData
+              .filter((photo: { key: string }) => photo.key.includes('gallery-'))
+              .map((photo: { key: string; url: string }) => ({
+                file: null as File | null,
+                preview: photo.url,
+              })),
+            customUrl: weddingData.customUrl || "",
+            visibility: weddingData.visibility || "public",
+            theme: weddingData.theme || "default",
+            primaryColor: weddingData.primaryColor || "#FF5733",
+          }));
+        }
       } catch (error) {
         console.error('Error fetching wedding details:', error);
         alert('Failed to load wedding details. Please try again.');
@@ -277,6 +325,7 @@ export default function CreateWeddingPage() {
       const weddingId = searchParams.get('weddingId') || uuidv4();
       const photoUrls: string[] = [];
 
+      // Process wedding photos
       if (isEditMode) {
         // 1. Get current wedding data and photos
         const currentWeddingResponse = await fetch(`${import.meta.env.VITE_API_URL}api/wedding/id/${weddingId}`, {
@@ -324,12 +373,17 @@ export default function CreateWeddingPage() {
         await deletePhotos(photosToDelete);
 
         // 5. Update wedding with all photos (new + existing)
-        await updateWedding(weddingId, [...newPhotoUrls, ...existingPhotoUrls]);
+        await updateWedding(weddingId, [...newPhotoUrls, ...existingPhotoUrls], []);
       } else {
-        // Create mode - simply process all new photos and create wedding
         const newPhotoUrls = await processNewPhotos(weddingId);
-        await updateWedding(weddingId, newPhotoUrls);
+        photoUrls.push(...newPhotoUrls);
       }
+
+      // Process gift photos and create gifts
+      const giftResults = await processGifts(weddingId);
+
+      // Update wedding with all photos and gift data
+      await updateWedding(weddingId, photoUrls, giftResults);
 
       navigate("/dashboard");
     } catch (error) {
@@ -415,8 +469,113 @@ export default function CreateWeddingPage() {
     }
   };
 
-  // Helper function to update/create wedding in DynamoDB
-  const updateWedding = async (weddingId: string, photoUrls: string[]): Promise<void> => {
+  // Helper function to process gifts
+  const processGifts = async (weddingId: string) => {
+    const giftResults = [];
+
+    for (const gift of weddingDetails.giftItems) {
+      let imageKey = null;
+
+      // Upload gift photo if exists
+      if (gift.imageFile) {
+        const giftPhotoKey = await uploadGiftPhoto(
+          weddingId,
+          gift.id,
+          gift.imageFile
+        );
+        imageKey = giftPhotoKey;
+      }
+
+      // Create gift object
+      const giftData = {
+        id: gift.id,
+        weddingId: weddingId,
+        name: gift.name,
+        description: gift.description || undefined,
+        price: gift.price ? parseFloat(gift.price) : undefined,
+        imageUrl: imageKey, // Store the S3 key
+        totalContributed: 0,
+        isFullyFunded: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      giftResults.push(giftData);
+    }
+
+    // Create gifts in DynamoDB
+    if (giftResults.length > 0) {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}api/gift-registry`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${await auth.getToken()}`,
+        },
+        body: JSON.stringify({
+          gifts: giftResults
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create gifts');
+      }
+
+      return await response.json();
+    }
+
+    return [];
+  };
+
+  // Helper function to upload gift photo
+  const uploadGiftPhoto = async (weddingId: string, giftId: string, file: File): Promise<string> => {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}api/gift-registry/photo-upload-url`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${await auth.getToken()}`,
+      },
+      body: JSON.stringify({
+        giftId,
+        fileName: file.name,
+        contentType: file.type,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to get gift photo upload URL');
+    }
+
+    const { signedUrl, key } = await response.json();
+    
+    await fetch(signedUrl, {
+      method: 'PUT',
+      body: file,
+      headers: {
+        'Content-Type': file.type,
+      },
+    });
+
+    return key;
+  };
+
+  // Helper function to get signed URL for a gift image
+  const getGiftImageUrl = async (imageKey: string): Promise<string> => {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}api/show-photo/gifts/${imageKey}`, {
+      headers: {
+        Authorization: `Bearer ${await auth.getToken()}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to get gift image URL');
+    }
+
+    const { url } = await response.json();
+    return url;
+  };
+
+  // Update the updateWedding function to include gift data
+  const updateWedding = async (weddingId: string, photoUrls: string[], giftResults: any[]): Promise<void> => {
     const body = {
       weddingId,
       userId: auth.user?.email,

@@ -80,4 +80,48 @@ export namespace Photo {
             throw error;
         }
     };
+
+    /**
+     * Generate a signed URL for gift photo upload
+     */
+    export const generateGiftPhotoUploadUrl = async (giftId: string, fileName: string, contentType: string) => {
+        try {
+            const key = `gifts/${giftId}/${fileName}`;
+            
+            const command = new PutObjectCommand({
+                Bucket: Resource.WeddingAssets.name,
+                Key: key,
+                ContentType: contentType,
+            });
+
+            const signedUrl = await getSignedUrl(s3, command, { expiresIn: 3600 });
+            
+            return { 
+                signedUrl,
+                key 
+            };
+        } catch (error) {
+            console.error("Error generating gift photo upload URL:", error);
+            throw error;
+        }
+    };
+
+    /**
+     * Get a gift photo by fileName (key)
+     */
+    export const getGiftPhotoByFileName = async (fileName: string): Promise<{ url: string }> => {
+        try {
+            const command = new GetObjectCommand({
+                Bucket: Resource.WeddingAssets.name,
+                Key: fileName,
+                ResponseContentDisposition: "inline",
+            });
+
+            const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+            return { url };
+        } catch (error) {
+            console.error("Error fetching gift photo:", error);
+            throw error;
+        }
+    };
 }

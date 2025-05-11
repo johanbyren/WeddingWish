@@ -7,6 +7,7 @@ import {
   UpdateCommand,
   ScanCommand,
   BatchWriteCommand,
+  QueryCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { Resource } from "sst/resource";
 import { schema, GiftRegistryType } from "./types";
@@ -56,7 +57,18 @@ export namespace GiftRegistry {
             // Prepare batch write items
             const batchWriteItems = validationResults.map((gift: GiftRegistryType) => ({
                 PutRequest: {
-                    Item: gift
+                    Item: {
+                        giftId: gift.id,
+                        weddingId: gift.weddingId,
+                        name: gift.name,
+                        description: gift.description,
+                        price: gift.price,
+                        imageUrl: gift.imageUrl,
+                        totalContributed: gift.totalContributed,
+                        isFullyFunded: gift.isFullyFunded,
+                        createdAt: gift.createdAt,
+                        updatedAt: gift.updatedAt
+                    }
                 }
             }));
 
@@ -72,7 +84,7 @@ export namespace GiftRegistry {
                     try {
                         return await ddb.send(new BatchWriteCommand({
                             RequestItems: {
-                                [process.env.TABLE_NAME || "GiftRegistry"]: chunk
+                                [Resource.GiftRegistryTable.name]: chunk
                             }
                         }));
                     } catch (error) {
@@ -86,7 +98,7 @@ export namespace GiftRegistry {
 
             // Check for unprocessed items
             const unprocessedItems = results.flatMap(result => 
-                result.UnprocessedItems?.[process.env.TABLE_NAME || "GiftRegistry"] || []
+                result.UnprocessedItems?.[Resource.GiftRegistryTable.name] || []
             );
 
             if (unprocessedItems.length > 0) {
@@ -154,13 +166,16 @@ export namespace GiftRegistry {
                         }
 
                         const updateCommand = new UpdateCommand({
-                            TableName: process.env.TABLE_NAME || "GiftRegistry",
-                            Key: { id },
+                            TableName: Resource.GiftRegistryTable.name,
+                            Key: { 
+                                giftId: id,
+                                weddingId: giftUpdates.weddingId
+                            },
                             UpdateExpression: `SET ${updateExpressions.join(', ')}`,
                             ExpressionAttributeValues: expressionAttributeValues,
                             ExpressionAttributeNames: expressionAttributeNames,
                             ReturnValues: "ALL_NEW",
-                            ConditionExpression: "attribute_exists(id)",
+                            ConditionExpression: "attribute_exists(giftId)",
                         });
 
                         const result = await ddb.send(updateCommand);
@@ -188,4 +203,31 @@ export namespace GiftRegistry {
             );
         }
     }
+
+    /**
+     * Get all gifts for a wedding
+     * @param weddingId The ID of the wedding
+     * @returns Array of gifts for the wedding
+     * @throws {GiftRegistryError} If DynamoDB operations fail
+     */
+    export const getByWeddingId = async (weddingId: string): Promise<GiftRegistryType[]> => {
+        try {
+            const command = new QueryCommand({
+                TableName: Resource.GiftRegistryTable.name,
+                IndexName: "WeddingGiftsIndex",
+                KeyConditionExpression: "weddingId = :weddingId",
+                ExpressionAttributeValues: {
+                    ":weddingId": weddingId
+                }
+            });
+
+            const result = await ddb.send(command);
+            return (result.Items || []) as GiftRegistryType[];
+        } catch (error) {
+            throw new GiftRegistryError(
+                `Failed to fetch gifts for wedding ${weddingId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                error
+            );
+        }
+    };
 }
