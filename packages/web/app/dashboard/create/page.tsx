@@ -560,7 +560,9 @@ export default function CreateWeddingPage() {
 
   // Helper function to get signed URL for a gift image
   const getGiftImageUrl = async (imageKey: string): Promise<string> => {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}api/show-photo/gifts/${imageKey}`, {
+    // The imageKey is in the format "gifts/{giftId}/{fileName}"
+    const [type, giftId, fileName] = imageKey.split('/');
+    const response = await fetch(`${import.meta.env.VITE_API_URL}api/show-photo/${type}/${giftId}/${fileName}`, {
       headers: {
         Authorization: `Bearer ${await auth.getToken()}`,
       },
