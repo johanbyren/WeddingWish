@@ -7,33 +7,15 @@ import { useEffect, useState } from "react"
 import { useAuth } from "~/context/auth"
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "~/components/ui/dialog"
 
-// Mock gifts data - we'll implement this later
-const mockGifts = [
-  {
-    id: "1",
-    name: "Wedding Dress",
-    description: "Help us fund the perfect wedding dress",
-    price: 1500,
-    collected: 750,
-    imageUrl: "/placeholder.svg",
-  },
-  {
-    id: "2",
-    name: "Wedding Rings",
-    description: "Contribute to our wedding rings",
-    price: 1000,
-    collected: 400,
-    imageUrl: "/placeholder.svg",
-  },
-  {
-    id: "3",
-    name: "Honeymoon Trip",
-    description: "Help us have an unforgettable honeymoon in Bali",
-    price: 3000,
-    collected: 1200,
-    imageUrl: "/placeholder.svg",
-  },
-]
+interface Gift {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  totalContributed: number;
+  imageUrl: string | null;
+  isFullyFunded: boolean;
+}
 
 interface Wedding {
   weddingId: string
@@ -55,6 +37,7 @@ export default function WeddingPage() {
   const { slug } = useParams()
   const auth = useAuth()
   const [wedding, setWedding] = useState<Wedding | null>(null)
+  const [gifts, setGifts] = useState<Gift[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
@@ -82,6 +65,18 @@ export default function WeddingPage() {
 
         const data = await response.json();
         setWedding(data);
+
+        // Fetch gifts for this wedding
+        const giftsResponse = await fetch(`${import.meta.env.VITE_API_URL}api/show-gift/wedding/${data.weddingId}`, {
+          method: 'GET'
+        });
+
+        if (!giftsResponse.ok) {
+          throw new Error('Failed to fetch gifts');
+        }
+
+        const giftsData = await giftsResponse.json();
+        setGifts(giftsData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -234,7 +229,7 @@ export default function WeddingPage() {
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
-              {mockGifts.map((gift) => (
+              {gifts.map((gift) => (
                 <Card key={gift.id}>
                   <div className="aspect-video bg-gray-100">
                     <img
@@ -251,11 +246,11 @@ export default function WeddingPage() {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-500">
-                          ${gift.collected} of ${gift.price}
+                          ${gift.totalContributed} of ${gift.price}
                         </span>
-                        <span className="text-sm font-medium">{Math.round((gift.collected / gift.price) * 100)}%</span>
+                        <span className="text-sm font-medium">{Math.round((gift.totalContributed / gift.price) * 100)}%</span>
                       </div>
-                      <Progress value={(gift.collected / gift.price) * 100} className="h-2" />
+                      <Progress value={(gift.totalContributed / gift.price) * 100} className="h-2" />
                     </div>
                   </CardContent>
                   <CardFooter>
