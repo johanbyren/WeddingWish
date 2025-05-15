@@ -6,6 +6,8 @@ interface ImportMetaEnv {
   readonly VITE_API_URL: string
   readonly VITE_AUTH_URL: string
   readonly VITE_BUCKET_URL: string
+  readonly VITE_STRIPE_SECRET_KEY: string
+  readonly VITE_STRIPE_PUBLISHABLE_KEY: string
 }
 interface ImportMeta {
   readonly env: ImportMetaEnv

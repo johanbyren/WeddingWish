@@ -2,6 +2,10 @@ import { api } from "./api";
 import { auth } from "./auth";
 import { router } from "./router";
 
+// Create a secret for Stripe keys
+const stripeSecretKey = new sst.Secret("STRIPE_SECRET_KEY");
+const stripePublishableKey = new sst.Secret("STRIPE_PUBLISHABLE_KEY");
+
 new sst.aws.StaticSite("React", {
   path: "packages/web",
   build: {
@@ -11,7 +15,9 @@ new sst.aws.StaticSite("React", {
   environment: {
     VITE_API_URL: api.url,
     VITE_AUTH_URL: auth.url,
-    VITE_BUCKET_URL: $interpolate`${router.url}/files`
+    VITE_BUCKET_URL: $interpolate`${router.url}/files`,
+    VITE_STRIPE_SECRET_KEY: stripeSecretKey.value,
+    VITE_STRIPE_PUBLISHABLE_KEY: stripePublishableKey.value
   },
   assets: {
     fileOptions: [

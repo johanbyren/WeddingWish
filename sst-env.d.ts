@@ -31,6 +31,14 @@ declare module "sst" {
       "type": "sst.aws.StaticSite"
       "url": string
     }
+    "STRIPE_PUBLISHABLE_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "STRIPE_SECRET_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "SettingsTable": {
       "name": string
       "type": "sst.aws.Dynamo"

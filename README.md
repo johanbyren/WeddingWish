@@ -19,14 +19,30 @@ A template to create a monorepo SST v3 project. [Learn more](https://sst.dev/doc
    npx replace-in-file '/wedding-wish/g' 'MY_APP' '**/*.*' --verbose
    ```
 
-4. Deploy!
+4. Set up Stripe environment variables:
+
+   ```bash
+   # Set Stripe publishable key (creates .env file for local development)
+   sst secrets set STRIPE_PUBLISHABLE_KEY pk_test_your_key_here --fallback
+
+   # Set Stripe secret key (creates .env file for local development)
+   sst secrets set STRIPE_SECRET_KEY sk_test_your_key_here --fallback
+   ```
+
+   The `--fallback` flag will:
+   - Set the secret in AWS Secrets Manager for production/staging
+   - Create a `.env` file in your project root for local development
+   - Automatically load the values when running `sst dev`
+   - Use it like this: `${import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY}`
+
+5. Deploy!
 
    ```bash
    npm install
    npx sst deploy --stage dev|prod
    ```
 
-5. Optionally, enable [_git push to deploy_](https://sst.dev/docs/console/#autodeploy).
+6. Optionally, enable [_git push to deploy_](https://sst.dev/docs/console/#autodeploy).
 
 ## Usage
 

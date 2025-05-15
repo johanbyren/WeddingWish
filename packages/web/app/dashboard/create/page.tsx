@@ -474,7 +474,7 @@ export default function CreateWeddingPage() {
     const giftResults = [];
 
     for (const gift of weddingDetails.giftItems) {
-      let imageKey = null;
+      let imageKey = undefined;
 
       // Upload gift photo if exists
       if (gift.imageFile) {
@@ -488,12 +488,12 @@ export default function CreateWeddingPage() {
 
       // Create gift object
       const giftData = {
-        id: gift.id,
+        id: gift.id || crypto.randomUUID(), // Ensure we always have an ID
         weddingId: weddingId,
         name: gift.name,
         description: gift.description || undefined,
         price: gift.price ? parseFloat(gift.price) : undefined,
-        imageUrl: imageKey, // Store the S3 key
+        imageUrl: imageKey || undefined, // Use undefined instead of null
         totalContributed: 0,
         isFullyFunded: false,
         createdAt: new Date().toISOString(),

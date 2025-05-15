@@ -10,12 +10,17 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "sst": "^3",
     "@aws-sdk/client-dynamodb": "^3.744.0",
-    "@aws-sdk/lib-dynamodb": "^3.744.0",
-    "@openauthjs/openauth": "^0.3.9",
+    "@aws-sdk/client-eventbridge": "^3.810.0",
     "@aws-sdk/client-s3": "^3.758.0",
-    "@aws-sdk/s3-request-presigner": "^3.758.0"
+    "@aws-sdk/lib-dynamodb": "^3.744.0",
+    "@aws-sdk/s3-request-presigner": "^3.758.0",
+    "@openauthjs/openauth": "^0.3.9",
+    "@stripe/react-stripe-js": "^3.7.0",
+    "@stripe/stripe-js": "^7.3.0",
+    "aws-cdk-lib": "^2.195.0",
+    "sst": "^3.14.24",
+    "stripe": "^18.1.0"
   },
   "volta": {
     "node": "20.18.3"

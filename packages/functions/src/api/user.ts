@@ -36,10 +36,10 @@ app.post(
 /**
  * List all users
  */
-app.get("/", async (c) => {
-    const users = await User.list();
-    return c.json(users);
-});
+// app.get("/", async (c) => {
+//     const users = await User.list();
+//     return c.json(users);
+// });
 
 /**
  * Update a user
