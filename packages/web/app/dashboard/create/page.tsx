@@ -25,6 +25,7 @@ export default function CreateWeddingPage() {
   const weddingId = searchParams.get('weddingId');
   const isEditMode = !!weddingId;
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(isEditMode);
   const [activeTab, setActiveTab] = useState("details");
   const [weddingDetails, setWeddingDetails] = useState({
     title: "",
@@ -148,6 +149,7 @@ export default function CreateWeddingPage() {
       if (!isEditMode || !weddingId) return;
 
       try {
+        setIsLoading(true);
         // Fetch wedding details
         const weddingResponse = await fetch(`${import.meta.env.VITE_API_URL}api/wedding/id/${weddingId}`, {
           headers: {
@@ -244,6 +246,8 @@ export default function CreateWeddingPage() {
       } catch (error) {
         console.error('Error fetching wedding details:', error);
         alert('Failed to load wedding details. Please try again.');
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -652,465 +656,362 @@ export default function CreateWeddingPage() {
         </nav>
       </header>
       <main className="flex-1 p-4 md:p-6">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-2xl font-bold mb-6">{isEditMode ? 'Edit Your Wedding Page' : 'Create Your Wedding Page'}</h1>
+        <div className="max-w-4xl mx-auto relative">
+          {isLoading && (
+            <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center z-50">
+              <div className="flex flex-col items-center gap-4">
+                <svg className="animate-spin h-8 w-8 text-pink-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p className="text-pink-500 font-medium">Loading wedding details...</p>
+              </div>
+            </div>
+          )}
+          <div className={isLoading ? "opacity-50 pointer-events-none" : ""}>
+            <h1 className="text-2xl font-bold mb-6">{isEditMode ? 'Edit Your Wedding Page' : 'Create Your Wedding Page'}</h1>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="details">Wedding Details</TabsTrigger>
-              <TabsTrigger value="settings">Wedding Settings</TabsTrigger>
-              <TabsTrigger value="photos">Photos</TabsTrigger>
-              <TabsTrigger value="gifts">Gift Registry</TabsTrigger>
-              <TabsTrigger value="preview">Preview</TabsTrigger>
-            </TabsList>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+              <TabsList className="grid w-full grid-cols-5">
+                <TabsTrigger value="details">Wedding Details</TabsTrigger>
+                <TabsTrigger value="settings">Wedding Settings</TabsTrigger>
+                <TabsTrigger value="photos">Photos</TabsTrigger>
+                <TabsTrigger value="gifts">Gift Registry</TabsTrigger>
+                <TabsTrigger value="preview">Preview</TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="details">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Wedding Details</CardTitle>
-                  <CardDescription>
-                    Fill in the basic information about your wedding to create your page.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="title">Wedding Title</Label>
-                      <Input
-                        id="title"
-                        name="title"
-                        placeholder="John & Jane's Wedding"
-                        value={weddingDetails.title}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="date">Wedding Date</Label>
-                      <DatePicker date={weddingDetails.date} setDate={handleDateChange} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="location">Wedding Location</Label>
-                      <Input
-                        id="location"
-                        name="location"
-                        placeholder="Venue name and address"
-                        value={weddingDetails.location}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="story">Your Love Story</Label>
-                      <Textarea
-                        id="story"
-                        name="story"
-                        placeholder="Share your journey together..."
-                        className="min-h-[150px]"
-                        value={weddingDetails.story}
-                        onChange={handleChange}
-                      />
-                    </div>
-                  </form>
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Link to="/dashboard">
-                    <Button variant="outline">Cancel</Button>
-                  </Link>
-                  <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600">
-                    Next: Add Photos
-                  </Button>
-                </CardFooter>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="settings">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Wedding Settings</CardTitle>
-                  <CardDescription>Customize how your wedding page appears</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Page Visibility</h3>
-                    <RadioGroup 
-                      value={weddingDetails.visibility} 
-                      onValueChange={(value) => setWeddingDetails(prev => ({ ...prev, visibility: value }))}
-                      className="grid gap-2"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="public" id="public" />
-                        <Label htmlFor="public">Public - Anyone with the link can view</Label>
+              <TabsContent value="details">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Wedding Details</CardTitle>
+                    <CardDescription>
+                      Fill in the basic information about your wedding to create your page.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="title">Wedding Title</Label>
+                        <Input
+                          id="title"
+                          name="title"
+                          placeholder="John & Jane's Wedding"
+                          value={weddingDetails.title}
+                          onChange={handleChange}
+                          required
+                        />
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="password" id="password" />
-                        <Label htmlFor="password">Password Protected - Guests need a password</Label>
+                      <div className="space-y-2">
+                        <Label htmlFor="date">Wedding Date</Label>
+                        <DatePicker date={weddingDetails.date} setDate={handleDateChange} />
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="private" id="private" />
-                        <Label htmlFor="private">Private - Only you can view</Label>
+                      <div className="space-y-2">
+                        <Label htmlFor="location">Wedding Location</Label>
+                        <Input
+                          id="location"
+                          name="location"
+                          placeholder="Venue name and address"
+                          value={weddingDetails.location}
+                          onChange={handleChange}
+                          required
+                        />
                       </div>
-                    </RadioGroup>
-                  </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="story">Your Love Story</Label>
+                        <Textarea
+                          id="story"
+                          name="story"
+                          placeholder="Share your journey together..."
+                          className="min-h-[150px]"
+                          value={weddingDetails.story}
+                          onChange={handleChange}
+                        />
+                      </div>
+                    </form>
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <Link to="/dashboard">
+                      <Button variant="outline">Cancel</Button>
+                    </Link>
+                    <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600">
+                      Next: Add Photos
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </TabsContent>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="customUrl">Custom URL</Label>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500">weddingwish.com/wedding/</span>
-                      <Input
-                        id="customUrl"
-                        value={weddingDetails.customUrl}
-                        className="max-w-[200px]"
-                        onChange={(e) => {
-                          // Only allow lowercase letters, numbers, and hyphens
-                          const value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
-                          setWeddingDetails(prev => ({ ...prev, customUrl: value }));
-                        }}
-                      />
-                      {urlValidation.isChecking ? (
-                        <span className="text-sm text-gray-500">Checking...</span>
-                      ) : urlValidation.message && (
-                        <span className={`text-sm ${urlValidation.isValid ? 'text-green-500' : 'text-red-500'}`}>
-                          {urlValidation.message}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-gray-500">Choose a unique URL for your wedding page</p>
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="theme">Page Theme</Label>
-                      <Select
-                        value={weddingDetails.theme}
-                        onValueChange={(value) => setWeddingDetails(prev => ({ ...prev, theme: value }))}
+              <TabsContent value="settings">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Wedding Settings</CardTitle>
+                    <CardDescription>Customize how your wedding page appears</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium">Page Visibility</h3>
+                      <RadioGroup 
+                        value={weddingDetails.visibility} 
+                        onValueChange={(value) => setWeddingDetails(prev => ({ ...prev, visibility: value }))}
+                        className="grid gap-2"
                       >
-                        <SelectTrigger id="theme">
-                          <SelectValue placeholder="Select theme" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="classic">Classic</SelectItem>
-                          <SelectItem value="modern">Modern</SelectItem>
-                          <SelectItem value="rustic">Rustic</SelectItem>
-                          <SelectItem value="elegant">Elegant</SelectItem>
-                          <SelectItem value="minimalist">Minimalist</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="primaryColor">Primary Color</Label>
-                      <Select
-                        value={weddingDetails.primaryColor}
-                        onValueChange={(value) => setWeddingDetails(prev => ({ ...prev, primaryColor: value }))}
-                      >
-                        <SelectTrigger id="primaryColor">
-                          <SelectValue placeholder="Select color" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pink">Pink</SelectItem>
-                          <SelectItem value="blue">Blue</SelectItem>
-                          <SelectItem value="green">Green</SelectItem>
-                          <SelectItem value="purple">Purple</SelectItem>
-                          <SelectItem value="gold">Gold</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button variant="outline" onClick={goToPreviousTab}>
-                    Back
-                  </Button>
-                  <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600">
-                    Next: Add Photos
-                  </Button>
-                </CardFooter>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="photos">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Wedding Photos</CardTitle>
-                  <CardDescription>Upload photos for your wedding page.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    <div className="space-y-2">
-                      <Label>Cover Photo</Label>
-                      <p className="text-sm text-gray-500">
-                        This will be the main image at the top of your wedding page.
-                      </p>
-                      {weddingDetails.coverPhotoPreview ? (
-                        <div className="relative aspect-[3/1] overflow-hidden rounded-lg border">
-                          <img
-                            src={weddingDetails.coverPhotoPreview || "/placeholder.svg"}
-                            alt="Cover preview"
-                            className="w-full h-full object-cover"
-                          />
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            className="absolute top-2 right-2"
-                            onClick={() =>
-                              setWeddingDetails((prev) => ({ ...prev, coverPhoto: null, coverPhotoPreview: "" }))
-                            }
-                          >
-                            Remove
-                          </Button>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="public" id="public" />
+                          <Label htmlFor="public">Public - Anyone with the link can view</Label>
                         </div>
-                      ) : (
-                        <ImageUploader onImageSelected={handleCoverPhotoChange} />
-                      )}
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="password" id="password" />
+                          <Label htmlFor="password">Password Protected - Guests need a password</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="private" id="private" />
+                          <Label htmlFor="private">Private - Only you can view</Label>
+                        </div>
+                      </RadioGroup>
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Additional Photos</Label>
-                      <p className="text-sm text-gray-500">Add more photos to your wedding gallery (optional).</p>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
-                        {weddingDetails.additionalPhotos.map((photo, index) => (
-                          <div key={index} className="relative aspect-square overflow-hidden rounded-lg border">
+                      <Label htmlFor="customUrl">Custom URL</Label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-500">weddingwish.com/wedding/</span>
+                        <Input
+                          id="customUrl"
+                          value={weddingDetails.customUrl}
+                          className="max-w-[200px]"
+                          onChange={(e) => {
+                            // Only allow lowercase letters, numbers, and hyphens
+                            const value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+                            setWeddingDetails(prev => ({ ...prev, customUrl: value }));
+                          }}
+                        />
+                        {urlValidation.isChecking ? (
+                          <span className="text-sm text-gray-500">Checking...</span>
+                        ) : urlValidation.message && (
+                          <span className={`text-sm ${urlValidation.isValid ? 'text-green-500' : 'text-red-500'}`}>
+                            {urlValidation.message}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500">Choose a unique URL for your wedding page</p>
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="theme">Page Theme</Label>
+                        <Select
+                          value={weddingDetails.theme}
+                          onValueChange={(value) => setWeddingDetails(prev => ({ ...prev, theme: value }))}
+                        >
+                          <SelectTrigger id="theme">
+                            <SelectValue placeholder="Select theme" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="classic">Classic</SelectItem>
+                            <SelectItem value="modern">Modern</SelectItem>
+                            <SelectItem value="rustic">Rustic</SelectItem>
+                            <SelectItem value="elegant">Elegant</SelectItem>
+                            <SelectItem value="minimalist">Minimalist</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="primaryColor">Primary Color</Label>
+                        <Select
+                          value={weddingDetails.primaryColor}
+                          onValueChange={(value) => setWeddingDetails(prev => ({ ...prev, primaryColor: value }))}
+                        >
+                          <SelectTrigger id="primaryColor">
+                            <SelectValue placeholder="Select color" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pink">Pink</SelectItem>
+                            <SelectItem value="blue">Blue</SelectItem>
+                            <SelectItem value="green">Green</SelectItem>
+                            <SelectItem value="purple">Purple</SelectItem>
+                            <SelectItem value="gold">Gold</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <Button variant="outline" onClick={goToPreviousTab}>
+                      Back
+                    </Button>
+                    <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600">
+                      Next: Add Photos
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="photos">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Wedding Photos</CardTitle>
+                    <CardDescription>Upload photos for your wedding page.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-6">
+                      <div className="space-y-2">
+                        <Label>Cover Photo</Label>
+                        <p className="text-sm text-gray-500">
+                          This will be the main image at the top of your wedding page.
+                        </p>
+                        {weddingDetails.coverPhotoPreview ? (
+                          <div className="relative aspect-[3/1] overflow-hidden rounded-lg border">
                             <img
-                              src={photo.preview || "/placeholder.svg"}
-                              alt={`Photo ${index + 1}`}
+                              src={weddingDetails.coverPhotoPreview || "/placeholder.svg"}
+                              alt="Cover preview"
                               className="w-full h-full object-cover"
                             />
                             <Button
                               variant="destructive"
                               size="sm"
                               className="absolute top-2 right-2"
-                              onClick={() => removeAdditionalPhoto(index)}
+                              onClick={() =>
+                                setWeddingDetails((prev) => ({ ...prev, coverPhoto: null, coverPhotoPreview: "" }))
+                              }
                             >
                               Remove
                             </Button>
                           </div>
-                        ))}
-                        <div className="aspect-square flex items-center justify-center border rounded-lg border-dashed">
-                          <ImageUploader 
-                            onImageSelected={handleAdditionalPhotoAdd}
-                            className="w-full h-full flex items-center justify-center"
-                          />
+                        ) : (
+                          <ImageUploader onImageSelected={handleCoverPhotoChange} />
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Additional Photos</Label>
+                        <p className="text-sm text-gray-500">Add more photos to your wedding gallery (optional).</p>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+                          {weddingDetails.additionalPhotos.map((photo, index) => (
+                            <div key={index} className="relative aspect-square overflow-hidden rounded-lg border">
+                              <img
+                                src={photo.preview || "/placeholder.svg"}
+                                alt={`Photo ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                className="absolute top-2 right-2"
+                                onClick={() => removeAdditionalPhoto(index)}
+                              >
+                                Remove
+                              </Button>
+                            </div>
+                          ))}
+                          <div className="aspect-square flex items-center justify-center border rounded-lg border-dashed">
+                            <ImageUploader 
+                              onImageSelected={handleAdditionalPhotoAdd}
+                              className="w-full h-full flex items-center justify-center"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button variant="outline" onClick={goToPreviousTab}>
-                    Back
-                  </Button>
-                  <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600">
-                    Next: Add Gifts
-                  </Button>
-                </CardFooter>
-              </Card>
-            </TabsContent>
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <Button variant="outline" onClick={goToPreviousTab}>
+                      Back
+                    </Button>
+                    <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600">
+                      Next: Add Gifts
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </TabsContent>
 
-            <TabsContent value="gifts">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Gift Registry</CardTitle>
-                  <CardDescription>Add items to your gift registry that guests can contribute to.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Add New Gift Item</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid md:grid-cols-[1fr_2fr] gap-6">
-                          <div>
-                            {newGiftItem.imagePreview ? (
-                              <div className="relative aspect-square overflow-hidden rounded-lg border">
-                                <img
-                                  src={newGiftItem.imagePreview}
-                                  alt="Gift preview"
-                                  className="w-full h-full object-cover"
-                                />
-                                <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  className="absolute top-2 right-2"
-                                  onClick={() => setNewGiftItem((prev) => ({ ...prev, imageFile: null, imagePreview: "" }))}
-                                >
-                                  Remove
-                                </Button>
-                              </div>
-                            ) : (
-                              <ImageUploader onImageSelected={handleGiftImageSelected} />
-                            )}
-                          </div>
-                          <div className="space-y-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="gift-name">Gift Name</Label>
-                              <Input
-                                id="gift-name"
-                                name="name"
-                                value={newGiftItem.name}
-                                onChange={handleNewGiftItemChange}
-                                placeholder="e.g., Wedding Dress, Honeymoon Fund"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="gift-price">Price ($)</Label>
-                              <Input
-                                id="gift-price"
-                                name="price"
-                                type="number"
-                                value={newGiftItem.price}
-                                onChange={handleNewGiftItemChange}
-                                placeholder="0.00"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="gift-description">Description</Label>
-                              <Textarea
-                                id="gift-description"
-                                name="description"
-                                value={newGiftItem.description}
-                                onChange={handleNewGiftItemChange}
-                                placeholder="Describe this gift and why it's important to you..."
-                                className="min-h-[100px]"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                      <CardFooter>
-                        <Button onClick={addGiftItem} className="flex items-center">
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add Gift Item
-                        </Button>
-                      </CardFooter>
-                    </Card>
-
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium">Your Gift Registry</h3>
-                      {weddingDetails.giftItems.length === 0 ? (
-                        <Card className="text-center p-6">
-                          <p className="text-gray-500">Your gift registry is empty. Add some items above.</p>
-                        </Card>
-                      ) : (
-                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                          {weddingDetails.giftItems.map((item) => (
-                            <Card key={item.id} className="overflow-hidden">
-                              <div className="aspect-video bg-gray-100 relative">
-                                {item.imagePreview ? (
+              <TabsContent value="gifts">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Gift Registry</CardTitle>
+                    <CardDescription>Add items to your gift registry that guests can contribute to.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Add New Gift Item</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid md:grid-cols-[1fr_2fr] gap-6">
+                            <div>
+                              {newGiftItem.imagePreview ? (
+                                <div className="relative aspect-square overflow-hidden rounded-lg border">
                                   <img
-                                    src={item.imagePreview}
-                                    alt={item.name}
+                                    src={newGiftItem.imagePreview}
+                                    alt="Gift preview"
                                     className="w-full h-full object-cover"
                                   />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                    No image
-                                  </div>
-                                )}
-                              </div>
-                              <CardContent className="p-4">
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h3 className="font-semibold">{item.name}</h3>
-                                    <p className="text-sm text-gray-500">{item.description}</p>
-                                    <p className="font-medium mt-2">${item.price}</p>
-                                  </div>
-                                  <Button variant="ghost" size="icon" onClick={() => removeGiftItem(item.id)}>
-                                    <Trash2 className="h-4 w-4" />
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    className="absolute top-2 right-2"
+                                    onClick={() => setNewGiftItem((prev) => ({ ...prev, imageFile: null, imagePreview: "" }))}
+                                  >
+                                    Remove
                                   </Button>
                                 </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button variant="outline" onClick={goToPreviousTab}>
-                    Back
-                  </Button>
-                  <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600">
-                    Next: Preview
-                  </Button>
-                </CardFooter>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="preview">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Preview Your Wedding Page</CardTitle>
-                  <CardDescription>This is how your wedding page will look to your guests.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="border rounded-lg overflow-hidden">
-                    {/* Preview Header */}
-                    <div className="relative h-[200px] bg-gray-100">
-                      {weddingDetails.coverPhotoPreview ? (
-                        <img
-                          src={weddingDetails.coverPhotoPreview || "/placeholder.svg"}
-                          alt="Cover"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                          No cover photo selected
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-black/30 flex items-end">
-                        <div className="p-4 text-white">
-                          <h2 className="text-2xl font-bold">{weddingDetails.title || "Your Wedding Title"}</h2>
-                          <div className="flex flex-wrap gap-4 mt-2 text-sm">
-                            <div className="flex items-center">
-                              <span>
-                                {weddingDetails.date.toLocaleDateString("en-US", {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                })}
-                              </span>
+                              ) : (
+                                <ImageUploader onImageSelected={handleGiftImageSelected} />
+                              )}
                             </div>
-                            <div className="flex items-center">
-                              <span>{weddingDetails.location || "Wedding Location"}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Preview Content */}
-                    <div className="p-6 space-y-6">
-                      <div>
-                        <h3 className="text-xl font-semibold mb-2">Our Story</h3>
-                        <p className="text-gray-700">{weddingDetails.story || "Your love story will appear here..."}</p>
-                      </div>
-
-                      {weddingDetails.additionalPhotos.length > 0 && (
-                        <div>
-                          <h3 className="text-xl font-semibold mb-2">Photo Gallery</h3>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                            {weddingDetails.additionalPhotos.map((photo, index) => (
-                              <div key={index} className="aspect-square rounded-lg overflow-hidden">
-                                <img
-                                  src={photo.preview || "/placeholder.svg"}
-                                  alt={`Photo ${index + 1}`}
-                                  className="w-full h-full object-cover"
+                            <div className="space-y-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="gift-name">Gift Name</Label>
+                                <Input
+                                  id="gift-name"
+                                  name="name"
+                                  value={newGiftItem.name}
+                                  onChange={handleNewGiftItemChange}
+                                  placeholder="e.g., Wedding Dress, Honeymoon Fund"
                                 />
                               </div>
-                            ))}
+                              <div className="space-y-2">
+                                <Label htmlFor="gift-price">Price ($)</Label>
+                                <Input
+                                  id="gift-price"
+                                  name="price"
+                                  type="number"
+                                  value={newGiftItem.price}
+                                  onChange={handleNewGiftItemChange}
+                                  placeholder="0.00"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="gift-description">Description</Label>
+                                <Textarea
+                                  id="gift-description"
+                                  name="description"
+                                  value={newGiftItem.description}
+                                  onChange={handleNewGiftItemChange}
+                                  placeholder="Describe this gift and why it's important to you..."
+                                  className="min-h-[100px]"
+                                />
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        </CardContent>
+                        <CardFooter>
+                          <Button onClick={addGiftItem} className="flex items-center">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Gift Item
+                          </Button>
+                        </CardFooter>
+                      </Card>
 
-                      <div>
-                        <h3 className="text-xl font-semibold mb-2">Gift Registry</h3>
-                        {weddingDetails.giftItems.length > 0 ? (
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-medium">Your Gift Registry</h3>
+                        {weddingDetails.giftItems.length === 0 ? (
+                          <Card className="text-center p-6">
+                            <p className="text-gray-500">Your gift registry is empty. Add some items above.</p>
+                          </Card>
+                        ) : (
                           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {weddingDetails.giftItems.map((item) => (
-                              <Card key={item.id}>
-                                <div className="aspect-video bg-gray-100">
+                              <Card key={item.id} className="overflow-hidden">
+                                <div className="aspect-video bg-gray-100 relative">
                                   {item.imagePreview ? (
                                     <img
                                       src={item.imagePreview}
@@ -1123,36 +1024,152 @@ export default function CreateWeddingPage() {
                                     </div>
                                   )}
                                 </div>
-                                <CardHeader>
-                                  <CardTitle>{item.name}</CardTitle>
-                                  <CardDescription>{item.description}</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                  <p className="font-medium">${item.price}</p>
+                                <CardContent className="p-4">
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <h3 className="font-semibold">{item.name}</h3>
+                                      <p className="text-sm text-gray-500">{item.description}</p>
+                                      <p className="font-medium mt-2">${item.price}</p>
+                                    </div>
+                                    <Button variant="ghost" size="icon" onClick={() => removeGiftItem(item.id)}>
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
                                 </CardContent>
                               </Card>
                             ))}
                           </div>
-                        ) : (
-                          <p className="text-gray-500 italic">
-                            No gift items added yet.
-                          </p>
                         )}
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button variant="outline" onClick={goToPreviousTab}>
-                    Back
-                  </Button>
-                  <Button onClick={handleSubmit} className="bg-pink-500 hover:bg-pink-600" disabled={isSubmitting}>
-                    {isSubmitting ? (isEditMode ? "Updating..." : "Creating...") : (isEditMode ? "Update Wedding Page" : "Create Wedding Page")}
-                  </Button>
-                </CardFooter>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <Button variant="outline" onClick={goToPreviousTab}>
+                      Back
+                    </Button>
+                    <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600">
+                      Next: Preview
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="preview">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Preview Your Wedding Page</CardTitle>
+                    <CardDescription>This is how your wedding page will look to your guests.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="border rounded-lg overflow-hidden">
+                      {/* Preview Header */}
+                      <div className="relative h-[200px] bg-gray-100">
+                        {weddingDetails.coverPhotoPreview ? (
+                          <img
+                            src={weddingDetails.coverPhotoPreview || "/placeholder.svg"}
+                            alt="Cover"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400">
+                            No cover photo selected
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-black/30 flex items-end">
+                          <div className="p-4 text-white">
+                            <h2 className="text-2xl font-bold">{weddingDetails.title || "Your Wedding Title"}</h2>
+                            <div className="flex flex-wrap gap-4 mt-2 text-sm">
+                              <div className="flex items-center">
+                                <span>
+                                  {weddingDetails.date.toLocaleDateString("en-US", {
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                  })}
+                                </span>
+                              </div>
+                              <div className="flex items-center">
+                                <span>{weddingDetails.location || "Wedding Location"}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Preview Content */}
+                      <div className="p-6 space-y-6">
+                        <div>
+                          <h3 className="text-xl font-semibold mb-2">Our Story</h3>
+                          <p className="text-gray-700">{weddingDetails.story || "Your love story will appear here..."}</p>
+                        </div>
+
+                        {weddingDetails.additionalPhotos.length > 0 && (
+                          <div>
+                            <h3 className="text-xl font-semibold mb-2">Photo Gallery</h3>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                              {weddingDetails.additionalPhotos.map((photo, index) => (
+                                <div key={index} className="aspect-square rounded-lg overflow-hidden">
+                                  <img
+                                    src={photo.preview || "/placeholder.svg"}
+                                    alt={`Photo ${index + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        <div>
+                          <h3 className="text-xl font-semibold mb-2">Gift Registry</h3>
+                          {weddingDetails.giftItems.length > 0 ? (
+                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                              {weddingDetails.giftItems.map((item) => (
+                                <Card key={item.id}>
+                                  <div className="aspect-video bg-gray-100">
+                                    {item.imagePreview ? (
+                                      <img
+                                        src={item.imagePreview}
+                                        alt={item.name}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                        No image
+                                      </div>
+                                    )}
+                                  </div>
+                                  <CardHeader>
+                                    <CardTitle>{item.name}</CardTitle>
+                                    <CardDescription>{item.description}</CardDescription>
+                                  </CardHeader>
+                                  <CardContent>
+                                    <p className="font-medium">${item.price}</p>
+                                  </CardContent>
+                                </Card>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-gray-500 italic">
+                              No gift items added yet.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <Button variant="outline" onClick={goToPreviousTab}>
+                      Back
+                    </Button>
+                    <Button onClick={handleSubmit} className="bg-pink-500 hover:bg-pink-600" disabled={isSubmitting}>
+                      {isSubmitting ? (isEditMode ? "Updating..." : "Creating...") : (isEditMode ? "Update Wedding Page" : "Create Wedding Page")}
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
       </main>
     </div>
