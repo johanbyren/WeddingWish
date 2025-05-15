@@ -1,5 +1,5 @@
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { Button } from "~/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
@@ -7,6 +7,15 @@ import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { Textarea } from "~/components/ui/textarea"
 import { HeartIcon } from "lucide-react"
+
+import {loadStripe} from '@stripe/stripe-js';
+import {
+  EmbeddedCheckoutProvider,
+  EmbeddedCheckout
+} from '@stripe/react-stripe-js';
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+
 
 interface Gift {
   id: string;
@@ -16,6 +25,7 @@ interface Gift {
   totalContributed: number;
   imageUrl: string | null;
   isFullyFunded: boolean;
+  stripePriceId?: string;
 }
 
 interface Wedding {
@@ -34,6 +44,35 @@ export default function ContributePage() {
   const [wedding, setWedding] = useState<Wedding | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const fetchClientSecret = useCallback(() => {
+    if (!gift?.stripePriceId) {
+      console.error('Gift data:', gift);
+      throw new Error('This gift is not properly configured for payments. Please contact the wedding organizers.');
+    }
+
+    // Create a Checkout Session
+    return fetch(`${import.meta.env.VITE_API_URL}api/create-checkout-session`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        priceId: gift.stripePriceId,
+        quantity: 1,
+        returnUrl: `${window.location.origin}/${slug}/thank-you`,
+      }),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to create checkout session');
+        }
+        return data.clientSecret;
+      });
+  }, [gift?.stripePriceId, slug]);
+
+  const options = {fetchClientSecret};
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,6 +94,7 @@ export default function ContributePage() {
         }
 
         const weddingData = await response.json();
+        console.log('Wedding data:', weddingData);
         setWedding(weddingData);
 
         // Fetch the specific gift
@@ -67,8 +107,10 @@ export default function ContributePage() {
         }
 
         const giftData = await giftResponse.json();
+        console.log('Gift data:', giftData);
         setGift(giftData);
       } catch (err) {
+        console.error('Error fetching data:', err);
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setLoading(false);
@@ -126,6 +168,20 @@ export default function ContributePage() {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-500">Error</h2>
           <p className="mt-2 text-gray-600">{error || 'Gift not found'}</p>
+          <Button asChild className="mt-4">
+            <Link to={`/${slug}`}>Back to Wedding Page</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!gift.stripePriceId) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-500">Payment Not Available</h2>
+          <p className="mt-2 text-gray-600">This gift is not properly configured for payments. Please contact the wedding organizers.</p>
           <Button asChild className="mt-4">
             <Link to={`/${slug}`}>Back to Wedding Page</Link>
           </Button>
@@ -240,6 +296,18 @@ export default function ContributePage() {
           </div>
         </div>
       </footer>
+
+
+
+      <div id="checkout">
+        <EmbeddedCheckoutProvider
+          stripe={stripePromise}
+          options={options}
+        >
+          <EmbeddedCheckout />
+        </EmbeddedCheckoutProvider>
+      </div>
+
     </div>
   )
 }

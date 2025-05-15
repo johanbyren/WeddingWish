@@ -95,7 +95,6 @@ export namespace Wedding {
    * Get a wedding by custom URL
    */
   export const getByCustomUrl = async (customUrl: string) => {
-    console.log("Fetching wedding by url:", customUrl, "from table:", Resource.Weddings.name);
     try {
       const command = new QueryCommand({
         TableName: Resource.Weddings.name,

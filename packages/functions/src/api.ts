@@ -15,6 +15,7 @@ import showPhotoRoute from "./api/show-photo";
 import showGiftRoute from "./api/show-gift";
 import settingsRoute from "./api/settings";
 import giftRegistryRoute from "./api/gift-registry";
+import checkoutSessionRoute from "./api/checkoutSession";
 
 const client = createClient({
     clientID: "jwt-api",
@@ -57,6 +58,7 @@ const routes = app
   .route("/api/show-photo", showPhotoRoute)
   .route("/api/show-wedding", showWeddingRoute)
   .route("/api/show-gift", showGiftRoute)
+  .route("/api/create-checkout-session", checkoutSessionRoute);
 
 // Protected routes
 const protectedRoutes = protectedApp

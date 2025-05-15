@@ -63,6 +63,7 @@ export namespace GiftRegistry {
                         name: gift.name,
                         description: gift.description,
                         price: gift.price,
+                        stripePriceId: gift.stripePriceId,
                         imageUrl: gift.imageUrl,
                         totalContributed: gift.totalContributed,
                         isFullyFunded: gift.isFullyFunded,

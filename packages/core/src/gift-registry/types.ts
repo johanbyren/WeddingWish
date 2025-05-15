@@ -19,6 +19,7 @@ export const schema = z.object({
   name: z.string(),
   description: z.string().optional(),
   price: z.number().optional(),
+  stripePriceId: z.string().optional(), // Stripe price ID for the gift
   imageUrl: z.string().optional(), // Accept any string for imageUrl (can be S3 key or full URL)
   totalContributed: z.number().default(0), // Total amount contributed so far
   isFullyFunded: z.boolean().default(false), // Whether the gift is fully funded

@@ -504,6 +504,7 @@ export default function CreateWeddingPage() {
         updatedAt: new Date().toISOString()
       };
 
+      console.log('Creating gift with data:', giftData);
       giftResults.push(giftData);
     }
 
@@ -521,10 +522,14 @@ export default function CreateWeddingPage() {
       });
 
       if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to create gifts:', errorData);
         throw new Error('Failed to create gifts');
       }
 
-      return await response.json();
+      const createdGifts = await response.json();
+      console.log('Created gifts:', createdGifts);
+      return createdGifts;
     }
 
     return [];

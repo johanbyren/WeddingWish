@@ -47,7 +47,6 @@ app.get(
     async (c) => {
         try {
             const { customUrl } = c.req.valid("param");
-            console.log("API: Fetching wedding by customUrl:", customUrl, "from table:", Resource.Weddings.name);
             const wedding = await Wedding.getByCustomUrl(customUrl);
             if (!wedding) {
                 return c.json({ error: "Wedding not found" }, 404);
