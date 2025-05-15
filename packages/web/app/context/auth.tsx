@@ -128,7 +128,8 @@ export function AuthProvider ({ children }: { children: ReactNode }) {
           console.error("callback: Token exchange failed", exchanged.err);
         }
       }
-      navigate("/dashboard");
+      // Use window.location.href for the initial redirect after auth
+      window.location.href = '/dashboard';
     }
   }
 

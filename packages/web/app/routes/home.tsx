@@ -1,14 +1,10 @@
-import { Link, Navigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { Button } from "~/components/ui/button"
 import { HeartIcon, LogIn, LogOut, UserPlus } from "lucide-react"
 import { useAuth } from "~/context/auth";
 
 export default function Home() {
   const { loggedIn, user, loaded, login, logout } = useAuth();
-
-  if (loggedIn && loaded) {
-    return <Navigate to="/dashboard" replace />;
-  }
 
   return (
     <div className="flex flex-col min-h-screen">
