@@ -8,7 +8,7 @@ import { useAuth } from "~/context/auth"
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "~/components/ui/dialog"
 
 interface Gift {
-  id: string;
+  giftId: string;
   name: string;
   description: string;
   price: number;
@@ -230,7 +230,7 @@ export default function WeddingPage() {
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
               {gifts.map((gift) => (
-                <Card key={gift.id}>
+                <Card key={gift.giftId}>
                   <div className="aspect-video bg-gray-100">
                     <img
                       src={gift.imageUrl || "/placeholder.svg?height=200&width=400"}
@@ -255,7 +255,7 @@ export default function WeddingPage() {
                   </CardContent>
                   <CardFooter>
                     <Button asChild className="w-full bg-pink-500 hover:bg-pink-600">
-                      <Link to={`/${slug}/contribute/${gift.id}`}>Contribute</Link>
+                      <Link to={`/${slug}/contribute/${gift.giftId}`}>Contribute</Link>
                     </Button>
                   </CardFooter>
                 </Card>

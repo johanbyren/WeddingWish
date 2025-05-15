@@ -230,4 +230,35 @@ export namespace GiftRegistry {
             );
         }
     };
+
+    /**
+     * Get a specific gift by ID
+     * @param giftId The ID of the gift
+     * @param weddingId The ID of the wedding
+     * @returns The gift if found, null otherwise
+     * @throws {GiftRegistryError} If DynamoDB operations fail
+     */
+    export const getById = async (giftId: string, weddingId: string): Promise<GiftRegistryType | null> => {
+        try {
+            const command = new GetCommand({
+                TableName: Resource.GiftRegistryTable.name,
+                Key: {
+                    giftId: giftId,
+                    weddingId: weddingId
+                }
+            });
+
+            const result = await ddb.send(command);
+            if (!result.Item) {
+                return null;
+            }
+
+            return result.Item as GiftRegistryType;
+        } catch (error) {
+            throw new GiftRegistryError(
+                `Failed to fetch gift ${giftId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                error
+            );
+        }
+    };
 }
