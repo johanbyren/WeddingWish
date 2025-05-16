@@ -209,7 +209,7 @@ export default function ManageGifts() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="price">Price ($)</Label>
+                    <Label htmlFor="price">Price (sek)</Label>
                     <Input
                       id="price"
                       name="price"

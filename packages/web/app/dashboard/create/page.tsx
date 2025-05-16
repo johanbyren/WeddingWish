@@ -974,7 +974,7 @@ export default function CreateWeddingPage() {
                                 />
                               </div>
                               <div className="space-y-2">
-                                <Label htmlFor="gift-price">Price ($)</Label>
+                                <Label htmlFor="gift-price">Price (sek)</Label>
                                 <Input
                                   id="gift-price"
                                   name="price"

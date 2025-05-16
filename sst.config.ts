@@ -16,5 +16,6 @@ export default $config({
     await import("./infra/auth");
     await import("./infra/router");
     await import("./infra/web");
+    await import("./infra/secrets");
   },
 });

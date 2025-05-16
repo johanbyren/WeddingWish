@@ -58,6 +58,7 @@ app.post(
         gifts.map(async (gift) => {
           try {
             console.log('Creating Stripe product for gift:', gift.name);
+            
             // Create a Stripe product
             const product = await stripe.products.create({
               name: gift.name,
@@ -75,7 +76,7 @@ app.post(
             const price = await stripe.prices.create({
               product: product.id,
               unit_amount: Math.round(gift.price * 100), // Convert to cents
-              currency: 'usd',
+              currency: 'sek',
             });
             console.log('Created Stripe price:', price.id);
 

@@ -104,7 +104,7 @@ export function GiftRegistry() {
               <Input id="name" name="name" value={newItem.name} onChange={handleNewItemChange} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="price">Price ($)</Label>
+              <Label htmlFor="price">Price (sek)</Label>
               <Input id="price" name="price" type="number" value={newItem.price} onChange={handleNewItemChange} />
             </div>
           </div>
