@@ -18,26 +18,39 @@ app.post(
   zValidator(
     "json",
     z.object({
-      priceId: z.string(),
-      quantity: z.number().default(1),
+      giftId: z.string(),
+      amount: z.number().positive(),
       returnUrl: z.string().url(),
     })
   ),
   async (c) => {
     try {
-      const { priceId, quantity, returnUrl } = c.req.valid("json");
+      const { giftId, amount, returnUrl } = c.req.valid("json");
       
-      console.log('Creating checkout session with:', { priceId, quantity, returnUrl });
+      console.log('Creating checkout session with:', { giftId, amount, returnUrl });
 
-      // Verify the price exists
-      const price = await stripe.prices.retrieve(priceId);
-      console.log('Retrieved price:', price);
+      // First create a product
+      const product = await stripe.products.create({
+        name: 'Wedding Gift Contribution',
+        metadata: {
+          giftId: giftId,
+        },
+      });
+      console.log('Created product:', product);
+
+      // Then create a price for this specific contribution
+      const price = await stripe.prices.create({
+        unit_amount: Math.round(amount * 100), // Convert to cents
+        currency: 'sek',
+        product: product.id,
+      });
+      console.log('Created price:', price);
 
       const session = await stripe.checkout.sessions.create({
         line_items: [
           {
-            price: priceId,
-            quantity: quantity,
+            price: price.id,
+            quantity: 1,
           },
         ],
         mode: "payment",

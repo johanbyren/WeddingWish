@@ -5,7 +5,7 @@ import { Button } from "~/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
-import { Textarea } from "~/components/ui/textarea"
+import { Slider } from "~/components/ui/slider"
 import { HeartIcon } from "lucide-react"
 
 import {loadStripe} from '@stripe/stripe-js';
@@ -16,7 +16,6 @@ import {
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-
 interface Gift {
   id: string;
   name: string;
@@ -25,7 +24,7 @@ interface Gift {
   totalContributed: number;
   imageUrl: string | null;
   isFullyFunded: boolean;
-  stripePriceId?: string;
+  giftId: string;
 }
 
 interface Wedding {
@@ -44,35 +43,51 @@ export default function ContributePage() {
   const [wedding, setWedding] = useState<Wedding | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showCheckout, setShowCheckout] = useState(false)
+  const [clientSecret, setClientSecret] = useState<string | null>(null)
 
-  const fetchClientSecret = useCallback(() => {
-    if (!gift?.stripePriceId) {
+  const handleAmountChange = (value: string) => {
+    setAmount(value);
+    setShowCheckout(false); // Reset checkout when amount changes
+    setClientSecret(null);
+  };
+
+  const handlePayClick = async () => {
+    if (!gift?.giftId) {
       console.error('Gift data:', gift);
-      throw new Error('This gift is not properly configured for payments. Please contact the wedding organizers.');
+      throw new Error('This gift is not properly configured. Please contact the wedding organizers.');
     }
 
-    // Create a Checkout Session
-    return fetch(`${import.meta.env.VITE_API_URL}api/create-checkout-session`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        priceId: gift.stripePriceId,
-        quantity: 1,
-        returnUrl: `${window.location.origin}/${slug}/thank-you`,
-      }),
-    })
-      .then(async (res) => {
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error || 'Failed to create checkout session');
-        }
-        return data.clientSecret;
+    setIsProcessing(true);
+    try {
+      // Create a Checkout Session
+      const response = await fetch(`${import.meta.env.VITE_API_URL}api/create-checkout-session`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          giftId: gift.giftId,
+          amount: parseFloat(amount),
+          returnUrl: `${window.location.origin}/${slug}/thank-you`,
+        }),
       });
-  }, [gift?.stripePriceId, slug]);
 
-  const options = {fetchClientSecret};
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create checkout session');
+      }
+
+      setClientSecret(data.clientSecret);
+      setShowCheckout(true);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to create checkout session');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const options = { clientSecret };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -122,35 +137,6 @@ export default function ContributePage() {
     }
   }, [slug, giftId]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsProcessing(true)
-
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}api/contribute`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          giftId,
-          amount: parseFloat(amount),
-          name,
-          message,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to process contribution');
-      }
-
-      navigate(`/${slug}/thank-you`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      setIsProcessing(false);
-    }
-  }
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -168,20 +154,6 @@ export default function ContributePage() {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-500">Error</h2>
           <p className="mt-2 text-gray-600">{error || 'Gift not found'}</p>
-          <Button asChild className="mt-4">
-            <Link to={`/${slug}`}>Back to Wedding Page</Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!gift.stripePriceId) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-500">Payment Not Available</h2>
-          <p className="mt-2 text-gray-600">This gift is not properly configured for payments. Please contact the wedding organizers.</p>
           <Button asChild className="mt-4">
             <Link to={`/${slug}`}>Back to Wedding Page</Link>
           </Button>
@@ -221,10 +193,46 @@ export default function ContributePage() {
 
             {/* Right: Payment Section */}
             <div className="rounded-xl shadow bg-white p-6 flex flex-col items-center">
-              <div className="w-full max-w-md">
-                <EmbeddedCheckoutProvider stripe={stripePromise} options={options}>
-                  <EmbeddedCheckout />
-                </EmbeddedCheckoutProvider>
+              <div className="w-full max-w-md space-y-6">
+                {!showCheckout ? (
+                  <>
+                    <div className="space-y-4">
+                      <Label htmlFor="amount">Contribution Amount (SEK)</Label>
+                      <div className="space-y-2">
+                        <Input
+                          id="amount"
+                          type="number"
+                          min="1"
+                          value={amount}
+                          onChange={(e) => handleAmountChange(e.target.value)}
+                          className="w-full"
+                        />
+                        <Slider
+                          value={[parseFloat(amount)]}
+                          min={1}
+                          max={1000}
+                          step={1}
+                          onValueChange={(value: number[]) => handleAmountChange(value[0].toString())}
+                        />
+                      </div>
+                    </div>
+                    <Button 
+                      onClick={handlePayClick}
+                      disabled={isProcessing}
+                      className="w-full"
+                    >
+                      {isProcessing ? 'Processing...' : 'Pay Now'}
+                    </Button>
+                  </>
+                ) : (
+                  <div className="w-full">
+                    {clientSecret && (
+                      <EmbeddedCheckoutProvider stripe={stripePromise} options={options}>
+                        <EmbeddedCheckout />
+                      </EmbeddedCheckoutProvider>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -238,5 +246,5 @@ export default function ContributePage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }

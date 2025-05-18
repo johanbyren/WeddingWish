@@ -3,12 +3,7 @@ import { z } from "zod";
 import { GiftRegistry } from "@wedding-wish/core/gift-registry";
 import { Photo } from "@wedding-wish/core/photo";
 import { zValidator } from "@hono/zod-validator";
-import Stripe from "stripe";
 import { Resource } from "sst";
-
-const stripe = new Stripe(Resource.STRIPE_SECRET_KEY.value, {
-  apiVersion: "2025-04-30.basil",
-});
 
 const app = new Hono();
 
@@ -18,7 +13,6 @@ const giftSchema = z.object({
     name: z.string(),
     description: z.string().optional(),
     price: z.number().optional(),
-    stripePriceId: z.string().optional(),
     imageUrl: z.string().optional(),
     totalContributed: z.number().default(0),
     isFullyFunded: z.boolean().default(false),
@@ -53,50 +47,12 @@ app.post(
       const { gifts } = c.req.valid("json");
       console.log('Creating gifts:', gifts);
       
-      // Create Stripe products and prices for each gift
-      const giftsWithStripeIds = await Promise.all(
-        gifts.map(async (gift) => {
-          try {
-            console.log('Creating Stripe product for gift:', gift.name);
-
-            // Create a Stripe product
-            const product = await stripe.products.create({
-              name: gift.name,
-              description: gift.description,
-              images: gift.imageUrl ? [gift.imageUrl] : undefined,
-              metadata: {
-                giftId: gift.id,
-                weddingId: gift.weddingId,
-              },
-            });
-            console.log('Created Stripe product:', product.id);
-
-            console.log('Creating Stripe price for product:', product.id);
-            // Create a Stripe price for the product
-            const price = await stripe.prices.create({
-              product: product.id,
-              unit_amount: Math.round(gift.price * 100), // Convert to cents
-              currency: 'sek',
-            });
-            console.log('Created Stripe price:', price.id);
-
-            return {
-              ...gift,
-              stripePriceId: price.id,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            };
-          } catch (error) {
-            console.error('Error creating Stripe resources for gift:', gift.name, error);
-            throw error;
-          }
-        })
-      );
-
-      console.log('Created gifts with Stripe IDs:', giftsWithStripeIds);
-
       // Create the gifts in DynamoDB
-      const createdGifts = await GiftRegistry.create(giftsWithStripeIds);
+      const createdGifts = await GiftRegistry.create(gifts.map(gift => ({
+        ...gift,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })));
       console.log('Created gifts in DynamoDB:', createdGifts);
 
       return c.json(createdGifts);
