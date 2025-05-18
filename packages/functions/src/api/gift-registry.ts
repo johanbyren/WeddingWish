@@ -58,7 +58,7 @@ app.post(
         gifts.map(async (gift) => {
           try {
             console.log('Creating Stripe product for gift:', gift.name);
-            
+
             // Create a Stripe product
             const product = await stripe.products.create({
               name: gift.name,

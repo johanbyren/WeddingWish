@@ -59,26 +59,8 @@ app.get(
             const weddingId = c.req.param("weddingId");
             const gifts = await GiftRegistry.getByWeddingId(weddingId);
 
-            // Get signed URLs for gift images
-            const giftsWithUrls = await Promise.all(
-                gifts.map(async (gift) => {
-                    let imageUrl = null;
-                    if (gift.imageUrl) {
-                        try {
-                            const { url } = await Photo.getGiftPhotoByFileName(gift.imageUrl);
-                            imageUrl = url;
-                        } catch (error) {
-                            console.error('Error getting gift image URL:', error);
-                        }
-                    }
-                    return {
-                        ...gift,
-                        imageUrl
-                    };
-                })
-            );
-
-            return c.json(giftsWithUrls);
+            // Return gifts with their existing imageUrl from DynamoDB
+            return c.json(gifts);
         } catch (error) {
             console.error('Error fetching gifts:', error);
             if (error instanceof Error) {

@@ -42,6 +42,7 @@ export default function WeddingPage() {
   const [error, setError] = useState<string | null>(null)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0)
+  const [giftImages, setGiftImages] = useState<Record<string, string>>({})
 
   useEffect(() => {
     const fetchWeddingInfo = async () => {
@@ -91,6 +92,32 @@ export default function WeddingPage() {
       setLoading(false);
     }
   }, [slug, auth])
+
+  useEffect(() => {
+    const loadGiftImages = async () => {
+      if (!gifts) return;
+
+      const imageUrls: Record<string, string> = {};
+      for (const gift of gifts) {
+        try {
+          if (gift.imageUrl) {
+            console.log('Using image URL for gift:', gift.giftId, 'URL:', gift.imageUrl);
+            imageUrls[gift.giftId] = gift.imageUrl;
+          } else {
+            console.log('No image URL for gift:', gift.giftId);
+            imageUrls[gift.giftId] = "/placeholder.svg?height=200&width=400";
+          }
+        } catch (error) {
+          console.error(`Error processing image for gift ${gift.giftId}:`, error);
+          imageUrls[gift.giftId] = "/placeholder.svg?height=200&width=400";
+        }
+      }
+      console.log('Loaded gift images:', imageUrls);
+      setGiftImages(imageUrls);
+    };
+
+    loadGiftImages();
+  }, [gifts]);
 
   if (loading) {
     return (
@@ -233,7 +260,7 @@ export default function WeddingPage() {
                 <Card key={gift.giftId}>
                   <div className="aspect-video bg-gray-100">
                     <img
-                      src={gift.imageUrl || "/placeholder.svg?height=200&width=400"}
+                      src={giftImages[gift.giftId] || "/placeholder.svg?height=200&width=400"}
                       alt={gift.name}
                       className="w-full h-full object-cover"
                     />

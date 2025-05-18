@@ -478,16 +478,18 @@ export default function CreateWeddingPage() {
     const giftResults = [];
 
     for (const gift of weddingDetails.giftItems) {
-      let imageKey = undefined;
+      let imageUrl = undefined;
 
       // Upload gift photo if exists
       if (gift.imageFile) {
-        const giftPhotoKey = await uploadGiftPhoto(
+        imageUrl = await uploadGiftPhoto(
           weddingId,
           gift.id,
           gift.imageFile
         );
-        imageKey = giftPhotoKey;
+      } else if (gift.imagePreview) {
+        // If there's an existing image preview, use it directly
+        imageUrl = gift.imagePreview;
       }
 
       // Create gift object
@@ -497,7 +499,7 @@ export default function CreateWeddingPage() {
         name: gift.name,
         description: gift.description || undefined,
         price: gift.price ? parseFloat(gift.price) : undefined,
-        imageUrl: imageKey || undefined, // Use undefined instead of null
+        imageUrl: imageUrl || undefined, // Use undefined instead of null
         totalContributed: 0,
         isFullyFunded: false,
         createdAt: new Date().toISOString(),
@@ -564,12 +566,18 @@ export default function CreateWeddingPage() {
       },
     });
 
-    return key;
+    // Return the full CloudFront URL instead of just the key
+    return `${import.meta.env.VITE_BUCKET_URL}/${key}`;
   };
 
   // Helper function to get signed URL for a gift image
   const getGiftImageUrl = async (imageKey: string): Promise<string> => {
-    // The imageKey is in the format "gifts/{giftId}/{fileName}"
+    // If it's already a CloudFront URL, return it directly
+    if (imageKey.startsWith('http')) {
+      return imageKey;
+    }
+
+    // Otherwise, it's an S3 key, so get a signed URL
     const [type, giftId, fileName] = imageKey.split('/');
     const response = await fetch(`${import.meta.env.VITE_API_URL}api/show-photo/${type}/${giftId}/${fileName}`, {
       headers: {

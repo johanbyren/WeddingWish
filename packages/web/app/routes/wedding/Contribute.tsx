@@ -200,91 +200,32 @@ export default function ContributePage() {
       </header>
       <main className="flex-1 flex flex-col bg-gradient-to-b from-white to-pink-50">
         <div className="container px-4 md:px-6 py-12 mx-auto">
-          <div className="max-w-4xl mx-auto">
-            <div className="mb-6">
-              <Link to={`/${slug}`} className="text-pink-500 hover:underline">
-                &larr; Back to {wedding.title}
-              </Link>
+          <div className="max-w-4xl mx-auto grid gap-8 md:grid-cols-2 items-start">
+            {/* Left: Info/Context Section */}
+            <div className="rounded-xl shadow bg-white p-6 flex flex-col items-center">
+              <h3 className="text-xl font-bold mb-2 text-center">Contribute to the Wedding Couple</h3>
+              <p className="text-gray-600 mb-4 text-center">
+                Your contribution will go directly to the couple and help make their day even more special.
+              </p>
+              <div className="flex flex-col items-center gap-1 text-sm mb-4">
+                <span>Already contributed: <strong>${gift.totalContributed}</strong></span>
+              </div>
+              <div className="flex items-center gap-2 mt-2">
+                <img src="/stripe_logo.png" alt="Stripe" className="h-5" />
+                <span className="text-xs text-gray-500">Secure payment by Stripe</span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1 text-center">
+                Your payment is encrypted and securely processed. We never store your card details.
+              </p>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
-              <Card>
-                <div className="aspect-video bg-gray-100">
-                  <img
-                    src={gift.imageUrl || "/placeholder.svg?height=300&width=500"}
-                    alt={gift.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <CardHeader>
-                  <CardTitle>{gift.name}</CardTitle>
-                  <CardDescription>{gift.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex justify-between text-sm">
-                    <span>Total price: ${gift.price}</span>
-                    <span>Already contributed: ${gift.totalContributed}</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Make a Contribution</CardTitle>
-                  <CardDescription>
-                    Your contribution will help make their special day even more memorable.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="amount">Contribution Amount ($)</Label>
-                      <Input
-                        id="amount"
-                        type="number"
-                        min="1"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Your Name</Label>
-                      <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="message">Message (Optional)</Label>
-                      <Textarea
-                        id="message"
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        className="min-h-[100px]"
-                      />
-                    </div>
-
-                    <div className="pt-4 space-y-4">
-                      <h3 className="font-medium">Payment Information</h3>
-                      <div className="space-y-2">
-                        <Label htmlFor="cardNumber">Card Number</Label>
-                        <Input id="cardNumber" placeholder="1234 5678 9012 3456" required />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="expiry">Expiry Date</Label>
-                          <Input id="expiry" placeholder="MM/YY" required />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="cvc">CVC</Label>
-                          <Input id="cvc" placeholder="123" required />
-                        </div>
-                      </div>
-                    </div>
-                    <Button type="submit" className="w-full bg-pink-500 hover:bg-pink-600" disabled={isProcessing}>
-                      {isProcessing ? "Processing..." : `Contribute $${amount}`}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
+            {/* Right: Payment Section */}
+            <div className="rounded-xl shadow bg-white p-6 flex flex-col items-center">
+              <div className="w-full max-w-md">
+                <EmbeddedCheckoutProvider stripe={stripePromise} options={options}>
+                  <EmbeddedCheckout />
+                </EmbeddedCheckoutProvider>
+              </div>
             </div>
           </div>
         </div>
@@ -296,18 +237,6 @@ export default function ContributePage() {
           </div>
         </div>
       </footer>
-
-
-
-      <div id="checkout">
-        <EmbeddedCheckoutProvider
-          stripe={stripePromise}
-          options={options}
-        >
-          <EmbeddedCheckout />
-        </EmbeddedCheckoutProvider>
-      </div>
-
     </div>
   )
 }

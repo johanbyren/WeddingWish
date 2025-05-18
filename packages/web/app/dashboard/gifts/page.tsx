@@ -11,6 +11,7 @@ import { Textarea } from "~/components/ui/textarea"
 import { HeartIcon, ArrowLeft, Plus, Trash2, ImagePlus } from "lucide-react"
 import { ImageUploader } from "~/components/image-uploader"
 import { Alert, AlertDescription } from "~/components/ui/alert"
+import { useAuth } from "~/context/auth"
 
 interface GiftItem {
   id: string
@@ -19,9 +20,11 @@ interface GiftItem {
   price: string
   imageFile: File | null
   imagePreview: string
+  imageUrl?: string
 }
 
 export default function ManageGifts() {
+  const auth = useAuth()
   const [giftItems, setGiftItems] = useState<GiftItem[]>([
     {
       id: "1",
@@ -68,19 +71,57 @@ export default function ManageGifts() {
     }))
   }
 
-  const handleGiftImageSelected = (file: File, id: string) => {
-    const preview = URL.createObjectURL(file)
-    setGiftItems((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              imageFile: file,
-              imagePreview: preview,
-            }
-          : item,
-      ),
-    )
+  const handleGiftImageSelected = async (file: File, id: string) => {
+    try {
+      // Get the upload URL from the API
+      const response = await fetch(`${import.meta.env.VITE_API_URL}api/gift-registry/photo-upload-url`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${await auth.getToken()}`,
+        },
+        body: JSON.stringify({
+          giftId: id,
+          fileName: file.name,
+          contentType: file.type,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get upload URL');
+      }
+
+      const { signedUrl, key } = await response.json();
+      
+      // Upload the file to S3
+      await fetch(signedUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+      });
+
+      // Construct the CloudFront URL
+      const cloudFrontUrl = `${import.meta.env.VITE_BUCKET_URL}/${key}`;
+      
+      // Update the gift item with both the file and the CloudFront URL
+      setGiftItems((prev) =>
+        prev.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                imageFile: file,
+                imagePreview: URL.createObjectURL(file),
+                imageUrl: cloudFrontUrl,
+              }
+            : item,
+        ),
+      );
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      // You might want to show an error message to the user here
+    }
   }
 
   const addNewItem = () => {
@@ -126,12 +167,39 @@ export default function ManageGifts() {
     cancelEditing()
   }
 
-  const saveGiftRegistry = () => {
-    // In a real app, you would save the gift registry to a database
-    setSaveSuccess(true)
-    setTimeout(() => {
-      setSaveSuccess(false)
-    }, 3000)
+  const saveGiftRegistry = async () => {
+    try {
+      // Prepare the gift items for saving
+      const giftsToSave = giftItems.map(item => ({
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        price: parseFloat(item.price),
+        imageUrl: item.imageUrl, // This will now be the full CloudFront URL
+      }));
+
+      // Save to your backend
+      const response = await fetch(`${import.meta.env.VITE_API_URL}api/gift-registry`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${await auth.getToken()}`,
+        },
+        body: JSON.stringify({ gifts: giftsToSave }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save gift registry');
+      }
+
+      setSaveSuccess(true);
+      setTimeout(() => {
+        setSaveSuccess(false);
+      }, 3000);
+    } catch (error) {
+      console.error('Error saving gift registry:', error);
+      // You might want to show an error message to the user here
+    }
   }
 
   return (
