@@ -23,10 +23,13 @@ A template to create a monorepo SST v3 project. [Learn more](https://sst.dev/doc
 
    ```bash
    # Set Stripe publishable key (creates .env file for local development)
-   sst secrets set STRIPE_PUBLISHABLE_KEY pk_test_your_key_here --fallback
+   sst secret set STRIPE_PUBLISHABLE_KEY pk_test_your_key_here --fallback
 
    # Set Stripe secret key (creates .env file for local development)
-   sst secrets set STRIPE_SECRET_KEY sk_test_your_key_here --fallback
+   sst secret set STRIPE_SECRET_KEY sk_test_your_key_here --fallback
+
+   # Set Stripe account Id (creates .env file for local development)
+   sst secret set STRIPE_ACCOUNT_ID your_account_id_here --fallback
    ```
 
    The `--fallback` flag will:

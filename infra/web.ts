@@ -1,7 +1,7 @@
 import { api } from "./api";
 import { auth } from "./auth";
 import { router } from "./router";
-import { stripeSecretKey, stripePublishableKey } from "./secrets";
+import { stripeSecretKey, stripePublishableKey, stripeAccountId } from "./secrets";
 
 new sst.aws.StaticSite("React", {
   path: "packages/web",
@@ -14,7 +14,8 @@ new sst.aws.StaticSite("React", {
     VITE_AUTH_URL: auth.url,
     VITE_BUCKET_URL: $interpolate`${router.url}/files`,
     VITE_STRIPE_SECRET_KEY: stripeSecretKey.value,
-    VITE_STRIPE_PUBLISHABLE_KEY: stripePublishableKey.value
+    VITE_STRIPE_PUBLISHABLE_KEY: stripePublishableKey.value,
+    VITE_STRIPE_ACCOUNT_ID: stripeAccountId.value
   },
   assets: {
     fileOptions: [

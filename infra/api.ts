@@ -1,7 +1,7 @@
 import { weddingAssets, usersTable, weddingsTable, giftRegistryTable, contributionsTable, settingsTable } from "./storage";
 import { auth } from "./auth";
 import { email } from "./email";
-import { stripeSecretKey, stripePublishableKey } from "./secrets";
+import { stripeSecretKey, stripePublishableKey, stripeAccountId } from "./secrets";
 import { router as weddingAssetsRouter } from "./router";
 
 export const api = new sst.aws.Function("Api", {
@@ -19,6 +19,7 @@ export const api = new sst.aws.Function("Api", {
     settingsTable, 
     stripeSecretKey, 
     stripePublishableKey,
+    stripeAccountId,
     weddingAssetsRouter
   ],
   // environment: {

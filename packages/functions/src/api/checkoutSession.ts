@@ -31,9 +31,9 @@ app.post(
 
       // First create a product
       const product = await stripe.products.create({
-        name: 'Wedding Gift Contribution',
+        name: `${giftId}: Wedding Gift Contribution`,
         metadata: {
-          giftId: giftId,
+          giftId: giftId
         },
       });
       console.log('Created product:', product);
@@ -61,6 +61,13 @@ app.post(
         shipping_address_collection: {
           allowed_countries: ['US', 'CA', 'GB', 'SE', 'NO', 'DK', 'FI'],
         },
+        // payment_intent_data: {
+        //   application_fee_amount: 2000,
+        //   transfer_data: {
+        //     destination: 'brideAndGroomStripeAccountId', //We mush fetch this from user database. 
+        //   },
+        //   on_behalf_of: 'brideAndGroomStripeAccountId', // Same here. 
+        // },
       });
 
       console.log('Created session:', session);
