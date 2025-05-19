@@ -40,6 +40,7 @@ interface SettingsData {
     accountEmail: string;
     notifyOnContribution: boolean;
     autoThankYou: boolean;
+    stripeAccountId?: string;
   };
   notificationSettings?: {
     emailNotifications: boolean;
@@ -94,10 +95,11 @@ export default function Settings() {
 
   // Payment settings
   const [paymentSettings, setPaymentSettings] = useState({
-    paymentMethod: "swish",
+    paymentMethod: "stripe",
     accountEmail: auth.user?.email || "",
     notifyOnContribution: true,
     autoThankYou: true,
+    stripeAccountId: null as string | null,
   })
 
   // Notification settings
@@ -115,6 +117,10 @@ export default function Settings() {
     allowGuestComments: true,
     showRegistry: true,
   })
+
+  // Add this after the other state declarations
+  const [stripeConnectStatus, setStripeConnectStatus] = useState<'not_started' | 'in_progress' | 'completed'>('not_started');
+  const [stripeAccountId, setStripeAccountId] = useState<string | null>(null);
 
   // Load settings when component mounts
   useEffect(() => {
@@ -247,6 +253,15 @@ export default function Settings() {
       }));
     }
   }, [auth.user]);
+
+  // Add this after the other useEffect hooks
+  useEffect(() => {
+    // Check if we have a Stripe account ID in the settings
+    if (paymentSettings.stripeAccountId) {
+      setStripeAccountId(paymentSettings.stripeAccountId);
+      setStripeConnectStatus('completed');
+    }
+  }, [paymentSettings.stripeAccountId]);
 
   const countryCodes = [
     { country: "Sweden", code: "+46", flag: SE },
@@ -466,6 +481,44 @@ export default function Settings() {
       }, 5000);
     } finally {
       setIsSaving(prev => ({ ...prev, privacy: false }));
+    }
+  };
+
+  const handleStripeConnect = async () => {
+    try {
+      setIsSaving(prev => ({ ...prev, payment: true }));
+      setSaveError(null);
+      
+      const response = await fetch(`${import.meta.env.VITE_API_URL}api/settings/stripe-connect`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${await auth.getToken()}`,
+        },
+        body: JSON.stringify({
+          userId: auth.user!.email,
+          email: auth.user!.email,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to start Stripe Connect onboarding");
+      }
+
+      const data = await response.json();
+      if (data.success && data.url) {
+        setStripeAccountId(data.accountId);
+        setStripeConnectStatus('in_progress');
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error("Error starting Stripe Connect:", error);
+      setSaveError("Failed to start Stripe Connect onboarding. Please try again.");
+      setTimeout(() => {
+        setSaveError(null);
+      }, 5000);
+    } finally {
+      setIsSaving(prev => ({ ...prev, payment: false }));
     }
   };
 
@@ -792,23 +845,53 @@ export default function Settings() {
                       className="grid gap-2"
                     >
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="klarna" id="klarna" />
-                        <Label htmlFor="klarna">Klarna</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="swish" id="swish" />
-                        <Label htmlFor="swish">Swish</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
                         <RadioGroupItem value="stripe" id="stripe" />
                         <Label htmlFor="stripe">Stripe</Label>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="paypal" id="paypal" />
-                        <Label htmlFor="paypal">PayPal</Label>
-                      </div>
                     </RadioGroup>
                   </div>
+
+                  {paymentSettings.paymentMethod === 'stripe' && (
+                    <div className="space-y-4">
+                      <div className="rounded-lg border p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-1">
+                            <h4 className="text-sm font-medium">Stripe Connect Account</h4>
+                            <p className="text-sm text-gray-500">
+                              {stripeConnectStatus === 'not_started' && 'Set up your Stripe account to receive payments'}
+                              {stripeConnectStatus === 'in_progress' && 'Complete your Stripe account setup'}
+                              {stripeConnectStatus === 'completed' && 'Your Stripe account is ready to receive payments'}
+                            </p>
+                          </div>
+                          {stripeConnectStatus !== 'completed' && (
+                            <Button
+                              onClick={handleStripeConnect}
+                              disabled={isSaving.payment}
+                              className="bg-pink-500 hover:bg-pink-600"
+                            >
+                              {isSaving.payment ? (
+                                <>
+                                  <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                  </svg>
+                                  Setting up...
+                                </>
+                              ) : (
+                                'Set up Stripe Account'
+                              )}
+                            </Button>
+                          )}
+                        </div>
+                        {stripeConnectStatus === 'completed' && (
+                          <div className="mt-4 flex items-center gap-2 text-sm text-green-600">
+                            <Check className="h-4 w-4" />
+                            <span>Your Stripe account is connected and ready to receive payments</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="space-y-2">
                     <Label htmlFor="accountEmail">Payment Account Email</Label>

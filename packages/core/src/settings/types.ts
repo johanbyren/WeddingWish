@@ -31,6 +31,7 @@ export const paymentSettingsSchema = z.object({
   accountEmail: z.string().email(),
   notifyOnContribution: z.boolean(),
   autoThankYou: z.boolean(),
+  stripeAccountId: z.string().optional(),
 });
 
 export const notificationSettingsSchema = z.object({

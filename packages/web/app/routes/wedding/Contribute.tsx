@@ -30,6 +30,7 @@ interface Gift {
 interface Wedding {
   weddingId: string;
   title: string;
+  userId: string;
 }
 
 export default function ContributePage() {
@@ -70,6 +71,7 @@ export default function ContributePage() {
           giftId: gift.giftId,
           amount: parseFloat(amount),
           returnUrl: `${window.location.origin}/${slug}/thank-you`,
+          userId: wedding?.userId,
         }),
       });
 

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import Stripe from "stripe";
 import { Resource } from "sst";
+import { Settings } from "@wedding-wish/core/settings";
 
 const stripe = new Stripe(Resource.STRIPE_SECRET_KEY.value, {
   apiVersion: "2025-04-30.basil",
@@ -21,13 +22,20 @@ app.post(
       giftId: z.string(),
       amount: z.number().positive(),
       returnUrl: z.string().url(),
+      userId: z.string(), // Add userId to get the connected account
     })
   ),
   async (c) => {
     try {
-      const { giftId, amount, returnUrl } = c.req.valid("json");
+      const { giftId, amount, returnUrl, userId } = c.req.valid("json");
       
-      console.log('Creating checkout session with:', { giftId, amount, returnUrl });
+      console.log('Creating checkout session with:', { giftId, amount, returnUrl, userId });
+
+      // Get the connected account ID from settings
+      const settings = await Settings.get(userId, userId);
+      if (!settings?.paymentSettings?.stripeAccountId) {
+        throw new Error("Wedding couple has not set up their Stripe account yet");
+      }
 
       // First create a product
       const product = await stripe.products.create({
@@ -45,6 +53,12 @@ app.post(
         product: product.id,
       });
       console.log('Created price:', price);
+      
+      const percentageFee = amount * 0.10; // 10% of the amount
+      const fixedFee = 5; // fixed fee of 5 kr
+      const totalFee = Math.round((percentageFee + fixedFee) * 100); // convert to cents
+
+      console.log('Total fee:', totalFee);
 
       const session = await stripe.checkout.sessions.create({
         line_items: [
@@ -61,13 +75,13 @@ app.post(
         shipping_address_collection: {
           allowed_countries: ['US', 'CA', 'GB', 'SE', 'NO', 'DK', 'FI'],
         },
-        // payment_intent_data: {
-        //   application_fee_amount: 2000,
-        //   transfer_data: {
-        //     destination: 'brideAndGroomStripeAccountId', //We mush fetch this from user database. 
-        //   },
-        //   on_behalf_of: 'brideAndGroomStripeAccountId', // Same here. 
-        // },
+        payment_intent_data: {
+          application_fee_amount: totalFee,
+          transfer_data: {
+            destination: settings.paymentSettings.stripeAccountId,
+          },
+          // on_behalf_of: settings.paymentSettings.stripeAccountId
+        },
       });
 
       console.log('Created session:', session);
