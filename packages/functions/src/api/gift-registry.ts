@@ -144,4 +144,26 @@ app.get(
     }
 );
 
+/**
+ * Delete a gift
+ */
+app.delete(
+    "/:giftId/:weddingId",
+    async (c) => {
+        try {
+            const giftId = c.req.param("giftId");
+            const weddingId = c.req.param("weddingId");
+            
+            await GiftRegistry.deleteGift(giftId, weddingId);
+            return c.json({ success: true });
+        } catch (error) {
+            console.error('Error deleting gift:', error);
+            if (error instanceof Error) {
+                return c.json({ error: error.message }, 400);
+            }
+            return c.json({ error: 'Failed to delete gift' }, 500);
+        }
+    }
+);
+
 export default app;

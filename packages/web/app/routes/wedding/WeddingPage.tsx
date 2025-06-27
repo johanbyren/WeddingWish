@@ -188,7 +188,7 @@ export default function WeddingPage() {
       <main className="flex-1 flex flex-col">
         <div className="relative h-[300px] md:h-[400px]">
           <img
-            src={`${import.meta.env.VITE_BUCKET_URL}/${wedding.photoUrls.find(url => url.includes('cover-'))}` || "/placeholder.svg?height=400&width=1200"}
+            src={wedding.photoUrls.find(url => url.includes('cover-')) || "/placeholder.svg?height=400&width=1200"}
             alt={wedding.title}
             className="object-cover w-full h-full"
           />
@@ -233,7 +233,7 @@ export default function WeddingPage() {
                       onClick={() => handleImageClick(photoUrl)}
                     >
                       <img
-                        src={`${import.meta.env.VITE_BUCKET_URL}/${photoUrl}`}
+                        src={photoUrl}
                         alt={`Wedding photo ${index}`}
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                       />
@@ -316,7 +316,7 @@ export default function WeddingPage() {
                 <ChevronLeft className="h-6 w-6" />
               </Button>
               <img
-                src={`${import.meta.env.VITE_BUCKET_URL}/${selectedImage}`}
+                src={selectedImage}
                 alt="Full size wedding photo"
                 className="w-auto h-auto max-w-full max-h-[90vh] object-contain"
               />

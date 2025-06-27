@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { Button } from "~/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card"
@@ -56,6 +56,37 @@ export default function ManageGifts() {
   const [isEditing, setIsEditing] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [weddingId, setWeddingId] = useState<string>("")
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState<string | null>(null)
+
+  // Load wedding ID when component mounts
+  useEffect(() => {
+    const loadWeddingId = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}api/wedding/current`, {
+          headers: {
+            Authorization: `Bearer ${await auth.getToken()}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch wedding ID');
+        }
+
+        const data = await response.json();
+        setWeddingId(data.id);
+      } catch (error) {
+        console.error('Error loading wedding ID:', error);
+        setSaveError('Failed to load wedding ID. Please try again.');
+        setTimeout(() => {
+          setSaveError(null);
+        }, 5000);
+      }
+    };
+
+    loadWeddingId();
+  }, [auth]);
 
   const handleNewItemChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -201,6 +232,37 @@ export default function ManageGifts() {
       // You might want to show an error message to the user here
     }
   }
+
+  const deleteGift = async (giftId: string) => {
+    try {
+      setIsDeleting(giftId);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}api/gift-registry/${giftId}/${weddingId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${await auth.getToken()}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete gift');
+      }
+
+      // Remove the gift from the local state
+      setGiftItems(prev => prev.filter(item => item.id !== giftId));
+      setSaveSuccess(true);
+      setTimeout(() => {
+        setSaveSuccess(false);
+      }, 3000);
+    } catch (error) {
+      console.error('Error deleting gift:', error);
+      setSaveError('Failed to delete gift. Please try again.');
+      setTimeout(() => {
+        setSaveError(null);
+      }, 5000);
+    } finally {
+      setIsDeleting(null);
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -383,8 +445,22 @@ export default function ManageGifts() {
                             <path d="m15 5 4 4" />
                           </svg>
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => removeItem(item.id)}>
-                          <Trash2 className="h-4 w-4" />
+                        <Button
+                          variant="destructive"
+                          onClick={() => deleteGift(item.id)}
+                          disabled={isDeleting === item.id}
+                        >
+                          {isDeleting === item.id ? (
+                            <>
+                              <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              Deleting...
+                            </>
+                          ) : (
+                            'Delete'
+                          )}
                         </Button>
                       </div>
                     </div>

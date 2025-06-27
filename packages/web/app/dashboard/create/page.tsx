@@ -918,6 +918,7 @@ export default function CreateWeddingPage() {
                             <ImageUploader 
                               onImageSelected={handleAdditionalPhotoAdd}
                               className="w-full h-full flex items-center justify-center"
+                              showPreview={false}
                             />
                           </div>
                         </div>

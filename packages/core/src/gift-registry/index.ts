@@ -11,6 +11,7 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 import { Resource } from "sst/resource";
 import { schema, GiftRegistryType } from "./types";
+import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 const client = new DynamoDBClient({ region: "eu-north-1" });
 const ddb = DynamoDBDocumentClient.from(client);
@@ -262,4 +263,54 @@ export namespace GiftRegistry {
             );
         }
     };
+
+    /**
+     * Delete a gift and its associated image
+     * @param giftId The ID of the gift to delete
+     * @param weddingId The ID of the wedding
+     * @throws {GiftRegistryError} If DynamoDB operations fail
+     */
+    export const deleteGift = async (giftId: string, weddingId: string) => {
+        try {
+            // First get the gift to get the image URL
+            const gift = await getById(giftId, weddingId);
+            if (!gift) {
+                throw new GiftRegistryError(`Gift with id ${giftId} does not exist`);
+            }
+
+            // Delete the gift from DynamoDB
+            const command = new DeleteCommand({
+                TableName: Resource.GiftRegistryTable.name,
+                Key: {
+                    giftId,
+                    weddingId
+                }
+            });
+
+            await ddb.send(command);
+
+            // If the gift has an image, delete it from S3
+            if (gift.imageUrl) {
+                // Extract the key from the CloudFront URL or use the key directly
+                const key = gift.imageUrl.includes('gifts/') 
+                    ? gift.imageUrl.split('/').slice(-2).join('/') // Extract from CloudFront URL
+                    : gift.imageUrl; // Use the key directly
+
+                const s3Client = new S3Client({ region: "eu-north-1" });
+                const deleteCommand = new DeleteObjectCommand({
+                    Bucket: Resource.WeddingAssets.name,
+                    Key: `gifts/${key}`
+                });
+
+                await s3Client.send(deleteCommand);
+            }
+
+            return true;
+        } catch (error) {
+            throw new GiftRegistryError(
+                `Failed to delete gift ${giftId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                error
+            );
+        }
+    }
 }

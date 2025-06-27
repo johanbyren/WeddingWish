@@ -6,9 +6,10 @@ interface ImageUploaderProps {
   onImageSelected: (file: File) => void
   className?: string
   preview?: string
+  showPreview?: boolean
 }
 
-export function ImageUploader({ onImageSelected, className, preview: initialPreview }: ImageUploaderProps) {
+export function ImageUploader({ onImageSelected, className, preview: initialPreview, showPreview = true }: ImageUploaderProps) {
   const [preview, setPreview] = useState<string | null>(initialPreview || null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -42,7 +43,7 @@ export function ImageUploader({ onImageSelected, className, preview: initialPrev
         <ImagePlus className="mr-2 h-4 w-4" />
         Upload Image
       </Button>
-      {preview && (
+      {showPreview && preview && (
         <div className="mt-2">
           <img
             src={preview}

@@ -163,7 +163,7 @@ export default function WeddingDetails() {
                         <CardFooter className="flex gap-2 justify-between">
                           <div className="flex gap-2">
                             <Button variant="outline" size="sm" asChild>
-                              <Link to={`/${weddings[0].weddingId}`}>View Page</Link>
+                              <Link to={`/${weddings[0].weddingId}`} target="_blank" rel="noopener noreferrer">View Page</Link>
                             </Button>
                             <Button variant="outline" size="sm" asChild>
                               <Link to={`/dashboard/create?weddingId=${weddings[0].weddingId}`}>Edit</Link>

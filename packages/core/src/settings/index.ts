@@ -52,14 +52,32 @@ export namespace Settings {
         // Get existing settings
         const existingSettings = await get(settings.userId, settings.email);
         
-        // Merge existing settings with new settings
+        // Only update the fields that are provided in the settings parameter
         const newSettings = {
             ...existingSettings,
-            ...settings,
+            userId: settings.userId,
+            email: settings.email,
             updatedAt: now,
             // Only set createdAt if it's a new record
             createdAt: existingSettings?.createdAt || now,
         };
+
+        // Only update the specific settings sections that are provided
+        if (settings.accountSettings) {
+            newSettings.accountSettings = settings.accountSettings;
+        }
+        if (settings.pageSettings) {
+            newSettings.pageSettings = settings.pageSettings;
+        }
+        if (settings.paymentSettings) {
+            newSettings.paymentSettings = settings.paymentSettings;
+        }
+        if (settings.notificationSettings) {
+            newSettings.notificationSettings = settings.notificationSettings;
+        }
+        if (settings.privacySettings) {
+            newSettings.privacySettings = settings.privacySettings;
+        }
 
         console.log('newSettings: ', newSettings)
 
