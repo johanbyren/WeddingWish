@@ -4,9 +4,10 @@ import { settingsSchema, Settings } from "@wedding-wish/core/settings";
 import { zValidator } from "@hono/zod-validator";
 import Stripe from "stripe";
 import { Resource } from "sst";
+import { SwishDonations } from "@wedding-wish/core/swish";
 
 const stripe = new Stripe(Resource.STRIPE_SECRET_KEY.value, {
-  apiVersion: "2025-04-30.basil",
+  apiVersion: "2023-10-16",
 });
 
 const app = new Hono();
@@ -127,6 +128,29 @@ app.post("/stripe-connect",
         } catch (error) {
             console.error("Error creating Stripe Connect account:", error);
             return c.json({ error: "Failed to create Stripe Connect account" }, 500);
+        }
+    }
+);
+
+app.post("/swish-donation",
+    zValidator(
+        "json",
+        z.object({
+            weddingId: z.string(),
+            giftId: z.string(),
+            amount: z.number(),
+            donorName: z.string().optional(),
+            message: z.string().optional(),
+            phone: z.string().optional(),
+        }),
+    ),
+    async (c) => {
+        try {
+            const donation = await c.req.json();
+            await SwishDonations.save(donation);
+            return c.json({ success: true });
+        } catch (error) {
+            return c.json({ error: "Failed to save Swish donation" }, 500);
         }
     }
 );

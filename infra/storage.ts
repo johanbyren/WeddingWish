@@ -124,6 +124,22 @@ export const settingsTable = new sst.aws.Dynamo("SettingsTable", {
     }
 });
 
+export const swishDonationsTable = new sst.aws.Dynamo("SwishDonationsTable", {
+    fields: {
+        donationId: "string",
+        weddingId: "string",
+        // giftId: "string",
+        // amount: "number",
+        // donorName: "string",
+        // message: "string",
+        // phone: "string",
+        // createdAt: "string",
+    },
+    primaryIndex: {
+        hashKey: "donationId",
+        rangeKey: "weddingId"
+    }
+});
 
 // Create S3 bucket for storing wedding assets
 export const weddingAssets = new sst.aws.Bucket("WeddingAssets", {

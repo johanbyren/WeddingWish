@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { Wedding } from "@wedding-wish/core/wedding";
 import { Photo } from "@wedding-wish/core/photo";
+import { Settings } from "@wedding-wish/core/settings";
 import { zValidator } from "@hono/zod-validator";
 import { Resource } from "sst";
 
@@ -40,9 +41,23 @@ app.get(
                 })
             );
 
+            // Get user's payment settings
+            let paymentSettings = null;
+            try {
+                console.log("Fetching payment settings for userId:", wedding.userId);
+                const userSettings = await Settings.get(wedding.userId, wedding.userId);
+                console.log("User settings fetched:", userSettings);
+                paymentSettings = userSettings?.paymentSettings || null;
+                console.log("Payment settings extracted:", paymentSettings);
+            } catch (error) {
+                console.error("Error fetching payment settings:", error);
+                // Continue without payment settings if there's an error
+            }
+
             return c.json({
                 ...wedding,
-                photoUrls
+                photoUrls,
+                paymentSettings
             });
         } catch (error) {
             console.error("API: Error fetching wedding by id:", error);
@@ -83,9 +98,23 @@ app.get(
                 })
             );
 
+            // Get user's payment settings
+            let paymentSettings = null;
+            try {
+                console.log("Fetching payment settings for userId:", wedding.userId);
+                const userSettings = await Settings.get(wedding.userId, wedding.userId);
+                console.log("User settings fetched:", userSettings);
+                paymentSettings = userSettings?.paymentSettings || null;
+                console.log("Payment settings extracted:", paymentSettings);
+            } catch (error) {
+                console.error("Error fetching payment settings:", error);
+                // Continue without payment settings if there's an error
+            }
+
             return c.json({
                 ...wedding,
-                photoUrls
+                photoUrls,
+                paymentSettings
             });
         } catch (error) {
             console.error("Error fetching wedding:", error);

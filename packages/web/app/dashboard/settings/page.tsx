@@ -41,6 +41,7 @@ interface SettingsData {
     notifyOnContribution: boolean;
     autoThankYou: boolean;
     stripeAccountId?: string;
+    swishPhoneNumber?: string;
   };
   notificationSettings?: {
     emailNotifications: boolean;
@@ -99,7 +100,8 @@ export default function Settings() {
     accountEmail: auth.user?.email || "",
     notifyOnContribution: true,
     autoThankYou: true,
-    stripeAccountId: null as string | null,
+    stripeAccountId: undefined as string | undefined,
+    swishPhoneNumber: "",
   })
 
   // Notification settings
@@ -347,7 +349,7 @@ export default function Settings() {
             ...accountSettings,
             weddingDate: accountSettings.weddingDate.toISOString(),
           },
-          paymentSettings,
+          paymentSettings: preparePaymentSettingsForSave(),
           notificationSettings,
           privacySettings,
         }),
@@ -386,7 +388,7 @@ export default function Settings() {
         body: JSON.stringify({
           userId: auth.user!.email,
           email: auth.user!.email,
-          paymentSettings,
+          paymentSettings: preparePaymentSettingsForSave(),
         }),
       });
 
@@ -520,6 +522,41 @@ export default function Settings() {
     } finally {
       setIsSaving(prev => ({ ...prev, payment: false }));
     }
+  };
+
+  // Helper function to prepare payment settings for saving
+  const preparePaymentSettingsForSave = () => {
+    const paymentSettingsToSave: any = {
+      paymentMethod: paymentSettings.paymentMethod,
+      accountEmail: paymentSettings.accountEmail,
+      notifyOnContribution: paymentSettings.notifyOnContribution,
+      autoThankYou: paymentSettings.autoThankYou,
+    };
+    
+    // Only include stripeAccountId if payment method is stripe and it has a value
+    if (paymentSettings.paymentMethod === 'stripe' && paymentSettings.stripeAccountId) {
+      paymentSettingsToSave.stripeAccountId = paymentSettings.stripeAccountId;
+    }
+    
+    // Only include swishPhoneNumber if payment method is swish and it has a value
+    if (paymentSettings.paymentMethod === 'swish' && paymentSettings.swishPhoneNumber && paymentSettings.swishPhoneNumber.trim()) {
+      paymentSettingsToSave.swishPhoneNumber = paymentSettings.swishPhoneNumber.trim();
+    }
+    
+    // Explicitly exclude fields that don't apply to the selected payment method
+    if (paymentSettings.paymentMethod === 'swish') {
+      // Remove any Stripe-related fields when Swish is selected
+      delete paymentSettingsToSave.stripeAccountId;
+    } else if (paymentSettings.paymentMethod === 'stripe') {
+      // Remove any Swish-related fields when Stripe is selected
+      delete paymentSettingsToSave.swishPhoneNumber;
+    }
+    
+    // Debug logging
+    console.log('Original payment settings:', paymentSettings);
+    console.log('Prepared payment settings for save:', paymentSettingsToSave);
+    
+    return paymentSettingsToSave;
   };
 
   return (
@@ -848,6 +885,10 @@ export default function Settings() {
                         <RadioGroupItem value="stripe" id="stripe" />
                         <Label htmlFor="stripe">Stripe</Label>
                       </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="swish" id="swish" />
+                        <Label htmlFor="swish">Swish (private phone number)</Label>
+                      </div>
                     </RadioGroup>
                   </div>
 
@@ -890,6 +931,20 @@ export default function Settings() {
                           </div>
                         )}
                       </div>
+                    </div>
+                  )}
+
+                  {paymentSettings.paymentMethod === 'swish' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="swishPhoneNumber">Swish Phone Number</Label>
+                      <Input
+                        id="swishPhoneNumber"
+                        type="tel"
+                        placeholder="e.g. 0701234567"
+                        value={paymentSettings.swishPhoneNumber}
+                        onChange={e => setPaymentSettings(prev => ({ ...prev, swishPhoneNumber: e.target.value }))}
+                      />
+                      <p className="text-xs text-gray-500">Enter your private Swish phone number (not a business number).</p>
                     </div>
                   )}
 

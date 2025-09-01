@@ -19,6 +19,7 @@
     "@stripe/react-stripe-js": "^3.7.0",
     "@stripe/stripe-js": "^7.3.0",
     "aws-cdk-lib": "^2.195.0",
+    "qrcode.react": "^4.2.0",
     "sst": "^3.14.24",
     "stripe": "^18.1.0"
   },

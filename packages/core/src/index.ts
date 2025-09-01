@@ -4,3 +4,4 @@ export * from './wedding';
 export * from './photo';
 export * from './settings';
 export * from './gift-registry';
+export * from './swish';

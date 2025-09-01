@@ -17,7 +17,8 @@
     "./settings": "./src/settings/index.ts",
     "./settings/types": "./src/settings/types.ts",
     "./gift-registry": "./src/gift-registry/index.ts",
-    "./gift-registry/types": "./src/gift-registry/types.ts"
+    "./gift-registry/types": "./src/gift-registry/types.ts",
+    "./swish": "./src/swish/index.ts"
   },
   "dependencies": {
     "sst": "*"

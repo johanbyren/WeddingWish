@@ -47,6 +47,10 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Dynamo"
     }
+    "SwishDonationsTable": {
+      "name": string
+      "type": "sst.aws.Dynamo"
+    }
     "Users": {
       "name": string
       "type": "sst.aws.Dynamo"

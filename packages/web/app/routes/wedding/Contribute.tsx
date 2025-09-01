@@ -7,6 +7,7 @@ import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { Slider } from "~/components/ui/slider"
 import { HeartIcon } from "lucide-react"
+import { QRCodeCanvas } from 'qrcode.react';
 
 import {loadStripe} from '@stripe/stripe-js';
 import {
@@ -46,6 +47,12 @@ export default function ContributePage() {
   const [error, setError] = useState<string | null>(null)
   const [showCheckout, setShowCheckout] = useState(false)
   const [clientSecret, setClientSecret] = useState<string | null>(null)
+  const [showSwishQR, setShowSwishQR] = useState(false);
+  const [swishQRString, setSwishQRString] = useState('');
+  const [donorName, setDonorName] = useState("");
+  const [donorMessage, setDonorMessage] = useState("");
+  const [swishDonationSaved, setSwishDonationSaved] = useState(false);
+  const [swishDonationError, setSwishDonationError] = useState<string | null>(null);
 
   const handleAmountChange = (value: string) => {
     setAmount(value);
@@ -87,6 +94,27 @@ export default function ContributePage() {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  // Helper to get swish phone number from wedding.paymentSettings
+  const swishPhoneNumber = (wedding as any)?.paymentSettings?.swishPhoneNumber || '';
+  const paymentMethod = (wedding as any)?.paymentSettings?.paymentMethod || 'stripe';
+
+  // Debug logging to verify payment method detection
+  console.log('Payment method detected:', paymentMethod);
+  console.log('Swish phone number:', swishPhoneNumber);
+  console.log('Wedding payment settings:', (wedding as any)?.paymentSettings);
+
+  const handleSwishClick = () => {
+    if (!gift?.name || !swishPhoneNumber) return;
+    // Remove any leading + from phone number and ensure country code is present
+    let phone = swishPhoneNumber.replace(/^\+/, '');
+    // If phone starts with 0, replace with 46
+    if (phone.startsWith('0')) phone = '46' + phone.slice(1);
+    // Compose QR string
+    const qr = `C123SE;${phone};${amount};SEK;Wedding gift: ${gift.name}`;
+    setSwishQRString(qr);
+    setShowSwishQR(true);
   };
 
   const options = { clientSecret };
@@ -184,19 +212,32 @@ export default function ContributePage() {
               <div className="flex flex-col items-center gap-1 text-sm mb-4">
                 <span>Already contributed: <strong>${gift.totalContributed}</strong></span>
               </div>
-              <div className="flex items-center gap-2 mt-2">
-                <img src="/stripe_logo.png" alt="Stripe" className="h-5" />
-                <span className="text-xs text-gray-500">Secure payment by Stripe</span>
-              </div>
+              {paymentMethod === 'swish' ? (
+                <div className="flex items-center gap-2 mt-2">
+                  <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">S</span>
+                  </div>
+                  <span className="text-xs text-gray-500">Secure payment via Swish</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 mt-2">
+                  <img src="/stripe_logo.png" alt="Stripe" className="h-5" />
+                  <span className="text-xs text-gray-500">Secure payment by Stripe</span>
+                </div>
+              )}
               <p className="text-xs text-gray-500 mt-1 text-center">
-                Your payment is encrypted and securely processed. We never store your card details.
+                {paymentMethod === 'swish' 
+                  ? 'Scan the QR code with your Swish app to complete your contribution.'
+                  : 'Your payment is encrypted and securely processed. We never store your card details.'
+                }
               </p>
             </div>
 
             {/* Right: Payment Section */}
             <div className="rounded-xl shadow bg-white p-6 flex flex-col items-center">
               <div className="w-full max-w-md space-y-6">
-                {!showCheckout ? (
+                {paymentMethod === 'swish' ? (
+                  // Swish Payment Flow
                   <>
                     <div className="space-y-4">
                       <Label htmlFor="amount">Contribution Amount (SEK)</Label>
@@ -206,7 +247,7 @@ export default function ContributePage() {
                           type="number"
                           min="1"
                           value={amount}
-                          onChange={(e) => handleAmountChange(e.target.value)}
+                          onChange={(e) => { handleAmountChange(e.target.value); setShowSwishQR(false); }}
                           className="w-full"
                         />
                         <Slider
@@ -214,26 +255,112 @@ export default function ContributePage() {
                           min={1}
                           max={1000}
                           step={1}
-                          onValueChange={(value: number[]) => handleAmountChange(value[0].toString())}
+                          onValueChange={(value: number[]) => { handleAmountChange(value[0].toString()); setShowSwishQR(false); }}
                         />
                       </div>
                     </div>
                     <Button 
-                      onClick={handlePayClick}
-                      disabled={isProcessing}
-                      className="w-full"
+                      onClick={handleSwishClick}
+                      disabled={isProcessing || !swishPhoneNumber}
+                      className="w-full bg-green-500 hover:bg-green-600"
                     >
-                      {isProcessing ? 'Processing...' : 'Pay Now'}
+                      {isProcessing ? 'Processing...' : 'Show Swish QR Code'}
                     </Button>
+                    {showSwishQR && swishQRString && (
+                      <div className="mt-6 flex flex-col items-center">
+                        <QRCodeCanvas value={swishQRString} size={200} />
+                        <p className="mt-4 text-center text-gray-700">Scan this QR code with your Swish app to complete your donation.<br/>Phone: <b>{swishPhoneNumber}</b><br/>Amount: <b>{amount} SEK</b><br/>Message: <b>Wedding gift: {gift.name}</b></p>
+                        <div className="mt-4 w-full max-w-xs">
+                          <Label htmlFor="donorName">Your Name (optional)</Label>
+                          <Input
+                            id="donorName"
+                            value={donorName}
+                            onChange={e => setDonorName(e.target.value)}
+                            className="mb-2"
+                          />
+                          <Label htmlFor="donorMessage">Message (optional)</Label>
+                          <Input
+                            id="donorMessage"
+                            value={donorMessage}
+                            onChange={e => setDonorMessage(e.target.value)}
+                            className="mb-2"
+                          />
+                          <Button
+                            className="w-full mt-2 bg-pink-500 hover:bg-pink-600"
+                            onClick={async () => {
+                              setSwishDonationSaved(false);
+                              setSwishDonationError(null);
+                              try {
+                                const res = await fetch("/api/swish-donation", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({
+                                    weddingId: wedding?.weddingId,
+                                    giftId: gift?.giftId,
+                                    amount: parseFloat(amount),
+                                    donorName,
+                                    message: donorMessage,
+                                    phone: swishPhoneNumber,
+                                  })
+                                });
+                                if (!res.ok) throw new Error("Failed to save Swish donation");
+                                setSwishDonationSaved(true);
+                              } catch (err) {
+                                setSwishDonationError("Could not save your donation. Please try again.");
+                              }
+                            }}
+                          >
+                            I've completed my Swish payment
+                          </Button>
+                          {swishDonationSaved && <p className="text-green-600 mt-2">Thank you! Your donation has been registered.</p>}
+                          {swishDonationError && <p className="text-red-600 mt-2">{swishDonationError}</p>}
+                        </div>
+                      </div>
+                    )}
                   </>
                 ) : (
-                  <div className="w-full">
-                    {clientSecret && (
-                      <EmbeddedCheckoutProvider stripe={stripePromise} options={options}>
-                        <EmbeddedCheckout />
-                      </EmbeddedCheckoutProvider>
+                  // Stripe Payment Flow
+                  <>
+                    {!showCheckout ? (
+                      <>
+                        <div className="space-y-4">
+                          <Label htmlFor="amount">Contribution Amount (SEK)</Label>
+                          <div className="space-y-2">
+                            <Input
+                              id="amount"
+                              type="number"
+                              min="1"
+                              value={amount}
+                              onChange={(e) => handleAmountChange(e.target.value)}
+                              className="w-full"
+                            />
+                            <Slider
+                              value={[parseFloat(amount)]}
+                              min={1}
+                              max={1000}
+                              step={1}
+                              onValueChange={(value: number[]) => handleAmountChange(value[0].toString())}
+                            />
+                          </div>
+                        </div>
+                        <Button 
+                          onClick={handlePayClick}
+                          disabled={isProcessing}
+                          className="w-full"
+                        >
+                          {isProcessing ? 'Processing...' : 'Pay Now'}
+                        </Button>
+                      </>
+                    ) : (
+                      <div className="w-full">
+                        {clientSecret && (
+                          <EmbeddedCheckoutProvider stripe={stripePromise} options={options}>
+                            <EmbeddedCheckout />
+                          </EmbeddedCheckoutProvider>
+                        )}
+                      </div>
                     )}
-                  </div>
+                  </>
                 )}
               </div>
             </div>
