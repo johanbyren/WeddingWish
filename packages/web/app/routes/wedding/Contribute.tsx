@@ -8,6 +8,7 @@ import { Label } from "~/components/ui/label"
 import { Slider } from "~/components/ui/slider"
 import { HeartIcon } from "lucide-react"
 import { QRCodeCanvas } from 'qrcode.react';
+import { useTranslation } from "~/context/translation"
 
 import {loadStripe} from '@stripe/stripe-js';
 import {
@@ -36,6 +37,7 @@ interface Wedding {
 
 export default function ContributePage() {
   const { slug, giftId } = useParams()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [amount, setAmount] = useState("50")
   const [name, setName] = useState("")
@@ -235,9 +237,9 @@ export default function ContributePage() {
           <div className="max-w-4xl mx-auto grid gap-8 md:grid-cols-2 items-start">
             {/* Left: Info/Context Section */}
             <div className="rounded-xl shadow bg-white p-6 flex flex-col items-center">
-              <h3 className="text-xl font-bold mb-2 text-center">Contribute to the Wedding Couple</h3>
+              <h3 className="text-xl font-bold mb-2 text-center">{t('contribute.title')}</h3>
               <p className="text-gray-600 mb-4 text-center">
-                Your contribution will go directly to the couple and help make their day even more special.
+{t('contribute.description')}
               </p>
               <div className="flex flex-col items-center gap-1 text-sm mb-4">
                 <span>Already contributed: <strong>${gift.totalContributed}</strong></span>

@@ -267,10 +267,6 @@ export default function ManageGifts() {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="px-4 lg:px-6 h-14 flex items-center border-b">
-        <Link to="/" className="flex items-center gap-2 font-semibold">
-          <HeartIcon className="h-6 w-6 text-pink-500" />
-          <span>WeddingWish</span>
-        </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
           <Button variant="ghost" size="sm" asChild>
             <Link to="/dashboard" className="flex items-center">

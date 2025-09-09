@@ -3,6 +3,7 @@ import { Button } from "~/components/ui/button"
 import { Progress } from "~/components/ui/progress"
 import { HeartIcon, PartyPopper } from "lucide-react"
 import { useState, useEffect } from "react"
+import { useTranslation } from "~/context/translation"
 
 interface Gift {
   id: string;
@@ -17,6 +18,7 @@ interface Gift {
 
 export default function ThankYouPage() {
   const { slug } = useParams()
+  const { t } = useTranslation()
   const location = useLocation()
   const [gift, setGift] = useState<Gift | null>(null)
   const [loading, setLoading] = useState(true)
@@ -82,10 +84,9 @@ export default function ThankYouPage() {
         <div className="container px-4 md:px-6 mx-auto">
           <div className="max-w-2xl mx-auto text-center">
             <PartyPopper className="h-16 w-16 mx-auto text-pink-500 mb-6" />
-            <h1 className="text-3xl font-bold mb-4">Thank You for Your Contribution!</h1>
+            <h1 className="text-3xl font-bold mb-4">{t('thankYou.title')}</h1>
             <p className="text-gray-700 mb-8">
-              Your generosity means the world to us. Your contribution will help make our special day even more memorable.
-              We can't wait to celebrate with you!
+{t('thankYou.description')}
             </p>
             
             {/* Progress Bar Section */}

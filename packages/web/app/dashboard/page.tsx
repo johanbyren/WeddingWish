@@ -2,9 +2,11 @@ import { Link, Outlet, useLocation } from "react-router-dom"
 import { Button } from "~/components/ui/button"
 import { HeartIcon, Gift, Calendar, Settings, LogOut, Plus } from "lucide-react"
 import { useAuth } from "~/context/auth";
+import { LanguageSelector, useTranslation } from "~/context/translation";
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
+  const { t } = useTranslation();
   const location = useLocation();
 
   return (
@@ -14,11 +16,12 @@ export default function Dashboard() {
           <HeartIcon className="h-6 w-6 text-pink-500" />
           <span>WeddingWish{user ? ` - ${user.email}` : ''}</span>
         </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
-            <Button variant="ghost" size="sm" onClick={logout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
+        <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
+          <LanguageSelector />
+          <Button variant="ghost" size="sm" onClick={logout}>
+            <LogOut className="h-4 w-4 mr-2" />
+            {t('dashboard.logout')}
+          </Button>
         </nav>
       </header>
       <div className="flex flex-1">
@@ -30,7 +33,7 @@ export default function Dashboard() {
                 className={`w-full justify-start ${location.pathname === "/dashboard" ? "bg-accent" : ""}`}
               >
                 <Calendar className="h-4 w-4 mr-2" />
-                Wedding Details
+                {t('dashboard.weddingDetails')}
               </Button>
             </Link>
             <Link to="/dashboard/gifts">
@@ -39,7 +42,7 @@ export default function Dashboard() {
                 className={`w-full justify-start ${location.pathname === "/dashboard/gifts" ? "bg-accent" : ""}`}
               >
                 <Gift className="h-4 w-4 mr-2" />
-                Gift Registry
+                {t('dashboard.giftRegistry')}
               </Button>
             </Link>
             <Link to="/dashboard/create">
@@ -48,7 +51,7 @@ export default function Dashboard() {
                 className={`w-full justify-start ${location.pathname === "/dashboard/create" ? "bg-accent" : ""}`}
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Create New Page
+                {t('dashboard.createWedding')}
               </Button>
             </Link>
             <Link to="/dashboard/settings">
@@ -57,7 +60,7 @@ export default function Dashboard() {
                 className={`w-full justify-start ${location.pathname === "/dashboard/settings" ? "bg-accent" : ""}`}
               >
                 <Settings className="h-4 w-4 mr-2" />
-                Settings
+                {t('dashboard.settings')}
               </Button>
             </Link>
           </nav>

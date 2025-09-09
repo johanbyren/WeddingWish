@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { useAuth } from "~/context/auth"
+import { useTranslation } from "~/context/translation"
 import { Button } from "~/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
@@ -61,6 +62,7 @@ const CACHE_KEY = 'settings_cache';
 
 export default function Settings() {
   const auth = useAuth();
+  const { t } = useTranslation();
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [countrySearch, setCountrySearch] = useState("")
@@ -190,7 +192,7 @@ export default function Settings() {
         });
 
         if (!response.ok) {
-          throw new Error("Failed to fetch settings");
+          throw new Error(t('settings.failedToFetch'));
         }
 
         const data = await response.json();
@@ -233,7 +235,7 @@ export default function Settings() {
         }
       } catch (error) {
         console.error("Error loading settings:", error);
-        setSaveError("Failed to load settings. Please try again.");
+        setSaveError(t('settings.failedToLoad'));
         setTimeout(() => {
           setSaveError(null);
         }, 5000);
@@ -312,7 +314,7 @@ export default function Settings() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to save account settings");
+        throw new Error(t('settings.failedToSaveAccount'));
       }
 
       clearCache(CACHE_KEY);
@@ -322,7 +324,7 @@ export default function Settings() {
       }, 5000);
     } catch (error) {
       console.error("Error saving account settings:", error);
-      setSaveError("Failed to save account settings. Please try again.");
+      setSaveError(t('settings.failedToSaveAccountError'));
       setTimeout(() => {
         setSaveError(null);
       }, 5000);
@@ -356,7 +358,7 @@ export default function Settings() {
       });
 
       if (!settingsResponse.ok) {
-        throw new Error("Failed to save all settings");
+        throw new Error(t('settings.failedToSaveAll'));
       }
 
       clearCache(CACHE_KEY);
@@ -366,7 +368,7 @@ export default function Settings() {
       }, 5000);
     } catch (error) {
       console.error("Error saving all settings:", error);
-      setSaveError(error instanceof Error ? error.message : "Failed to save settings. Please try again.");
+      setSaveError(error instanceof Error ? error.message : t('settings.failedToSaveAllError'));
       setTimeout(() => {
         setSaveError(null);
       }, 5000);
@@ -393,7 +395,7 @@ export default function Settings() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to save payment settings");
+        throw new Error(t('settings.failedToSavePayment'));
       }
 
       clearCache(CACHE_KEY);
@@ -403,7 +405,7 @@ export default function Settings() {
       }, 5000);
     } catch (error) {
       console.error("Error saving payment settings:", error);
-      setSaveError("Failed to save payment settings. Please try again.");
+      setSaveError(t('settings.failedToSavePaymentError'));
       setTimeout(() => {
         setSaveError(null);
       }, 5000);
@@ -430,7 +432,7 @@ export default function Settings() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to save notification settings");
+        throw new Error(t('settings.failedToSaveNotifications'));
       }
 
       clearCache(CACHE_KEY);
@@ -440,7 +442,7 @@ export default function Settings() {
       }, 5000);
     } catch (error) {
       console.error("Error saving notification settings:", error);
-      setSaveError("Failed to save notification settings. Please try again.");
+      setSaveError(t('settings.failedToSaveNotificationsError'));
       setTimeout(() => {
         setSaveError(null);
       }, 5000);
@@ -467,7 +469,7 @@ export default function Settings() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to save privacy settings");
+        throw new Error(t('settings.failedToSavePrivacy'));
       }
 
       clearCache(CACHE_KEY);
@@ -477,7 +479,7 @@ export default function Settings() {
       }, 5000);
     } catch (error) {
       console.error("Error saving privacy settings:", error);
-      setSaveError("Failed to save privacy settings. Please try again.");
+      setSaveError(t('settings.failedToSavePrivacyError'));
       setTimeout(() => {
         setSaveError(null);
       }, 5000);
@@ -504,7 +506,7 @@ export default function Settings() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to start Stripe Connect onboarding");
+        throw new Error(t('settings.failedToStartStripe'));
       }
 
       const data = await response.json();
@@ -515,7 +517,7 @@ export default function Settings() {
       }
     } catch (error) {
       console.error("Error starting Stripe Connect:", error);
-      setSaveError("Failed to start Stripe Connect onboarding. Please try again.");
+      setSaveError(t('settings.failedToStartStripeError'));
       setTimeout(() => {
         setSaveError(null);
       }, 5000);
@@ -562,7 +564,7 @@ export default function Settings() {
   return (
     <div className="p-4 md:p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Settings</h1>
+        <h1 className="text-2xl font-bold">{t('settings.title')}</h1>
         <Button 
           onClick={saveAllSettings} 
           className="bg-pink-500 hover:bg-pink-600 min-w-[140px]"
@@ -577,7 +579,7 @@ export default function Settings() {
               Saving...
             </>
           ) : (
-            'Save All'
+            t('settings.saveAll')
           )}
         </Button>
       </div>
@@ -600,10 +602,10 @@ export default function Settings() {
 
       <Tabs defaultValue="account" className="space-y-4">
         <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          <TabsTrigger value="account">Account</TabsTrigger>
-          <TabsTrigger value="payment">Payment</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="privacy">Privacy</TabsTrigger>
+            <TabsTrigger value="account">{t('settings.account')}</TabsTrigger>
+            <TabsTrigger value="payment">{t('settings.payment')}</TabsTrigger>
+            <TabsTrigger value="notifications">{t('settings.notifications')}</TabsTrigger>
+            <TabsTrigger value="privacy">{t('settings.privacy')}</TabsTrigger>
         </TabsList>
 
         <div className="relative">
@@ -624,19 +626,19 @@ export default function Settings() {
             <TabsContent value="account">
               <Card>
                 <CardHeader>
-                  <CardTitle>Account Settings</CardTitle>
-                  <CardDescription>Manage your account details and password</CardDescription>
+                  <CardTitle>{t('settings.accountSettings')}</CardTitle>
+                  <CardDescription>{t('settings.personalInfo')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Profile Information</h3>
+                    <h3 className="text-lg font-medium">{t('settings.personalInfo')}</h3>
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
-                        <Label htmlFor="name">Full Name</Label>
+                        <Label htmlFor="name">{t('form.name')}</Label>
                         <Input id="name" name="name" value={accountSettings.name} onChange={handleAccountChange} />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="email">Email Address</Label>
+                        <Label htmlFor="email">{t('form.email')}</Label>
                         <Input
                           id="email"
                           name="email"
@@ -645,13 +647,13 @@ export default function Settings() {
                           onChange={handleAccountChange}
                           disabled
                         />
-                        <p className="text-xs text-gray-500">Email address cannot be changed as it is used as your account identifier</p>
+                        <p className="text-xs text-gray-500">{t('settings.emailCannotBeChanged')}</p>
                       </div>
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
-                        <Label htmlFor="partner1Name">First Partner</Label>
+                        <Label htmlFor="partner1Name">{t('settings.partner1Name')}</Label>
                         <Input 
                           id="partner1Name" 
                           name="partner1Name" 
@@ -660,7 +662,7 @@ export default function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="partner2Name">Second Partner</Label>
+                        <Label htmlFor="partner2Name">{t('settings.partner2Name')}</Label>
                         <Input 
                           id="partner2Name" 
                           name="partner2Name" 
@@ -686,9 +688,9 @@ export default function Settings() {
                     </div>
 
                     <div className="space-y-4">
-                      <h4 className="text-md font-medium">Shipping Address</h4>
+                      <h4 className="text-md font-medium">{t('settings.shippingAddress')}</h4>
                       <div className="space-y-2">
-                        <Label htmlFor="street">Street Address</Label>
+                        <Label htmlFor="street">{t('settings.street')}</Label>
                         <Input 
                           id="street" 
                           name="shippingAddress.street" 
@@ -701,7 +703,7 @@ export default function Settings() {
                       </div>
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
-                          <Label htmlFor="city">City</Label>
+                          <Label htmlFor="city">{t('settings.city')}</Label>
                           <Input 
                             id="city" 
                             name="shippingAddress.city" 
@@ -713,7 +715,7 @@ export default function Settings() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="state">State</Label>
+                          <Label htmlFor="state">{t('settings.state')}</Label>
                           <Input 
                             id="state" 
                             name="shippingAddress.state" 
@@ -727,7 +729,7 @@ export default function Settings() {
                       </div>
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
-                          <Label htmlFor="zipCode">ZIP Code</Label>
+                          <Label htmlFor="zipCode">{t('settings.zipCode')}</Label>
                           <Input 
                             id="zipCode" 
                             name="shippingAddress.zipCode" 
@@ -739,7 +741,7 @@ export default function Settings() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="country">Country</Label>
+                          <Label htmlFor="country">{t('settings.country')}</Label>
                           <div className="relative">
                             <Input 
                               id="country" 
@@ -786,7 +788,7 @@ export default function Settings() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="phoneNumber">Phone Number</Label>
+                      <Label htmlFor="phoneNumber">{t('settings.phoneNumber')}</Label>
                       <div className="flex gap-2">
                         <Select
                           value={accountSettings.phoneNumber.countryCode}
@@ -796,7 +798,7 @@ export default function Settings() {
                           }))}
                         >
                           <SelectTrigger className="w-[140px]">
-                            <SelectValue placeholder="Select country">
+                            <SelectValue placeholder={t('settings.selectCountry')}>
                               {accountSettings.phoneNumber.countryCode && (
                                 <div className="flex items-center gap-2">
                                   {countryCodes.find(c => c.code === accountSettings.phoneNumber.countryCode)?.flag && 
@@ -835,13 +837,13 @@ export default function Settings() {
                               phoneNumber: { ...prev.phoneNumber, number: value }
                             }))
                           }}
-                          placeholder="Phone number"
+                          placeholder={t('settings.phoneNumber')}
                           className="w-[200px]"
                           pattern="[0-9]*"
                           inputMode="numeric"
                         />
                       </div>
-                      <p className="text-xs text-gray-500">For shipping notifications and important updates</p>
+                      <p className="text-xs text-gray-500">{t('settings.forShipping')}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -860,7 +862,7 @@ export default function Settings() {
                         Saving...
                       </>
                     ) : (
-                      'Save Account'
+                      t('settings.saveAccount')
                     )}
                   </Button>
                 </CardFooter>
@@ -871,12 +873,12 @@ export default function Settings() {
             <TabsContent value="payment">
               <Card>
                 <CardHeader>
-                  <CardTitle>Payment Settings</CardTitle>
-                  <CardDescription>Manage how you receive contributions from guests</CardDescription>
+                  <CardTitle>{t('settings.payment')}</CardTitle>
+                  <CardDescription>{t('settings.paymentMethod')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Payment Method</h3>
+                    <h3 className="text-lg font-medium">{t('settings.paymentMethod')}</h3>
                     <RadioGroup 
                       value={paymentSettings.paymentMethod} 
                       onValueChange={(value) => setPaymentSettings(prev => ({ ...prev, paymentMethod: value }))}
@@ -884,11 +886,11 @@ export default function Settings() {
                     >
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="stripe" id="stripe" />
-                        <Label htmlFor="stripe">Stripe</Label>
+                        <Label htmlFor="stripe">{t('payment.stripe')}</Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="swish" id="swish" />
-                        <Label htmlFor="swish">Swish (private phone number)</Label>
+                        <Label htmlFor="swish">{t('settings.swishPrivatePhone')}</Label>
                       </div>
                     </RadioGroup>
                   </div>
@@ -898,11 +900,11 @@ export default function Settings() {
                       <div className="rounded-lg border p-4">
                         <div className="flex items-center justify-between">
                           <div className="space-y-1">
-                            <h4 className="text-sm font-medium">Stripe Connect Account</h4>
+                            <h4 className="text-sm font-medium">{t('settings.stripeConnectAccount')}</h4>
                             <p className="text-sm text-gray-500">
-                              {stripeConnectStatus === 'not_started' && 'Set up your Stripe account to receive payments'}
-                              {stripeConnectStatus === 'in_progress' && 'Complete your Stripe account setup'}
-                              {stripeConnectStatus === 'completed' && 'Your Stripe account is ready to receive payments'}
+                              {stripeConnectStatus === 'not_started' && t('settings.setupStripeAccount')}
+                              {stripeConnectStatus === 'in_progress' && t('settings.completeStripeSetup')}
+                              {stripeConnectStatus === 'completed' && t('settings.stripeAccountReady')}
                             </p>
                           </div>
                           {stripeConnectStatus !== 'completed' && (
@@ -920,7 +922,7 @@ export default function Settings() {
                                   Setting up...
                                 </>
                               ) : (
-                                'Set up Stripe Account'
+                                t('settings.setupStripeButton')
                               )}
                             </Button>
                           )}
@@ -928,7 +930,7 @@ export default function Settings() {
                         {stripeConnectStatus === 'completed' && (
                           <div className="mt-4 flex items-center gap-2 text-sm text-green-600">
                             <Check className="h-4 w-4" />
-                            <span>Your Stripe account is connected and ready to receive payments</span>
+                            <span>{t('settings.stripeAccountConnected')}</span>
                           </div>
                         )}
                       </div>
@@ -937,7 +939,7 @@ export default function Settings() {
 
                   {paymentSettings.paymentMethod === 'swish' && (
                     <div className="space-y-2">
-                      <Label htmlFor="swishPhoneNumber">Swish Phone Number</Label>
+                      <Label htmlFor="swishPhoneNumber">{t('settings.swishPhoneNumber')}</Label>
                       <Input
                         id="swishPhoneNumber"
                         type="tel"
@@ -945,27 +947,27 @@ export default function Settings() {
                         value={paymentSettings.swishPhoneNumber}
                         onChange={e => setPaymentSettings(prev => ({ ...prev, swishPhoneNumber: e.target.value }))}
                       />
-                      <p className="text-xs text-gray-500">Enter your private Swish phone number (not a business number).</p>
+                      <p className="text-xs text-gray-500">{t('settings.enterPrivateSwishNumber')}</p>
                     </div>
                   )}
 
                   <div className="space-y-2">
-                    <Label htmlFor="accountEmail">Payment Account Email</Label>
+                    <Label htmlFor="accountEmail">{t('settings.accountEmail')}</Label>
                     <Input
                       id="accountEmail"
                       value={paymentSettings.accountEmail}
                       onChange={(e) => setPaymentSettings((prev) => ({ ...prev, accountEmail: e.target.value }))}
                     />
-                    <p className="text-xs text-gray-500">Email associated with your payment account</p>
+                    <p className="text-xs text-gray-500">{t('settings.emailAssociatedWithPayment')}</p>
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Contribution Settings</h3>
+                    <h3 className="text-lg font-medium">{t('settings.contributionSettings')}</h3>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
-                          <Label htmlFor="notifyOnContribution">Notify on contribution</Label>
-                          <p className="text-xs text-gray-500">Receive an email when someone contributes</p>
+                          <Label htmlFor="notifyOnContribution">{t('settings.notifyOnContribution')}</Label>
+                          <p className="text-xs text-gray-500">{t('settings.receiveEmailOnContribution')}</p>
                         </div>
                         <Switch
                           id="notifyOnContribution"
@@ -975,8 +977,8 @@ export default function Settings() {
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
-                          <Label htmlFor="autoThankYou">Automatic thank you emails</Label>
-                          <p className="text-xs text-gray-500">Send automatic thank you emails to contributors</p>
+                          <Label htmlFor="autoThankYou">{t('settings.automaticThankYouEmails')}</Label>
+                          <p className="text-xs text-gray-500">{t('settings.sendAutomaticThankYou')}</p>
                         </div>
                         <Switch
                           id="autoThankYou"
@@ -1002,7 +1004,7 @@ export default function Settings() {
                         Saving...
                       </>
                     ) : (
-                      'Save Payment'
+                      t('settings.savePayment')
                     )}
                   </Button>
                 </CardFooter>
@@ -1013,15 +1015,15 @@ export default function Settings() {
             <TabsContent value="notifications">
               <Card>
                 <CardHeader>
-                  <CardTitle>Notification Settings</CardTitle>
-                  <CardDescription>Manage how and when you receive notifications</CardDescription>
+                  <CardTitle>{t('settings.notifications')}</CardTitle>
+                  <CardDescription>{t('settings.emailNotifications')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="emailNotifications">Email Notifications</Label>
-                        <p className="text-xs text-gray-500">Receive notifications via email</p>
+                        <Label htmlFor="emailNotifications">{t('settings.emailNotifications')}</Label>
+                        <p className="text-xs text-gray-500">{t('settings.receiveEmailNotifications')}</p>
                       </div>
                       <Switch
                         id="emailNotifications"
@@ -1031,8 +1033,8 @@ export default function Settings() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="contributionAlerts">Contribution Alerts</Label>
-                        <p className="text-xs text-gray-500">Get notified when someone contributes to your registry</p>
+                        <Label htmlFor="contributionAlerts">{t('settings.contributionAlerts')}</Label>
+                        <p className="text-xs text-gray-500">{t('settings.getNotifiedOnContribution')}</p>
                       </div>
                       <Switch
                         id="contributionAlerts"
@@ -1042,8 +1044,8 @@ export default function Settings() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="weeklyDigest">Weekly Digest</Label>
-                        <p className="text-xs text-gray-500">Receive a weekly summary of activity</p>
+                        <Label htmlFor="weeklyDigest">{t('settings.weeklyDigest')}</Label>
+                        <p className="text-xs text-gray-500">{t('settings.receiveWeeklySummary')}</p>
                       </div>
                       <Switch
                         id="weeklyDigest"
@@ -1053,8 +1055,8 @@ export default function Settings() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="marketingEmails">Marketing Emails</Label>
-                        <p className="text-xs text-gray-500">Receive updates and offers from WeddingWish</p>
+                        <Label htmlFor="marketingEmails">{t('settings.marketingEmails')}</Label>
+                        <p className="text-xs text-gray-500">{t('settings.receiveMarketingUpdates')}</p>
                       </div>
                       <Switch
                         id="marketingEmails"
@@ -1079,7 +1081,7 @@ export default function Settings() {
                         Saving...
                       </>
                     ) : (
-                      'Save Notifications'
+                      t('settings.saveNotifications')
                     )}
                   </Button>
                 </CardFooter>
@@ -1090,15 +1092,15 @@ export default function Settings() {
             <TabsContent value="privacy">
               <Card>
                 <CardHeader>
-                  <CardTitle>Privacy Settings</CardTitle>
-                  <CardDescription>Control what information is visible to your guests</CardDescription>
+                  <CardTitle>{t('settings.privacy')}</CardTitle>
+                  <CardDescription>{t('settings.showContributorNames')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="showContributorNames">Show Contributor Names</Label>
-                        <p className="text-xs text-gray-500">Display the names of people who contribute to your registry</p>
+                        <Label htmlFor="showContributorNames">{t('settings.showContributorNames')}</Label>
+                        <p className="text-xs text-gray-500">{t('settings.displayContributorNames')}</p>
                       </div>
                       <Switch
                         id="showContributorNames"
@@ -1108,8 +1110,8 @@ export default function Settings() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="showContributionAmounts">Show Contribution Amounts</Label>
-                        <p className="text-xs text-gray-500">Display how much each person contributed</p>
+                        <Label htmlFor="showContributionAmounts">{t('settings.showContributionAmounts')}</Label>
+                        <p className="text-xs text-gray-500">{t('settings.displayContributionAmounts')}</p>
                       </div>
                       <Switch
                         id="showContributionAmounts"
@@ -1119,8 +1121,8 @@ export default function Settings() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="allowGuestComments">Allow Guest Comments</Label>
-                        <p className="text-xs text-gray-500">Let guests leave comments on your wedding page</p>
+                        <Label htmlFor="allowGuestComments">{t('settings.allowGuestComments')}</Label>
+                        <p className="text-xs text-gray-500">{t('settings.letGuestsLeaveComments')}</p>
                       </div>
                       <Switch
                         id="allowGuestComments"
@@ -1130,8 +1132,8 @@ export default function Settings() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="showRegistry">Show Registry</Label>
-                        <p className="text-xs text-gray-500">Make your gift registry visible to guests</p>
+                        <Label htmlFor="showRegistry">{t('settings.showRegistry')}</Label>
+                        <p className="text-xs text-gray-500">{t('settings.makeRegistryVisible')}</p>
                       </div>
                       <Switch
                         id="showRegistry"
@@ -1156,7 +1158,7 @@ export default function Settings() {
                         Saving...
                       </>
                     ) : (
-                      'Save Privacy'
+                      t('settings.savePrivacy')
                     )}
                   </Button>
                 </CardFooter>

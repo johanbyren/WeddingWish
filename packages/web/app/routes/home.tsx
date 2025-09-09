@@ -2,9 +2,11 @@ import { Link } from "react-router-dom"
 import { Button } from "~/components/ui/button"
 import { HeartIcon, LogIn, LogOut, UserPlus } from "lucide-react"
 import { useAuth } from "~/context/auth";
+import { LanguageSelector, useTranslation } from "~/context/translation";
 
 export default function Home() {
   const { loggedIn, user, loaded, login, logout } = useAuth();
+  const { t } = useTranslation();
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -13,17 +15,18 @@ export default function Home() {
           <HeartIcon className="h-6 w-6 text-pink-500" />
           <span>WeddingWish{user ? ` - ${user.email}` : ''}</span>
         </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
+        <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
+          <LanguageSelector />
           {!user ? (
             <>
               <Button variant="ghost" size="sm" onClick={login}>
                 <LogIn className="h-4 w-4 mr-2" />
-                Login
+{t('home.login')}
               </Button>
               <Button variant="ghost" size="sm" asChild>
                 <Link to="/register" className="flex items-center">
                   <UserPlus className="h-4 w-4 mr-2" />
-                  Register
+{t('home.register')}
                 </Link>
               </Button>
             </>

@@ -7,6 +7,7 @@ import {
   ScrollRestoration,
 } from "react-router";
 import { AuthProvider } from "./context/auth";
+import { TranslationProvider } from "./context/translation";
 import { StrictMode } from "react";
 
 import type { Route } from "./+types/root";
@@ -46,11 +47,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <StrictMode>
-      <AuthProvider>
-        <div className="min-h-screen">
-          <Outlet />
-        </div>
-      </AuthProvider>
+      <TranslationProvider>
+        <AuthProvider>
+          <div className="min-h-screen">
+            <Outlet />
+          </div>
+        </AuthProvider>
+      </TranslationProvider>
     </StrictMode>
   );
 }

@@ -14,12 +14,14 @@ import { DatePicker } from "../../components/date-picker"
 import { ImageUploader } from "../../components/image-uploader"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
 import { useAuth } from "~/context/auth"
+import { LanguageSelector, useTranslation } from "~/context/translation"
 import { v4 as uuidv4 } from 'uuid'
 import { RadioGroup, RadioGroupItem } from "../../components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
 
 export default function CreateWeddingPage() {
   const auth = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const weddingId = searchParams.get('weddingId');
@@ -655,15 +657,12 @@ export default function CreateWeddingPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="px-4 lg:px-6 h-14 flex items-center border-b">
-        <Link to="/" className="flex items-center gap-2 font-semibold">
-          <HeartIcon className="h-6 w-6 text-pink-500" />
-          <span>WeddingWish</span>
-        </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
+
+        <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
           <Link to="/dashboard">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
+              {t('create.backToDashboard')}
             </Button>
           </Link>
         </nav>
@@ -682,15 +681,15 @@ export default function CreateWeddingPage() {
             </div>
           )}
           <div className={isLoading ? "opacity-50 pointer-events-none" : ""}>
-            <h1 className="text-2xl font-bold mb-6">{isEditMode ? 'Edit Your Wedding Page' : 'Create Your Wedding Page'}</h1>
+            <h1 className="text-2xl font-bold mb-6">{isEditMode ? t('create.editTitle') : t('create.title')}</h1>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
               <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="details">Wedding Details</TabsTrigger>
-                <TabsTrigger value="settings">Wedding Settings</TabsTrigger>
-                <TabsTrigger value="photos">Photos</TabsTrigger>
-                <TabsTrigger value="gifts">Gift Registry</TabsTrigger>
-                <TabsTrigger value="preview">Preview</TabsTrigger>
+                <TabsTrigger value="details">{t('create.weddingDetails')}</TabsTrigger>
+                <TabsTrigger value="settings">{t('create.weddingSettings')}</TabsTrigger>
+                <TabsTrigger value="photos">{t('create.weddingPhotos')}</TabsTrigger>
+                <TabsTrigger value="gifts">{t('create.giftRegistry')}</TabsTrigger>
+                <TabsTrigger value="preview">{t('create.preview')}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="details">
@@ -698,7 +697,7 @@ export default function CreateWeddingPage() {
                   <CardHeader>
                     <CardTitle>Wedding Details</CardTitle>
                     <CardDescription>
-                      Fill in the basic information about your wedding to create your page.
+                      {t('create.fillBasicInfo')}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -747,7 +746,7 @@ export default function CreateWeddingPage() {
                       <Button variant="outline">Cancel</Button>
                     </Link>
                     <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600 min-w-[220px]">
-                      Next: Wedding Settings
+                      {t('create.nextWeddingSettings')}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -757,7 +756,7 @@ export default function CreateWeddingPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle>Wedding Settings</CardTitle>
-                    <CardDescription>Customize how your wedding page appears</CardDescription>
+                    <CardDescription>{t('create.customizeWeddingPage')}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="space-y-4">
@@ -851,7 +850,7 @@ export default function CreateWeddingPage() {
                       Back
                     </Button>
                     <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600 min-w-[140px]">
-                      Next: Photos
+                      {t('create.nextPhotos')}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -861,20 +860,20 @@ export default function CreateWeddingPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle>Wedding Photos</CardTitle>
-                    <CardDescription>Upload photos for your wedding page.</CardDescription>
+                    <CardDescription>{t('create.uploadPhotos')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-6">
                       <div className="space-y-2">
-                        <Label>Cover Photo</Label>
+                        <Label>{t('create.coverPhoto')}</Label>
                         <p className="text-sm text-gray-500">
-                          This will be the main image at the top of your wedding page.
+                          {t('create.coverPhotoDescription')}
                         </p>
                         {weddingDetails.coverPhotoPreview ? (
                           <div className="relative aspect-[3/1] overflow-hidden rounded-lg border">
                             <img
                               src={weddingDetails.coverPhotoPreview || "/placeholder.svg"}
-                              alt="Cover preview"
+                              alt={t('create.coverPreview')}
                               className="w-full h-full object-cover"
                             />
                             <Button
@@ -885,7 +884,7 @@ export default function CreateWeddingPage() {
                                 setWeddingDetails((prev) => ({ ...prev, coverPhoto: null, coverPhotoPreview: "" }))
                               }
                             >
-                              Remove
+                              {t('create.remove')}
                             </Button>
                           </div>
                         ) : (
@@ -894,8 +893,8 @@ export default function CreateWeddingPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Additional Photos</Label>
-                        <p className="text-sm text-gray-500">Add more photos to your wedding gallery (optional).</p>
+                        <Label>{t('create.additionalPhotos')}</Label>
+                        <p className="text-sm text-gray-500">{t('create.additionalPhotosDescription')}</p>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
                           {weddingDetails.additionalPhotos.map((photo, index) => (
                             <div key={index} className="relative aspect-square overflow-hidden rounded-lg border">
@@ -910,7 +909,7 @@ export default function CreateWeddingPage() {
                                 className="absolute top-2 right-2"
                                 onClick={() => removeAdditionalPhoto(index)}
                               >
-                                Remove
+                                {t('create.remove')}
                               </Button>
                             </div>
                           ))}
@@ -930,7 +929,7 @@ export default function CreateWeddingPage() {
                       Back
                     </Button>
                     <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600 min-w-[140px]">
-                      Next: Gifts
+                      {t('create.nextGifts')}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -940,7 +939,7 @@ export default function CreateWeddingPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle>Gift Registry</CardTitle>
-                    <CardDescription>Add items to your gift registry that guests can contribute to.</CardDescription>
+                    <CardDescription>{t('create.addGiftItems')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-6">
@@ -955,7 +954,7 @@ export default function CreateWeddingPage() {
                                 <div className="relative aspect-square overflow-hidden rounded-lg border">
                                   <img
                                     src={newGiftItem.imagePreview}
-                                    alt="Gift preview"
+                                    alt={t('create.giftPreview')}
                                     className="w-full h-full object-cover"
                                   />
                                   <Button
@@ -964,7 +963,7 @@ export default function CreateWeddingPage() {
                                     className="absolute top-2 right-2"
                                     onClick={() => setNewGiftItem((prev) => ({ ...prev, imageFile: null, imagePreview: "" }))}
                                   >
-                                    Remove
+                                    {t('create.remove')}
                                   </Button>
                                 </div>
                               ) : (
@@ -1010,16 +1009,16 @@ export default function CreateWeddingPage() {
                         <CardFooter>
                           <Button onClick={addGiftItem} className="flex items-center">
                             <Plus className="h-4 w-4 mr-2" />
-                            Add Gift Item
+                            {t('create.addGiftItem')}
                           </Button>
                         </CardFooter>
                       </Card>
 
                       <div className="space-y-4">
-                        <h3 className="text-lg font-medium">Your Gift Registry</h3>
+                        <h3 className="text-lg font-medium">{t('create.yourGiftRegistry')}</h3>
                         {weddingDetails.giftItems.length === 0 ? (
                           <Card className="text-center p-6">
-                            <p className="text-gray-500">Your gift registry is empty. Add some items above.</p>
+                            <p className="text-gray-500">{t('create.noGiftsAdded')}</p>
                           </Card>
                         ) : (
                           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -1062,7 +1061,7 @@ export default function CreateWeddingPage() {
                       Back
                     </Button>
                     <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600 min-w-[140px]">
-                      Next: Preview
+                      {t('create.nextPreview')}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -1072,16 +1071,16 @@ export default function CreateWeddingPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle>Preview Your Wedding Page</CardTitle>
-                    <CardDescription>This is how your wedding page will look to your guests.</CardDescription>
+                    <CardDescription>{t('create.previewDescription')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="border rounded-lg overflow-hidden">
-                      {/* Preview Header */}
+                      {/* {t('create.previewHeader')} */}
                       <div className="relative h-[200px] bg-gray-100">
                         {weddingDetails.coverPhotoPreview ? (
                           <img
                             src={weddingDetails.coverPhotoPreview || "/placeholder.svg"}
-                            alt="Cover"
+                            alt={t('create.cover')}
                             className="w-full h-full object-cover"
                           />
                         ) : (
@@ -1110,7 +1109,7 @@ export default function CreateWeddingPage() {
                         </div>
                       </div>
 
-                      {/* Preview Content */}
+                      {/* {t('create.previewContent')} */}
                       <div className="p-6 space-y-6">
                         <div>
                           <h3 className="text-xl font-semibold mb-2">Our Story</h3>
@@ -1177,7 +1176,7 @@ export default function CreateWeddingPage() {
                       Back
                     </Button>
                     <Button onClick={handleSubmit} className="bg-pink-500 hover:bg-pink-600" disabled={isSubmitting}>
-                      {isSubmitting ? (isEditMode ? "Updating..." : "Creating...") : (isEditMode ? "Update Wedding Page" : "Create Wedding Page")}
+                      {isSubmitting ? (isEditMode ? t('create.updating') : t('create.creating')) : (isEditMode ? t('create.updateWeddingPage') : t('create.createWeddingPage'))}
                     </Button>
                   </CardFooter>
                 </Card>
