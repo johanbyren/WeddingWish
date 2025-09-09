@@ -112,8 +112,11 @@ export default function ContributePage() {
     // If phone starts with 0, replace with 46
     if (phone.startsWith('0')) phone = '46' + phone.slice(1);
     // Compose QR string
-    const qr = `C123SE;${phone};${amount};SEK;Wedding gift: ${gift.name}`;
-    setSwishQRString(qr);
+    const message = `Wedding gift: ${gift.name}`;
+    const lockMask = '6';
+    const qrCodeString = `C${phone};${amount};${message};${lockMask}`;
+
+    setSwishQRString(qrCodeString);
     setShowSwishQR(true);
   };
 
@@ -253,7 +256,7 @@ export default function ContributePage() {
                         <Slider
                           value={[parseFloat(amount)]}
                           min={1}
-                          max={1000}
+                          max={5000}
                           step={1}
                           onValueChange={(value: number[]) => { handleAmountChange(value[0].toString()); setShowSwishQR(false); }}
                         />
