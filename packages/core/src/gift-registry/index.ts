@@ -265,6 +265,58 @@ export namespace GiftRegistry {
     };
 
     /**
+     * Add a contribution to a gift
+     * @param giftId The ID of the gift
+     * @param weddingId The ID of the wedding
+     * @param amount The amount to add to totalContributed
+     * @throws {GiftRegistryError} If DynamoDB operations fail
+     */
+    export const addContribution = async (giftId: string, weddingId: string, amount: number) => {
+        try {
+            console.log(`Adding contribution of ${amount} to gift ${giftId} for wedding ${weddingId}`);
+            
+            // First get the current gift to check if it exists and get current totalContributed
+            const currentGift = await getById(giftId, weddingId);
+            if (!currentGift) {
+                throw new GiftRegistryError(`Gift with id ${giftId} does not exist`);
+            }
+
+            const newTotalContributed = currentGift.totalContributed + amount;
+            const isFullyFunded = currentGift.price ? newTotalContributed >= currentGift.price : false;
+
+            // Update the gift with new contribution amount
+            const updateCommand = new UpdateCommand({
+                TableName: Resource.GiftRegistryTable.name,
+                Key: { 
+                    giftId: giftId,
+                    weddingId: weddingId
+                },
+                UpdateExpression: "SET totalContributed = :totalContributed, isFullyFunded = :isFullyFunded, updatedAt = :updatedAt",
+                ExpressionAttributeValues: {
+                    ":totalContributed": newTotalContributed,
+                    ":isFullyFunded": isFullyFunded,
+                    ":updatedAt": new Date().toISOString()
+                },
+                ReturnValues: "ALL_NEW",
+                ConditionExpression: "attribute_exists(giftId)",
+            });
+
+            const result = await ddb.send(updateCommand);
+            console.log(`Successfully added contribution. New total: ${newTotalContributed}, Fully funded: ${isFullyFunded}`);
+            
+            return result.Attributes as GiftRegistryType;
+        } catch (error) {
+            if (error instanceof Error && error.name === 'ConditionalCheckFailedException') {
+                throw new GiftRegistryError(`Gift with id ${giftId} does not exist`);
+            }
+            throw new GiftRegistryError(
+                `Failed to add contribution to gift ${giftId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                error
+            );
+        }
+    };
+
+    /**
      * Delete a gift and its associated image
      * @param giftId The ID of the gift to delete
      * @param weddingId The ID of the wedding

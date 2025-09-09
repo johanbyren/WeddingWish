@@ -746,8 +746,8 @@ export default function CreateWeddingPage() {
                     <Link to="/dashboard">
                       <Button variant="outline">Cancel</Button>
                     </Link>
-                    <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600">
-                      Next: Add Photos
+                    <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600 min-w-[220px]">
+                      Next: Wedding Settings
                     </Button>
                   </CardFooter>
                 </Card>
@@ -850,8 +850,8 @@ export default function CreateWeddingPage() {
                     <Button variant="outline" onClick={goToPreviousTab}>
                       Back
                     </Button>
-                    <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600">
-                      Next: Add Photos
+                    <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600 min-w-[140px]">
+                      Next: Photos
                     </Button>
                   </CardFooter>
                 </Card>
@@ -929,8 +929,8 @@ export default function CreateWeddingPage() {
                     <Button variant="outline" onClick={goToPreviousTab}>
                       Back
                     </Button>
-                    <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600">
-                      Next: Add Gifts
+                    <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600 min-w-[140px]">
+                      Next: Gifts
                     </Button>
                   </CardFooter>
                 </Card>
@@ -1061,7 +1061,7 @@ export default function CreateWeddingPage() {
                     <Button variant="outline" onClick={goToPreviousTab}>
                       Back
                     </Button>
-                    <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600">
+                    <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600 min-w-[140px]">
                       Next: Preview
                     </Button>
                   </CardFooter>

@@ -51,13 +51,31 @@ export default function ContributePage() {
   const [swishQRString, setSwishQRString] = useState('');
   const [donorName, setDonorName] = useState("");
   const [donorMessage, setDonorMessage] = useState("");
-  const [swishDonationSaved, setSwishDonationSaved] = useState(false);
   const [swishDonationError, setSwishDonationError] = useState<string | null>(null);
 
   const handleAmountChange = (value: string) => {
     setAmount(value);
     setShowCheckout(false); // Reset checkout when amount changes
     setClientSecret(null);
+  };
+
+  // Function to refresh gift data after donation
+  const refreshGiftData = async () => {
+    if (!giftId || !wedding?.weddingId) return;
+    
+    try {
+      const giftResponse = await fetch(`${import.meta.env.VITE_API_URL}api/show-gift/${giftId}?weddingId=${wedding.weddingId}`, {
+        method: 'GET'
+      });
+
+      if (giftResponse.ok) {
+        const updatedGiftData = await giftResponse.json();
+        setGift(updatedGiftData);
+        console.log('Gift data refreshed:', updatedGiftData);
+      }
+    } catch (error) {
+      console.error('Failed to refresh gift data:', error);
+    }
   };
 
   const handlePayClick = async () => {
@@ -111,8 +129,17 @@ export default function ContributePage() {
     let phone = swishPhoneNumber.replace(/^\+/, '');
     // If phone starts with 0, replace with 46
     if (phone.startsWith('0')) phone = '46' + phone.slice(1);
+    
+    // Build the message with donor info
+    let message = `Bröllopspresent: ${gift.name}`;
+    if (donorName) {
+      message += ` från ${donorName}`;
+    }
+    if (donorMessage) {
+      message += ` - ${donorMessage}`;
+    }
+    
     // Compose QR string
-    const message = `Wedding gift: ${gift.name}`;
     const lockMask = '6';
     const qrCodeString = `C${phone};${amount};${message};${lockMask}`;
 
@@ -262,6 +289,28 @@ export default function ContributePage() {
                         />
                       </div>
                     </div>
+                    
+                    <div className="space-y-4">
+                      <Label htmlFor="donorName">Your Name (optional)</Label>
+                      <Input
+                        id="donorName"
+                        value={donorName}
+                        onChange={(e) => { setDonorName(e.target.value); setShowSwishQR(false); }}
+                        placeholder="Enter your name"
+                        className="w-full"
+                      />
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <Label htmlFor="donorMessage">Message (optional)</Label>
+                      <Input
+                        id="donorMessage"
+                        value={donorMessage}
+                        onChange={(e) => { setDonorMessage(e.target.value); setShowSwishQR(false); }}
+                        placeholder="Add a personal message"
+                        className="w-full"
+                      />
+                    </div>
                     <Button 
                       onClick={handleSwishClick}
                       disabled={isProcessing || !swishPhoneNumber}
@@ -272,29 +321,14 @@ export default function ContributePage() {
                     {showSwishQR && swishQRString && (
                       <div className="mt-6 flex flex-col items-center">
                         <QRCodeCanvas value={swishQRString} size={200} />
-                        <p className="mt-4 text-center text-gray-700">Scan this QR code with your Swish app to complete your donation.<br/>Phone: <b>{swishPhoneNumber}</b><br/>Amount: <b>{amount} SEK</b><br/>Message: <b>Wedding gift: {gift.name}</b></p>
+                        <p className="mt-4 text-center text-gray-700">Scan this QR code with your Swish app to complete your donation.<br/>Phone: <b>{swishPhoneNumber}</b><br/>Amount: <b>{amount} SEK</b><br/>Message: <b>{donorName ? `Wedding gift: ${gift.name} (from ${donorName})` : `Wedding gift: ${gift.name}`}{donorMessage ? ` - ${donorMessage}` : ''}</b></p>
                         <div className="mt-4 w-full max-w-xs">
-                          <Label htmlFor="donorName">Your Name (optional)</Label>
-                          <Input
-                            id="donorName"
-                            value={donorName}
-                            onChange={e => setDonorName(e.target.value)}
-                            className="mb-2"
-                          />
-                          <Label htmlFor="donorMessage">Message (optional)</Label>
-                          <Input
-                            id="donorMessage"
-                            value={donorMessage}
-                            onChange={e => setDonorMessage(e.target.value)}
-                            className="mb-2"
-                          />
                           <Button
                             className="w-full mt-2 bg-pink-500 hover:bg-pink-600"
                             onClick={async () => {
-                              setSwishDonationSaved(false);
                               setSwishDonationError(null);
                               try {
-                                const res = await fetch("/api/swish-donation", {
+                                const res = await fetch(`${import.meta.env.VITE_API_URL}api/swish-donation`, {
                                   method: "POST",
                                   headers: { "Content-Type": "application/json" },
                                   body: JSON.stringify({
@@ -307,7 +341,12 @@ export default function ContributePage() {
                                   })
                                 });
                                 if (!res.ok) throw new Error("Failed to save Swish donation");
-                                setSwishDonationSaved(true);
+                                // Refresh gift data to show updated progress
+                                await refreshGiftData();
+                                // Redirect to thank you page with gift data
+                                navigate(`/${slug}/thank-you`, { 
+                                  state: { giftId: gift?.giftId } 
+                                });
                               } catch (err) {
                                 setSwishDonationError("Could not save your donation. Please try again.");
                               }
@@ -315,7 +354,6 @@ export default function ContributePage() {
                           >
                             I've completed my Swish payment
                           </Button>
-                          {swishDonationSaved && <p className="text-green-600 mt-2">Thank you! Your donation has been registered.</p>}
                           {swishDonationError && <p className="text-red-600 mt-2">{swishDonationError}</p>}
                         </div>
                       </div>

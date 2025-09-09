@@ -131,4 +131,54 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Fix button click areas */
+  button, [role="button"] {
+    position: relative;
+    z-index: 1;
+    pointer-events: auto;
+  }
+  
+  /* Ensure buttons are clickable across their entire area */
+  .inline-flex {
+    position: relative;
+    z-index: 1;
+  }
+  
+  /* Fix any potential z-index issues with overlapping elements */
+  .relative {
+    z-index: auto;
+  }
+  
+  /* Ensure clickable elements don't have pointer-events disabled */
+  button:not(:disabled) {
+    pointer-events: auto !important;
+  }
+  
+  /* Fix Link components inside buttons */
+  button a, [role="button"] a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  /* Ensure all interactive elements are properly clickable */
+  [role="button"], button, a {
+    position: relative;
+    z-index: 10;
+  }
+  
+  /* Fix potential issues with flex containers */
+  .flex, .inline-flex {
+    position: relative;
+  }
+  
+  /* Ensure no element blocks button clicks */
+  *:not(button):not([role="button"]):not(a) {
+    pointer-events: auto;
+  }
 }

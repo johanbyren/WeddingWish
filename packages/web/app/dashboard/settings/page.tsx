@@ -565,7 +565,7 @@ export default function Settings() {
         <h1 className="text-2xl font-bold">Settings</h1>
         <Button 
           onClick={saveAllSettings} 
-          className="bg-pink-500 hover:bg-pink-600"
+          className="bg-pink-500 hover:bg-pink-600 min-w-[140px]"
           disabled={isSaving.all || isLoading}
         >
           {isSaving.all ? (
@@ -577,7 +577,7 @@ export default function Settings() {
               Saving...
             </>
           ) : (
-            'Save All Settings'
+            'Save All'
           )}
         </Button>
       </div>
@@ -849,6 +849,7 @@ export default function Settings() {
                   <Button 
                     onClick={saveAccountSettings}
                     disabled={isSaving.account}
+                    className="min-w-[120px]"
                   >
                     {isSaving.account ? (
                       <>
@@ -859,7 +860,7 @@ export default function Settings() {
                         Saving...
                       </>
                     ) : (
-                      'Update Account'
+                      'Save Account'
                     )}
                   </Button>
                 </CardFooter>
@@ -990,6 +991,7 @@ export default function Settings() {
                   <Button 
                     onClick={savePaymentSettings}
                     disabled={isSaving.payment}
+                    className="min-w-[140px]"
                   >
                     {isSaving.payment ? (
                       <>
@@ -1000,7 +1002,7 @@ export default function Settings() {
                         Saving...
                       </>
                     ) : (
-                      'Update Payment Settings'
+                      'Save Payment'
                     )}
                   </Button>
                 </CardFooter>
@@ -1066,6 +1068,7 @@ export default function Settings() {
                   <Button 
                     onClick={saveNotificationSettings}
                     disabled={isSaving.notification}
+                    className="min-w-[160px]"
                   >
                     {isSaving.notification ? (
                       <>
@@ -1076,7 +1079,7 @@ export default function Settings() {
                         Saving...
                       </>
                     ) : (
-                      'Update Notification Settings'
+                      'Save Notifications'
                     )}
                   </Button>
                 </CardFooter>
@@ -1142,6 +1145,7 @@ export default function Settings() {
                   <Button 
                     onClick={savePrivacySettings}
                     disabled={isSaving.privacy}
+                    className="min-w-[140px]"
                   >
                     {isSaving.privacy ? (
                       <>
@@ -1152,7 +1156,7 @@ export default function Settings() {
                         Saving...
                       </>
                     ) : (
-                      'Update Privacy Settings'
+                      'Save Privacy'
                     )}
                   </Button>
                 </CardFooter>

@@ -1,4 +1,4 @@
-import { weddingAssets, usersTable, weddingsTable, giftRegistryTable, contributionsTable, settingsTable } from "./storage";
+import { weddingAssets, usersTable, weddingsTable, giftRegistryTable, contributionsTable, settingsTable, swishDonationsTable } from "./storage";
 import { auth } from "./auth";
 import { email } from "./email";
 import { stripeSecretKey, stripePublishableKey, stripeAccountId } from "./secrets";
@@ -17,6 +17,7 @@ export const api = new sst.aws.Function("Api", {
     giftRegistryTable, 
     contributionsTable, 
     settingsTable, 
+    swishDonationsTable,
     stripeSecretKey, 
     stripePublishableKey,
     stripeAccountId,
