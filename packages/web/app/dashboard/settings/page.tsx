@@ -99,7 +99,7 @@ export default function Settings() {
 
   // Payment settings
   const [paymentSettings, setPaymentSettings] = useState({
-    paymentMethod: "stripe",
+    paymentMethod: "swish",
     accountEmail: auth.user?.email || "",
     notifyOnContribution: true,
     autoThankYou: true,
@@ -869,10 +869,11 @@ export default function Settings() {
                       onValueChange={(value) => setPaymentSettings(prev => ({ ...prev, paymentMethod: value }))}
                       className="grid gap-2"
                     >
-                      <div className="flex items-center space-x-2">
+                      {/* Stripe option hidden for first release */}
+                      {/* <div className="flex items-center space-x-2">
                         <RadioGroupItem value="stripe" id="stripe" />
                         <Label htmlFor="stripe">{t('payment.stripe')}</Label>
-                      </div>
+                      </div> */}
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="swish" id="swish" />
                         <Label htmlFor="swish">{t('settings.swishPrivatePhone')}</Label>
@@ -880,7 +881,8 @@ export default function Settings() {
                     </RadioGroup>
                   </div>
 
-                  {paymentSettings.paymentMethod === 'stripe' && (
+                  {/* Stripe configuration hidden for first release */}
+                  {/* {paymentSettings.paymentMethod === 'stripe' && (
                     <div className="space-y-4">
                       <div className="rounded-lg border p-4">
                         <div className="flex items-center justify-between">
@@ -917,7 +919,7 @@ export default function Settings() {
                         )}
                       </div>
                     </div>
-                  )}
+                  )} */}
 
                   {paymentSettings.paymentMethod === 'swish' && (
                     <div className="space-y-2">

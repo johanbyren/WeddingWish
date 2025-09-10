@@ -119,7 +119,7 @@ export default function ContributePage() {
 
   // Helper to get swish phone number from wedding.paymentSettings
   const swishPhoneNumber = (wedding as any)?.paymentSettings?.swishPhoneNumber || '';
-  const paymentMethod = (wedding as any)?.paymentSettings?.paymentMethod || 'stripe';
+  const paymentMethod = (wedding as any)?.paymentSettings?.paymentMethod || 'swish';
 
   // Debug logging to verify payment method detection
   console.log('Payment method detected:', paymentMethod);
