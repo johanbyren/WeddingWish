@@ -21,7 +21,7 @@ export default function WeddingDetails() {
   const isFetchingRef = useRef(false);
 
   const handleDeleteWedding = async (weddingId: string) => {
-    if (!confirm('Are you sure you want to delete this wedding page? This action cannot be undone.')) {
+    if (!confirm(t('dashboard.confirmDeleteWedding'))) {
       return;
     }
 
@@ -46,7 +46,7 @@ export default function WeddingDetails() {
       setWeddings([]);
     } catch (error) {
       console.error("Error deleting wedding:", error);
-      alert('Failed to delete wedding. Please try again.');
+      alert(t('dashboard.failedToDeleteWedding'));
     }
   };
 
@@ -112,12 +112,12 @@ export default function WeddingDetails() {
   return (
     <div className="p-4 md:p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <h1 className="text-2xl font-bold">{t('dashboard.title')}</h1>
         {weddings.length === 0 && (
           <Button asChild className="bg-pink-500 hover:bg-pink-600">
             <Link to="/dashboard/create" className="flex items-center">
               <PlusCircle className="h-4 w-4 mr-2" />
-              <span>Create Wedding Page</span>
+              <span>{t('dashboard.createWeddingPage')}</span>
             </Link>
           </Button>
         )}
@@ -125,7 +125,7 @@ export default function WeddingDetails() {
 
       <Tabs defaultValue="wedding-details">
         <TabsList>
-          <TabsTrigger value="wedding-details">Wedding Details</TabsTrigger>
+          <TabsTrigger value="wedding-details">{t('dashboard.weddingDetails')}</TabsTrigger>
         </TabsList>
         <TabsContent value="wedding-details" className="space-y-4 mt-4">
           <div className="relative">
@@ -143,35 +143,35 @@ export default function WeddingDetails() {
             <div className={loading ? "opacity-50 pointer-events-none" : ""}>
               <Card>
                 <CardHeader>
-                  <CardTitle>Your Wedding Page</CardTitle>
-                  <CardDescription>Manage your wedding page details.</CardDescription>
+                  <CardTitle>{t('dashboard.yourWeddingPage')}</CardTitle>
+                  <CardDescription>{t('dashboard.manageWeddingDetails')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-4">
                     {!loading && (weddings.length > 0 ? (
                       <Card>
                         <CardHeader className="pb-2">
-                          <CardTitle>{weddings[0].title || "Untitled Wedding"}</CardTitle>
+                          <CardTitle>{weddings[0].title || t('dashboard.untitledWedding')}</CardTitle>
                           <CardDescription>
-                            Created on {new Date(weddings[0].createdAt || "").toLocaleDateString()}
+{t('dashboard.createdOn')} {new Date(weddings[0].createdAt || "").toLocaleDateString()}
                           </CardDescription>
                         </CardHeader>
                         <CardContent className="pb-2">
                           {weddings[0].date && (
-                            <p className="text-sm">Wedding Date: {new Date(weddings[0].date).toLocaleDateString()}</p>
+                            <p className="text-sm">{t('dashboard.weddingDateLabel')} {new Date(weddings[0].date).toLocaleDateString()}</p>
                           )}
-                          {weddings[0].location && <p className="text-sm">Location: {weddings[0].location}</p>}
+                          {weddings[0].location && <p className="text-sm">{t('dashboard.locationLabel')} {weddings[0].location}</p>}
                         </CardContent>
                         <CardFooter className="flex gap-2 justify-between">
                           <div className="flex gap-2">
                             <Link to={`/${weddings[0].weddingId}`} target="_blank" rel="noopener noreferrer" className="block">
                               <Button variant="outline" size="sm">
-                                View Page
+                                {t('dashboard.viewPage')}
                               </Button>
                             </Link>
                             <Link to={`/dashboard/create?weddingId=${weddings[0].weddingId}`} className="block">
                               <Button variant="outline" size="sm">
-                                Edit
+                                {t('dashboard.edit')}
                               </Button>
                             </Link>
                           </div>
@@ -182,27 +182,27 @@ export default function WeddingDetails() {
                             className="text-gray-500 hover:text-red-500"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
+                            {t('dashboard.delete')}
                           </Button>
                         </CardFooter>
                       </Card>
                     ) : (
                       <Card className="border-dashed border-2">
                         <CardHeader className="text-center">
-                          <CardTitle className="text-xl">No Wedding Page Yet</CardTitle>
+                          <CardTitle className="text-xl">{t('dashboard.noWeddingPageYet')}</CardTitle>
                           <CardDescription className="mt-2">
-                            Create your wedding page to get started
+                            {t('dashboard.createWeddingPageToGetStarted')}
                           </CardDescription>
                         </CardHeader>
                         <CardContent className="flex justify-center">
                           <div className="text-center">
                             <p className="text-muted-foreground mb-4">
-                              Start by creating your wedding page to share with your guests
+{t('dashboard.startByCreatingWeddingPage')}
                             </p>
                             <Button asChild>
                               <Link to="/dashboard/create" className="flex items-center">
                                 <PlusCircle className="h-4 w-4 mr-2" />
-                                <span>Create Wedding Page</span>
+                                <span>{t('dashboard.createWeddingPage')}</span>
                               </Link>
                             </Button>
                           </div>

@@ -661,7 +661,7 @@ export default function Settings() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="weddingDate">Wedding Date</Label>
+                      <Label htmlFor="weddingDate">{t('settings.weddingDate')}</Label>
                       <DatePicker 
                         date={accountSettings.weddingDate} 
                         setDate={(date) => {

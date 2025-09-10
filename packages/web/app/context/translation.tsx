@@ -27,6 +27,7 @@ const translations = {
     'common.success': 'Success',
     'common.yes': 'Yes',
     'common.no': 'No',
+    'common.pickDate': 'Pick a date',
     
     // Wedding
     'wedding.title': 'Wedding Title',
@@ -117,6 +118,19 @@ const translations = {
     'dashboard.location': 'Location',
     'dashboard.viewPage': 'View Page',
     'dashboard.edit': 'Edit',
+    'dashboard.createWeddingPage': 'Create Wedding Page',
+    'dashboard.yourWeddingPage': 'Your Wedding Page',
+    'dashboard.manageWeddingDetails': 'Manage your wedding page details.',
+    'dashboard.untitledWedding': 'Untitled Wedding',
+    'dashboard.createdOn': 'Created on',
+    'dashboard.weddingDateLabel': 'Wedding Date:',
+    'dashboard.locationLabel': 'Location:',
+    'dashboard.delete': 'Delete',
+    'dashboard.noWeddingPageYet': 'No Wedding Page Yet',
+    'dashboard.createWeddingPageToGetStarted': 'Create your wedding page to get started',
+    'dashboard.startByCreatingWeddingPage': 'Start by creating your wedding page to share with your guests',
+    'dashboard.confirmDeleteWedding': 'Are you sure you want to delete this wedding page? This action cannot be undone.',
+    'dashboard.failedToDeleteWedding': 'Failed to delete wedding. Please try again.',
     
     // Create Wedding Page
     'create.title': 'Create Your Wedding Page',
@@ -400,6 +414,7 @@ const translations = {
     'common.success': 'Framgång',
     'common.yes': 'Ja',
     'common.no': 'Nej',
+    'common.pickDate': 'Välj ett datum',
     
     // Wedding
     'wedding.title': 'Bröllopstitel',
@@ -490,6 +505,19 @@ const translations = {
     'dashboard.location': 'Plats',
     'dashboard.viewPage': 'Visa sida',
     'dashboard.edit': 'Redigera',
+    'dashboard.createWeddingPage': 'Skapa bröllopssida',
+    'dashboard.yourWeddingPage': 'Din bröllopssida',
+    'dashboard.manageWeddingDetails': 'Hantera dina bröllopsdetaljer.',
+    'dashboard.untitledWedding': 'Namnlöst bröllop',
+    'dashboard.createdOn': 'Skapad den',
+    'dashboard.weddingDateLabel': 'Bröllopsdag:',
+    'dashboard.locationLabel': 'Plats:',
+    'dashboard.delete': 'Ta bort',
+    'dashboard.noWeddingPageYet': 'Ingen bröllopssida än',
+    'dashboard.createWeddingPageToGetStarted': 'Skapa din bröllopssida för att komma igång',
+    'dashboard.startByCreatingWeddingPage': 'Börja med att skapa din bröllopssida för att dela med dina gäster',
+    'dashboard.confirmDeleteWedding': 'Är du säker på att du vill ta bort denna bröllopssida? Denna åtgärd kan inte ångras.',
+    'dashboard.failedToDeleteWedding': 'Misslyckades med att ta bort bröllopet. Försök igen.',
     
     // Create Wedding Page
     'create.title': 'Skapa din bröllopssida',
