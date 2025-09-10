@@ -277,9 +277,11 @@ export default function WeddingPage() {
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button asChild className="w-full bg-pink-500 hover:bg-pink-600">
-                      <Link to={`/${slug}/contribute/${gift.giftId}`}>Contribute</Link>
-                    </Button>
+                    <Link to={`/${slug}/contribute/${gift.giftId}`} className="block w-full">
+                      <Button className="w-full bg-pink-500 hover:bg-pink-600">
+                        Contribute
+                      </Button>
+                    </Link>
                   </CardFooter>
                 </Card>
               ))}
@@ -302,11 +304,11 @@ export default function WeddingPage() {
             View full size wedding photos. Use the arrow buttons to navigate between photos.
           </DialogDescription>
           {selectedImage && (
-            <div className="relative w-full h-full flex items-center justify-center">
+            <div className="relative w-full h-full flex items-center justify-center px-24">
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/50 hover:bg-white/80 rounded-full"
+                className="absolute -left-12 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white rounded-full shadow-xl z-20 border border-gray-200"
                 onClick={handlePreviousImage}
               >
                 <ChevronLeft className="h-6 w-6" />
@@ -319,7 +321,7 @@ export default function WeddingPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/50 hover:bg-white/80 rounded-full"
+                className="absolute -right-12 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white rounded-full shadow-xl z-20 border border-gray-200"
                 onClick={handleNextImage}
               >
                 <ChevronRight className="h-6 w-6" />

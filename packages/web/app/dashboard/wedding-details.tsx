@@ -162,12 +162,16 @@ export default function WeddingDetails() {
                         </CardContent>
                         <CardFooter className="flex gap-2 justify-between">
                           <div className="flex gap-2">
-                            <Button variant="outline" size="sm" asChild>
-                              <Link to={`/${weddings[0].weddingId}`} target="_blank" rel="noopener noreferrer">View Page</Link>
-                            </Button>
-                            <Button variant="outline" size="sm" asChild>
-                              <Link to={`/dashboard/create?weddingId=${weddings[0].weddingId}`}>Edit</Link>
-                            </Button>
+                            <Link to={`/${weddings[0].weddingId}`} target="_blank" rel="noopener noreferrer" className="block">
+                              <Button variant="outline" size="sm">
+                                View Page
+                              </Button>
+                            </Link>
+                            <Link to={`/dashboard/create?weddingId=${weddings[0].weddingId}`} className="block">
+                              <Button variant="outline" size="sm">
+                                Edit
+                              </Button>
+                            </Link>
                           </div>
                           <Button 
                             variant="outline" 

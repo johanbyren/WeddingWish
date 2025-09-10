@@ -123,13 +123,12 @@ export default function ThankYouPage() {
               </div>
             ) : null}
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild className="bg-pink-500 hover:bg-pink-600">
-                <Link to={`/${slug}`}>Return to Wedding Page</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link to="/">Back to Home</Link>
-              </Button>
+            <div className="flex justify-center">
+              <Link to={`/${slug}`} className="block">
+                <Button className="bg-pink-500 hover:bg-pink-600">
+                  Return to Wedding Page
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
