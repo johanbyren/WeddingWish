@@ -271,7 +271,7 @@ export default function WeddingPage() {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-500">
-                          ${gift.totalContributed} of ${gift.price}
+                          {gift.totalContributed} sek of {gift.price} sek
                         </span>
                         <span className="text-sm font-medium">{Math.round((gift.totalContributed / gift.price) * 100)}%</span>
                       </div>

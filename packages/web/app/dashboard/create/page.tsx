@@ -949,7 +949,7 @@ export default function CreateWeddingPage() {
                         </CardHeader>
                         <CardContent>
                           <div className="grid md:grid-cols-[1fr_2fr] gap-6">
-                            <div>
+                            <div className="flex items-center">
                               {newGiftItem.imagePreview ? (
                                 <div className="relative aspect-square overflow-hidden rounded-lg border">
                                   <img
@@ -1007,7 +1007,7 @@ export default function CreateWeddingPage() {
                           </div>
                         </CardContent>
                         <CardFooter>
-                          <Button onClick={addGiftItem} className="flex items-center">
+                          <Button onClick={addGiftItem} className="flex items-center bg-pink-500 hover:bg-pink-600">
                             <Plus className="h-4 w-4 mr-2" />
                             {t('create.addGiftItem')}
                           </Button>
@@ -1042,7 +1042,7 @@ export default function CreateWeddingPage() {
                                     <div>
                                       <h3 className="font-semibold">{item.name}</h3>
                                       <p className="text-sm text-gray-500">{item.description}</p>
-                                      <p className="font-medium mt-2">${item.price}</p>
+                                      <p className="font-medium mt-2">{item.price} sek</p>
                                     </div>
                                     <Button variant="ghost" size="icon" onClick={() => removeGiftItem(item.id)}>
                                       <Trash2 className="h-4 w-4" />
@@ -1157,7 +1157,7 @@ export default function CreateWeddingPage() {
                                     <CardDescription>{item.description}</CardDescription>
                                   </CardHeader>
                                   <CardContent>
-                                    <p className="font-medium">${item.price}</p>
+                                    <p className="font-medium">{item.price} sek</p>
                                   </CardContent>
                                 </Card>
                               ))}

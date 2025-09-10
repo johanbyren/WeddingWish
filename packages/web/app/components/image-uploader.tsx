@@ -1,6 +1,7 @@
 import { useState, useRef } from "react"
 import { ImagePlus } from "lucide-react"
 import { Button } from "./ui/button"
+import { useTranslation } from "~/context/translation"
 
 interface ImageUploaderProps {
   onImageSelected: (file: File) => void
@@ -10,6 +11,7 @@ interface ImageUploaderProps {
 }
 
 export function ImageUploader({ onImageSelected, className, preview: initialPreview, showPreview = true }: ImageUploaderProps) {
+  const { t } = useTranslation()
   const [preview, setPreview] = useState<string | null>(initialPreview || null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -41,7 +43,7 @@ export function ImageUploader({ onImageSelected, className, preview: initialPrev
         className="w-full"
       >
         <ImagePlus className="mr-2 h-4 w-4" />
-        Upload Image
+        {t('create.uploadImage')}
       </Button>
       {showPreview && preview && (
         <div className="mt-2">

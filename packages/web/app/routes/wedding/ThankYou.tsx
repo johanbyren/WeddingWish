@@ -108,8 +108,8 @@ export default function ThankYouPage() {
                     </div>
                     <Progress value={progressPercentage} className="h-3" />
                     <div className="flex justify-between text-sm text-gray-600">
-                      <span>${gift.totalContributed} contributed</span>
-                      <span>${gift.price} goal</span>
+                      <span>{gift.totalContributed} sek contributed</span>
+                      <span>{gift.price} sek goal</span>
                     </div>
                   </div>
                   {gift.isFullyFunded && (
