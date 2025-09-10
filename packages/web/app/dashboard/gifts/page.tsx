@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { Button } from "~/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card"
-import { HeartIcon, ArrowLeft, ImagePlus } from "lucide-react"
+import { HeartIcon, ImagePlus } from "lucide-react"
 import { Alert, AlertDescription } from "~/components/ui/alert"
 import { ProgressBar } from "~/components/progress-bar"
 import { ContributorList } from "~/components/contributor-list"
@@ -163,18 +163,7 @@ export default function ManageGifts() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="px-4 lg:px-6 h-14 flex items-center border-b">
-        <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/dashboard" className="flex items-center">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              {t('dashboard.backToDashboard')}
-            </Link>
-          </Button>
-        </nav>
-      </header>
-      <main className="flex-1 p-4 md:p-6">
+    <div className="p-4 md:p-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold">{t('gifts.overview')}</h1>
@@ -241,7 +230,6 @@ export default function ManageGifts() {
             </div>
           )}
         </div>
-      </main>
     </div>
   )
 }

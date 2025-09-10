@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/ta
 import { useAuth } from "~/context/auth"
 import { LanguageSelector, useTranslation } from "~/context/translation"
 import { v4 as uuidv4 } from 'uuid'
+import { clearCache } from "~/utils/cache"
 import { RadioGroup, RadioGroupItem } from "../../components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
 
@@ -39,6 +40,7 @@ export default function CreateWeddingPage() {
     additionalPhotos: [] as { file: File; preview: string }[],
     giftItems: [] as {
       id: string;
+      giftId?: string; // Add giftId for existing gifts
       name: string;
       description: string;
       price: string;
@@ -53,6 +55,7 @@ export default function CreateWeddingPage() {
 
   const [newGiftItem, setNewGiftItem] = useState({
     id: "",
+    giftId: undefined as string | undefined,
     name: "",
     description: "",
     price: "",
@@ -100,11 +103,23 @@ export default function CreateWeddingPage() {
     }))
   }
 
+  const removeCoverPhoto = () => {
+    if (confirm(t('create.confirmRemoveCoverPhoto'))) {
+      setWeddingDetails((prev) => ({
+        ...prev,
+        coverPhoto: null,
+        coverPhotoPreview: "",
+      }))
+    }
+  }
+
   const removeAdditionalPhoto = (index: number) => {
-    setWeddingDetails((prev) => ({
-      ...prev,
-      additionalPhotos: prev.additionalPhotos.filter((_, i) => i !== index),
-    }))
+    if (confirm(t('create.confirmRemovePhoto'))) {
+      setWeddingDetails((prev) => ({
+        ...prev,
+        additionalPhotos: prev.additionalPhotos.filter((_, i) => i !== index),
+      }))
+    }
   }
 
   const handleGiftImageSelected = (file: File) => {
@@ -130,6 +145,7 @@ export default function CreateWeddingPage() {
       }))
       setNewGiftItem({
         id: "",
+        giftId: undefined,
         name: "",
         description: "",
         price: "",
@@ -379,7 +395,7 @@ export default function CreateWeddingPage() {
         await deletePhotos(photosToDelete);
 
         // 5. Update wedding with all photos (new + existing)
-        await updateWedding(weddingId, [...newPhotoUrls, ...existingPhotoUrls], []);
+        photoUrls.push(...newPhotoUrls, ...existingPhotoUrls);
       } else {
         const newPhotoUrls = await processNewPhotos(weddingId);
         photoUrls.push(...newPhotoUrls);
@@ -390,6 +406,9 @@ export default function CreateWeddingPage() {
 
       // Update wedding with all photos and gift data
       await updateWedding(weddingId, photoUrls, giftResults);
+
+      // Clear dashboard cache so it shows updated data
+      clearCache('wedding_details_cache');
 
       navigate("/dashboard");
     } catch (error) {
@@ -480,6 +499,12 @@ export default function CreateWeddingPage() {
     const giftResults = [];
 
     for (const gift of weddingDetails.giftItems) {
+      // Skip gifts that already exist (have giftId) - only create new ones
+      if (gift.giftId) {
+        console.log('Skipping existing gift:', gift.name);
+        continue;
+      }
+
       let imageUrl = undefined;
 
       // Upload gift photo if exists
@@ -508,7 +533,7 @@ export default function CreateWeddingPage() {
         updatedAt: new Date().toISOString()
       };
 
-      console.log('Creating gift with data:', giftData);
+      console.log('Creating new gift with data:', giftData);
       giftResults.push(giftData);
     }
 
@@ -876,16 +901,13 @@ export default function CreateWeddingPage() {
                               alt={t('create.coverPreview')}
                               className="w-full h-full object-cover"
                             />
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              className="absolute top-2 right-2"
-                              onClick={() =>
-                                setWeddingDetails((prev) => ({ ...prev, coverPhoto: null, coverPhotoPreview: "" }))
-                              }
+                            <div 
+                              className="absolute top-2 right-2 bg-white/80 hover:bg-white text-gray-600 hover:text-red-600 shadow-md z-50 cursor-pointer rounded-full p-1.5 transition-colors"
+                              onClick={removeCoverPhoto}
+                              title={t('create.removeCoverPhoto')}
                             >
-                              {t('create.remove')}
-                            </Button>
+                              <Trash2 className="h-4 w-4" />
+                            </div>
                           </div>
                         ) : (
                           <ImageUploader onImageSelected={handleCoverPhotoChange} />
@@ -903,14 +925,13 @@ export default function CreateWeddingPage() {
                                 alt={`Photo ${index + 1}`}
                                 className="w-full h-full object-cover"
                               />
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                className="absolute top-2 right-2"
+                              <div 
+                                className="absolute top-2 right-2 bg-white/80 hover:bg-white text-gray-600 hover:text-red-600 shadow-md z-50 cursor-pointer rounded-full p-1.5 transition-colors"
                                 onClick={() => removeAdditionalPhoto(index)}
+                                title={t('create.removePhoto')}
                               >
-                                {t('create.remove')}
-                              </Button>
+                                <Trash2 className="h-4 w-4" />
+                              </div>
                             </div>
                           ))}
                           <div className="aspect-square flex items-center justify-center border rounded-lg border-dashed">
