@@ -55,11 +55,20 @@ export default function ContributePage() {
   const [donorName, setDonorName] = useState("");
   const [donorMessage, setDonorMessage] = useState("");
   const [swishDonationError, setSwishDonationError] = useState<string | null>(null);
+  const [isGeneratingQR, setIsGeneratingQR] = useState(false);
+
+  // Helper function to reset QR state
+  const resetQRState = () => {
+    setShowSwishQR(false);
+    setSwishQRString('');
+    setIsGeneratingQR(false);
+  };
 
   const handleAmountChange = (value: string) => {
     setAmount(value);
     setShowCheckout(false); // Reset checkout when amount changes
     setClientSecret(null);
+    resetQRState(); // Reset Swish QR when amount changes
   };
 
   // Function to refresh gift data after donation
@@ -127,7 +136,20 @@ export default function ContributePage() {
   console.log('Wedding payment settings:', (wedding as any)?.paymentSettings);
 
   const handleSwishClick = () => {
-    if (!gift?.name || !swishPhoneNumber) return;
+    // Validate all required data is present
+    if (!gift?.name || !swishPhoneNumber || !wedding?.weddingId) {
+      console.error('Missing required data for QR generation:', {
+        giftName: gift?.name,
+        swishPhoneNumber,
+        weddingId: wedding?.weddingId
+      });
+      return;
+    }
+
+    setShowSwishQR(false);
+    setSwishQRString('');
+    setIsGeneratingQR(true);
+
     // Remove any leading + from phone number and ensure country code is present
     let phone = swishPhoneNumber.replace(/^\+/, '');
     // If phone starts with 0, replace with 46
@@ -142,12 +164,30 @@ export default function ContributePage() {
       message += ` - ${donorMessage}`;
     }
     
+    // Ensure message doesn't exceed Swish's character limit (50 chars)
+    if (message.length > 50) {
+      message = message.substring(0, 47) + '...';
+    }
+    
     // Compose QR string
     const lockMask = '6';
     const qrCodeString = `C${phone};${amount};${message};${lockMask}`;
 
+    console.log('Generating QR code with data:', {
+      phone,
+      amount,
+      message,
+      qrCodeString
+    });
+
+    // Set the QR string first, then show the QR code after a small delay
     setSwishQRString(qrCodeString);
-    setShowSwishQR(true);
+    
+    // Small delay to ensure QRCodeCanvas component is ready
+    setTimeout(() => {
+      setShowSwishQR(true);
+      setIsGeneratingQR(false);
+    }, 100);
   };
 
   const options = { clientSecret };
@@ -273,7 +313,7 @@ export default function ContributePage() {
                           type="number"
                           min="1"
                           value={amount}
-                          onChange={(e) => { handleAmountChange(e.target.value); setShowSwishQR(false); }}
+                          onChange={(e) => { handleAmountChange(e.target.value); }}
                           className="w-full"
                         />
                         <Slider
@@ -281,7 +321,7 @@ export default function ContributePage() {
                           min={1}
                           max={5000}
                           step={1}
-                          onValueChange={(value: number[]) => { handleAmountChange(value[0].toString()); setShowSwishQR(false); }}
+                          onValueChange={(value: number[]) => { handleAmountChange(value[0].toString()); }}
                         />
                       </div>
                     </div>
@@ -291,7 +331,7 @@ export default function ContributePage() {
                       <Input
                         id="donorName"
                         value={donorName}
-                        onChange={(e) => { setDonorName(e.target.value); setShowSwishQR(false); }}
+                        onChange={(e) => { setDonorName(e.target.value); resetQRState(); }}
                         placeholder="Enter your name"
                         className="w-full"
                       />
@@ -302,21 +342,27 @@ export default function ContributePage() {
                       <Input
                         id="donorMessage"
                         value={donorMessage}
-                        onChange={(e) => { setDonorMessage(e.target.value); setShowSwishQR(false); }}
+                        onChange={(e) => { setDonorMessage(e.target.value); resetQRState(); }}
                         placeholder="Add a personal message"
                         className="w-full"
                       />
                     </div>
                     <Button 
                       onClick={handleSwishClick}
-                      disabled={isProcessing || !swishPhoneNumber}
+                      disabled={isProcessing || !swishPhoneNumber || isGeneratingQR}
                       className="w-full bg-green-500 hover:bg-green-600"
                     >
-                      {isProcessing ? 'Processing...' : 'Show Swish QR Code'}
+                      {isProcessing ? 'Processing...' : isGeneratingQR ? 'Generating QR Code...' : 'Show Swish QR Code'}
                     </Button>
                     {showSwishQR && swishQRString && (
                       <div className="mt-6 flex flex-col items-center">
-                        <QRCodeCanvas value={swishQRString} size={200} />
+                        <QRCodeCanvas 
+                          key={swishQRString} 
+                          value={swishQRString} 
+                          size={200}
+                          level="M"
+                          includeMargin={true}
+                        />
                         <p className="mt-4 text-center text-gray-700">Scan this QR code with your Swish app to complete your donation.<br/>Phone: <b>{swishPhoneNumber}</b><br/>Amount: <b>{amount} SEK</b><br/>Message: <b>{donorName ? `Wedding gift: ${gift.name} (from ${donorName})` : `Wedding gift: ${gift.name}`}{donorMessage ? ` - ${donorMessage}` : ''}</b></p>
                         <div className="mt-4 w-full max-w-xs">
                           <Button
