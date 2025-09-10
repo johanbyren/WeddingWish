@@ -145,6 +145,32 @@ app.get(
 );
 
 /**
+ * Get contributions for a specific gift
+ */
+app.get(
+    "/:giftId/contributions",
+    async (c) => {
+        try {
+            const giftId = c.req.param("giftId");
+            const weddingId = c.req.query("weddingId");
+
+            if (!weddingId) {
+                return c.json({ error: "weddingId is required" }, 400);
+            }
+
+            const contributions = await GiftRegistry.getContributions(giftId, weddingId);
+            return c.json(contributions);
+        } catch (error) {
+            console.error('Error fetching contributions:', error);
+            if (error instanceof Error) {
+                return c.json({ error: error.message }, 400);
+            }
+            return c.json({ error: 'Failed to fetch contributions' }, 500);
+        }
+    }
+);
+
+/**
  * Delete a gift
  */
 app.delete(

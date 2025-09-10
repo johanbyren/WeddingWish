@@ -89,7 +89,8 @@ This template uses [npm Workspaces](https://docs.npmjs.com/cli/v8/using-npm/work
     This is for any scripts that you can run on your SST app using the `sst shell` CLI and [`tsx`](https://www.npmjs.com/package/tsx). For example, you can run the example script using:
 
    ```bash
-   npm run shell src/example.ts
+   
+    shell src/example.ts
    ```
 
 ### Infrastructure
@@ -129,3 +130,7 @@ This architecture provides:
 ---
 
 **Join our community** [Discord](https://sst.dev/discord) | [YouTube](https://www.youtube.com/c/sst-dev) | [X.com](https://x.com/SST_dev)
+
+
+To remove a stage. 
+`npx sst remove --stage johanbyren/dev/prod`

@@ -128,7 +128,7 @@ export const swishDonationsTable = new sst.aws.Dynamo("SwishDonationsTable", {
     fields: {
         donationId: "string",
         weddingId: "string",
-        // giftId: "string",
+        giftId: "string",
         // amount: "number",
         // donorName: "string",
         // message: "string",
@@ -138,6 +138,12 @@ export const swishDonationsTable = new sst.aws.Dynamo("SwishDonationsTable", {
     primaryIndex: {
         hashKey: "donationId",
         rangeKey: "weddingId"
+    },
+    globalIndexes: {
+        "giftId-index": {
+            hashKey: "giftId",
+            rangeKey: "weddingId"
+        }
     }
 });
 

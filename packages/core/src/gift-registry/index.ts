@@ -317,6 +317,51 @@ export namespace GiftRegistry {
     };
 
     /**
+     * Get contributions for a specific gift
+     * @param giftId The ID of the gift
+     * @param weddingId The ID of the wedding
+     * @returns Array of contributions for the gift
+     * @throws {GiftRegistryError} If DynamoDB operations fail
+     */
+    export const getContributions = async (giftId: string, weddingId: string) => {
+        try {
+            // Query Swish donations table for contributions to this gift
+            const swishQueryCommand = new QueryCommand({
+                TableName: Resource.SwishDonationsTable.name,
+                IndexName: "giftId-index", // GSI with giftId as hashKey and weddingId as rangeKey
+                KeyConditionExpression: "giftId = :giftId AND weddingId = :weddingId",
+                ExpressionAttributeValues: {
+                    ":giftId": giftId,
+                    ":weddingId": weddingId
+                }
+            });
+
+            const swishResult = await ddb.send(swishQueryCommand);
+            
+            // For now, we'll return Swish donations as contributions
+            // In the future, we might want to also include Stripe contributions
+            const contributions = (swishResult.Items || []).map(item => ({
+                id: item.donationId,
+                contributorName: item.donorName || 'Anonymous',
+                amount: item.amount,
+                message: item.message || '',
+                createdAt: item.createdAt,
+                type: 'swish'
+            }));
+
+            return contributions;
+        } catch (error) {
+            if (error instanceof GiftRegistryError) {
+                throw error;
+            }
+            throw new GiftRegistryError(
+                `Failed to get contributions for gift ${giftId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                error
+            );
+        }
+    };
+
+    /**
      * Delete a gift and its associated image
      * @param giftId The ID of the gift to delete
      * @param weddingId The ID of the wedding

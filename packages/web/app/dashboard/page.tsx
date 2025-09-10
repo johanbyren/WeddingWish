@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation } from "react-router-dom"
 import { Button } from "~/components/ui/button"
-import { HeartIcon, Gift, Calendar, Settings, LogOut, Plus } from "lucide-react"
+import { HeartIcon, Gift, Calendar, Settings, LogOut } from "lucide-react"
 import { useAuth } from "~/context/auth";
 import { LanguageSelector, useTranslation } from "~/context/translation";
 
@@ -43,15 +43,6 @@ export default function Dashboard() {
               >
                 <Gift className="h-4 w-4 mr-2" />
                 {t('dashboard.giftRegistry')}
-              </Button>
-            </Link>
-            <Link to="/dashboard/create">
-              <Button 
-                variant="ghost" 
-                className={`w-full justify-start ${location.pathname === "/dashboard/create" ? "bg-accent" : ""}`}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                {t('dashboard.createWedding')}
               </Button>
             </Link>
             <Link to="/dashboard/settings">

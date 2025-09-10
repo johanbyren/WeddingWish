@@ -6,6 +6,7 @@ import { HeartIcon, Calendar, MapPin, ChevronLeft, ChevronRight } from "lucide-r
 import { useEffect, useState } from "react"
 import { useAuth } from "~/context/auth"
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "~/components/ui/dialog"
+import { FullScreenLoading } from "~/components/loading-spinner"
 
 interface Gift {
   giftId: string;
@@ -121,12 +122,7 @@ export default function WeddingPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading wedding details...</p>
-        </div>
-      </div>
+      <FullScreenLoading text="Loading wedding details..." />
     )
   }
 

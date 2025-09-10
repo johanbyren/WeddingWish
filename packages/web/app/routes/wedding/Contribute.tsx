@@ -9,6 +9,7 @@ import { Slider } from "~/components/ui/slider"
 import { HeartIcon } from "lucide-react"
 import { QRCodeCanvas } from 'qrcode.react';
 import { useTranslation } from "~/context/translation"
+import { FullScreenLoading } from "~/components/loading-spinner"
 
 import {loadStripe} from '@stripe/stripe-js';
 import {
@@ -200,14 +201,7 @@ export default function ContributePage() {
   }, [slug, giftId]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading gift details...</p>
-        </div>
-      </div>
-    );
+    return <FullScreenLoading text="Loading gift details..." />;
   }
 
   if (error || !gift || !wedding) {
