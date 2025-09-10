@@ -307,13 +307,13 @@ export default function CreateWeddingPage() {
         
         setUrlValidation({
           isValid: !exists || isUserWedding,
-          message: exists && !isUserWedding ? "This URL is already taken" : "URL is available",
+          message: exists && !isUserWedding ? t('create.urlTaken') : t('create.urlAvailable'),
           isChecking: false,
         });
       } catch (error) {
         setUrlValidation({
           isValid: false,
-          message: "Error checking URL availability",
+          message: t('create.urlCheckError'),
           isChecking: false,
         });
       }
@@ -676,7 +676,7 @@ export default function CreateWeddingPage() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <p className="text-pink-500 font-medium">Loading wedding details...</p>
+                <p className="text-pink-500 font-medium">{t('loading.weddingDetails')}</p>
               </div>
             </div>
           )}
@@ -695,7 +695,7 @@ export default function CreateWeddingPage() {
               <TabsContent value="details">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Wedding Details</CardTitle>
+                    <CardTitle>{t('create.weddingDetails')}</CardTitle>
                     <CardDescription>
                       {t('create.fillBasicInfo')}
                     </CardDescription>
@@ -703,37 +703,37 @@ export default function CreateWeddingPage() {
                   <CardContent>
                     <form className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="title">Wedding Title</Label>
+                        <Label htmlFor="title">{t('create.weddingTitle')}</Label>
                         <Input
                           id="title"
                           name="title"
-                          placeholder="John & Jane's Wedding"
+                          placeholder={t('create.weddingTitlePlaceholder')}
                           value={weddingDetails.title}
                           onChange={handleChange}
                           required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="date">Wedding Date</Label>
+                        <Label htmlFor="date">{t('create.weddingDate')}</Label>
                         <DatePicker date={weddingDetails.date} setDate={handleDateChange} />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="location">Wedding Location</Label>
+                        <Label htmlFor="location">{t('create.weddingLocation')}</Label>
                         <Input
                           id="location"
                           name="location"
-                          placeholder="Venue name and address"
+                          placeholder={t('create.weddingLocationPlaceholder')}
                           value={weddingDetails.location}
                           onChange={handleChange}
                           required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="story">Your Love Story</Label>
+                        <Label htmlFor="story">{t('create.loveStory')}</Label>
                         <Textarea
                           id="story"
                           name="story"
-                          placeholder="Share your journey together..."
+                          placeholder={t('create.loveStoryPlaceholder')}
                           className="min-h-[150px]"
                           value={weddingDetails.story}
                           onChange={handleChange}
@@ -743,7 +743,7 @@ export default function CreateWeddingPage() {
                   </CardContent>
                   <CardFooter className="flex justify-between">
                     <Link to="/dashboard">
-                      <Button variant="outline">Cancel</Button>
+                      <Button variant="outline">{t('common.cancel')}</Button>
                     </Link>
                     <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600 min-w-[220px]">
                       {t('create.nextWeddingSettings')}
@@ -755,12 +755,12 @@ export default function CreateWeddingPage() {
               <TabsContent value="settings">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Wedding Settings</CardTitle>
+                    <CardTitle>{t('create.weddingSettings')}</CardTitle>
                     <CardDescription>{t('create.customizeWeddingPage')}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="space-y-4">
-                      <h3 className="text-lg font-medium">Page Visibility</h3>
+                      <h3 className="text-lg font-medium">{t('create.pageVisibility')}</h3>
                       <RadioGroup 
                         value={weddingDetails.visibility} 
                         onValueChange={(value) => setWeddingDetails(prev => ({ ...prev, visibility: value }))}
@@ -768,21 +768,21 @@ export default function CreateWeddingPage() {
                       >
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="public" id="public" />
-                          <Label htmlFor="public">Public - Anyone with the link can view</Label>
+                          <Label htmlFor="public">{t('create.publicVisibility')}</Label>
                         </div>
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="password" id="password" />
-                          <Label htmlFor="password">Password Protected - Guests need a password</Label>
+                          <Label htmlFor="password">{t('create.passwordVisibility')}</Label>
                         </div>
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="private" id="private" />
-                          <Label htmlFor="private">Private - Only you can view</Label>
+                          <Label htmlFor="private">{t('create.privateVisibility')}</Label>
                         </div>
                       </RadioGroup>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="customUrl">Custom URL</Label>
+                      <Label htmlFor="customUrl">{t('create.customUrl')}</Label>
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-500">weddingwish.com/wedding/</span>
                         <Input
@@ -796,50 +796,50 @@ export default function CreateWeddingPage() {
                           }}
                         />
                         {urlValidation.isChecking ? (
-                          <span className="text-sm text-gray-500">Checking...</span>
+                          <span className="text-sm text-gray-500">{t('create.checking')}</span>
                         ) : urlValidation.message && (
                           <span className={`text-sm ${urlValidation.isValid ? 'text-green-500' : 'text-red-500'}`}>
                             {urlValidation.message}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-gray-500">Choose a unique URL for your wedding page</p>
+                      <p className="text-xs text-gray-500">{t('create.customUrlDescription')}</p>
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
-                        <Label htmlFor="theme">Page Theme</Label>
+                        <Label htmlFor="theme">{t('create.pageTheme')}</Label>
                         <Select
                           value={weddingDetails.theme}
                           onValueChange={(value) => setWeddingDetails(prev => ({ ...prev, theme: value }))}
                         >
                           <SelectTrigger id="theme">
-                            <SelectValue placeholder="Select theme" />
+                            <SelectValue placeholder={t('create.selectTheme')} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="classic">Classic</SelectItem>
-                            <SelectItem value="modern">Modern</SelectItem>
-                            <SelectItem value="rustic">Rustic</SelectItem>
-                            <SelectItem value="elegant">Elegant</SelectItem>
-                            <SelectItem value="minimalist">Minimalist</SelectItem>
+                            <SelectItem value="classic">{t('create.classic')}</SelectItem>
+                            <SelectItem value="modern">{t('create.modern')}</SelectItem>
+                            <SelectItem value="rustic">{t('create.rustic')}</SelectItem>
+                            <SelectItem value="elegant">{t('create.elegant')}</SelectItem>
+                            <SelectItem value="minimalist">{t('create.minimalist')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="primaryColor">Primary Color</Label>
+                        <Label htmlFor="primaryColor">{t('create.primaryColor')}</Label>
                         <Select
                           value={weddingDetails.primaryColor}
                           onValueChange={(value) => setWeddingDetails(prev => ({ ...prev, primaryColor: value }))}
                         >
                           <SelectTrigger id="primaryColor">
-                            <SelectValue placeholder="Select color" />
+                            <SelectValue placeholder={t('create.selectColor')} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="pink">Pink</SelectItem>
-                            <SelectItem value="blue">Blue</SelectItem>
-                            <SelectItem value="green">Green</SelectItem>
-                            <SelectItem value="purple">Purple</SelectItem>
-                            <SelectItem value="gold">Gold</SelectItem>
+                            <SelectItem value="pink">{t('create.pink')}</SelectItem>
+                            <SelectItem value="blue">{t('create.blue')}</SelectItem>
+                            <SelectItem value="green">{t('create.green')}</SelectItem>
+                            <SelectItem value="purple">{t('create.purple')}</SelectItem>
+                            <SelectItem value="gold">{t('create.gold')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -847,7 +847,7 @@ export default function CreateWeddingPage() {
                   </CardContent>
                   <CardFooter className="flex justify-between">
                     <Button variant="outline" onClick={goToPreviousTab}>
-                      Back
+                      {t('common.back')}
                     </Button>
                     <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600 min-w-[140px]">
                       {t('create.nextPhotos')}
@@ -859,7 +859,7 @@ export default function CreateWeddingPage() {
               <TabsContent value="photos">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Wedding Photos</CardTitle>
+                    <CardTitle>{t('create.weddingPhotos')}</CardTitle>
                     <CardDescription>{t('create.uploadPhotos')}</CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -926,7 +926,7 @@ export default function CreateWeddingPage() {
                   </CardContent>
                   <CardFooter className="flex justify-between">
                     <Button variant="outline" onClick={goToPreviousTab}>
-                      Back
+                      {t('common.back')}
                     </Button>
                     <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600 min-w-[140px]">
                       {t('create.nextGifts')}
@@ -938,14 +938,14 @@ export default function CreateWeddingPage() {
               <TabsContent value="gifts">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Gift Registry</CardTitle>
+                    <CardTitle>{t('create.giftRegistry')}</CardTitle>
                     <CardDescription>{t('create.addGiftItems')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-6">
                       <Card>
                         <CardHeader>
-                          <CardTitle>Add New Gift Item</CardTitle>
+                          <CardTitle>{t('create.addNewGiftItem')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                           <div className="grid md:grid-cols-[1fr_2fr] gap-6">
@@ -972,17 +972,17 @@ export default function CreateWeddingPage() {
                             </div>
                             <div className="space-y-4">
                               <div className="space-y-2">
-                                <Label htmlFor="gift-name">Gift Name</Label>
+                                <Label htmlFor="gift-name">{t('create.giftName')}</Label>
                                 <Input
                                   id="gift-name"
                                   name="name"
                                   value={newGiftItem.name}
                                   onChange={handleNewGiftItemChange}
-                                  placeholder="e.g., Wedding Dress, Honeymoon Fund"
+                                  placeholder={t('create.giftNamePlaceholder')}
                                 />
                               </div>
                               <div className="space-y-2">
-                                <Label htmlFor="gift-price">Price (sek)</Label>
+                                <Label htmlFor="gift-price">{t('create.priceSek')}</Label>
                                 <Input
                                   id="gift-price"
                                   name="price"
@@ -993,13 +993,13 @@ export default function CreateWeddingPage() {
                                 />
                               </div>
                               <div className="space-y-2">
-                                <Label htmlFor="gift-description">Description</Label>
+                                <Label htmlFor="gift-description">{t('create.description')}</Label>
                                 <Textarea
                                   id="gift-description"
                                   name="description"
                                   value={newGiftItem.description}
                                   onChange={handleNewGiftItemChange}
-                                  placeholder="Describe this gift and why it's important to you..."
+                                  placeholder={t('create.giftDescriptionPlaceholder')}
                                   className="min-h-[100px]"
                                 />
                               </div>
@@ -1033,7 +1033,7 @@ export default function CreateWeddingPage() {
                                     />
                                   ) : (
                                     <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                      No image
+                                      {t('create.noImage')}
                                     </div>
                                   )}
                                 </div>
@@ -1058,7 +1058,7 @@ export default function CreateWeddingPage() {
                   </CardContent>
                   <CardFooter className="flex justify-between">
                     <Button variant="outline" onClick={goToPreviousTab}>
-                      Back
+                      {t('common.back')}
                     </Button>
                     <Button onClick={goToNextTab} className="bg-pink-500 hover:bg-pink-600 min-w-[140px]">
                       {t('create.nextPreview')}
@@ -1070,7 +1070,7 @@ export default function CreateWeddingPage() {
               <TabsContent value="preview">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Preview Your Wedding Page</CardTitle>
+                    <CardTitle>{t('create.previewWeddingPage')}</CardTitle>
                     <CardDescription>{t('create.previewDescription')}</CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -1085,12 +1085,12 @@ export default function CreateWeddingPage() {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            No cover photo selected
+                            {t('create.noCoverPhotoSelected')}
                           </div>
                         )}
                         <div className="absolute inset-0 bg-black/30 flex items-end">
                           <div className="p-4 text-white">
-                            <h2 className="text-2xl font-bold">{weddingDetails.title || "Your Wedding Title"}</h2>
+                            <h2 className="text-2xl font-bold">{weddingDetails.title || t('create.yourWeddingTitle')}</h2>
                             <div className="flex flex-wrap gap-4 mt-2 text-sm">
                               <div className="flex items-center">
                                 <span>
@@ -1102,7 +1102,7 @@ export default function CreateWeddingPage() {
                                 </span>
                               </div>
                               <div className="flex items-center">
-                                <span>{weddingDetails.location || "Wedding Location"}</span>
+                                <span>{weddingDetails.location || t('create.weddingLocation')}</span>
                               </div>
                             </div>
                           </div>
@@ -1112,13 +1112,13 @@ export default function CreateWeddingPage() {
                       {/* {t('create.previewContent')} */}
                       <div className="p-6 space-y-6">
                         <div>
-                          <h3 className="text-xl font-semibold mb-2">Our Story</h3>
-                          <p className="text-gray-700">{weddingDetails.story || "Your love story will appear here..."}</p>
+                          <h3 className="text-xl font-semibold mb-2">{t('create.ourStory')}</h3>
+                          <p className="text-gray-700">{weddingDetails.story || t('create.loveStoryPlaceholder')}</p>
                         </div>
 
                         {weddingDetails.additionalPhotos.length > 0 && (
                           <div>
-                            <h3 className="text-xl font-semibold mb-2">Photo Gallery</h3>
+                            <h3 className="text-xl font-semibold mb-2">{t('create.photoGallery')}</h3>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                               {weddingDetails.additionalPhotos.map((photo, index) => (
                                 <div key={index} className="aspect-square rounded-lg overflow-hidden">
@@ -1134,7 +1134,7 @@ export default function CreateWeddingPage() {
                         )}
 
                         <div>
-                          <h3 className="text-xl font-semibold mb-2">Gift Registry</h3>
+                          <h3 className="text-xl font-semibold mb-2">{t('create.giftRegistry')}</h3>
                           {weddingDetails.giftItems.length > 0 ? (
                             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                               {weddingDetails.giftItems.map((item) => (
@@ -1148,7 +1148,7 @@ export default function CreateWeddingPage() {
                                       />
                                     ) : (
                                       <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                        No image
+                                        {t('create.noImage')}
                                       </div>
                                     )}
                                   </div>
@@ -1164,7 +1164,7 @@ export default function CreateWeddingPage() {
                             </div>
                           ) : (
                             <p className="text-gray-500 italic">
-                              No gift items added yet.
+                              {t('create.noGiftItemsAddedYet')}
                             </p>
                           )}
                         </div>
@@ -1173,7 +1173,7 @@ export default function CreateWeddingPage() {
                   </CardContent>
                   <CardFooter className="flex justify-between">
                     <Button variant="outline" onClick={goToPreviousTab}>
-                      Back
+                      {t('common.back')}
                     </Button>
                     <Button onClick={handleSubmit} className="bg-pink-500 hover:bg-pink-600" disabled={isSubmitting}>
                       {isSubmitting ? (isEditMode ? t('create.updating') : t('create.creating')) : (isEditMode ? t('create.updateWeddingPage') : t('create.createWeddingPage'))}

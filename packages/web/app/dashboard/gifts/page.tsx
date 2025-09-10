@@ -136,7 +136,7 @@ export default function ManageGifts() {
 
 
   if (loading) {
-    return <FullScreenLoading text="Loading gift registry..." />;
+    return <FullScreenLoading text={t('loading.giftRegistry')} />;
   }
 
   if (error) {

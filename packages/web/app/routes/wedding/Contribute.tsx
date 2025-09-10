@@ -201,7 +201,7 @@ export default function ContributePage() {
   }, [slug, giftId]);
 
   if (loading) {
-    return <FullScreenLoading text="Loading gift details..." />;
+    return <FullScreenLoading text={t('loading.giftDetails')} />;
   }
 
   if (error || !gift || !wedding) {

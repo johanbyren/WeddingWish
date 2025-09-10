@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '~/context/translation';
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg';
@@ -7,6 +8,7 @@ interface LoadingSpinnerProps {
 }
 
 export function LoadingSpinner({ size = 'md', className = '', text }: LoadingSpinnerProps) {
+  const { t } = useTranslation();
   const sizeClasses = {
     sm: 'h-4 w-4',
     md: 'h-8 w-8', 
@@ -51,21 +53,23 @@ export function LoadingSpinner({ size = 'md', className = '', text }: LoadingSpi
 }
 
 // Full screen loading component
-export function FullScreenLoading({ text = 'Loading...' }: { text?: string }) {
+export function FullScreenLoading({ text }: { text?: string }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="text-center">
-        <LoadingSpinner size="lg" text={text} />
+        <LoadingSpinner size="lg" text={text || t('common.loading')} />
       </div>
     </div>
   );
 }
 
 // Overlay loading component
-export function OverlayLoading({ text = 'Loading...' }: { text?: string }) {
+export function OverlayLoading({ text }: { text?: string }) {
+  const { t } = useTranslation();
   return (
     <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <LoadingSpinner size="md" text={text} />
+      <LoadingSpinner size="md" text={text || t('common.loading')} />
     </div>
   );
 }

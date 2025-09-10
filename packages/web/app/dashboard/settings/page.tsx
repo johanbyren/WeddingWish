@@ -574,7 +574,7 @@ export default function Settings() {
           {isSaving.all ? (
             <>
               <ButtonLoadingSpinner />
-              Saving...
+              {t('loading.saving')}
             </>
           ) : (
             t('settings.saveAll')
@@ -607,7 +607,7 @@ export default function Settings() {
         </TabsList>
 
         <div className="relative">
-          {isLoading && <OverlayLoading text="Loading settings..." />}
+          {isLoading && <OverlayLoading text={t('loading.settings')} />}
 
           <div className={isLoading ? "opacity-50 pointer-events-none" : ""}>
             {/* Account Settings */}
@@ -844,7 +844,7 @@ export default function Settings() {
                     {isSaving.account ? (
                       <>
                         <ButtonLoadingSpinner />
-                        Saving...
+                        {t('loading.saving')}
                       </>
                     ) : (
                       t('settings.saveAccount')
@@ -901,7 +901,7 @@ export default function Settings() {
                               {isSaving.payment ? (
                                 <>
                                   <ButtonLoadingSpinner />
-                                  Setting up...
+                                  {t('loading.settingUp')}
                                 </>
                               ) : (
                                 t('settings.setupStripeButton')
@@ -980,7 +980,7 @@ export default function Settings() {
                     {isSaving.payment ? (
                       <>
                         <ButtonLoadingSpinner />
-                        Saving...
+                        {t('loading.saving')}
                       </>
                     ) : (
                       t('settings.savePayment')
@@ -1054,7 +1054,7 @@ export default function Settings() {
                     {isSaving.notification ? (
                       <>
                         <ButtonLoadingSpinner />
-                        Saving...
+                        {t('loading.saving')}
                       </>
                     ) : (
                       t('settings.saveNotifications')
@@ -1128,7 +1128,7 @@ export default function Settings() {
                     {isSaving.privacy ? (
                       <>
                         <ButtonLoadingSpinner />
-                        Saving...
+                        {t('loading.saving')}
                       </>
                     ) : (
                       t('settings.savePrivacy')

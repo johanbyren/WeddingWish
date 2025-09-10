@@ -5,6 +5,7 @@ import { Progress } from "~/components/ui/progress"
 import { HeartIcon, Calendar, MapPin, ChevronLeft, ChevronRight } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useAuth } from "~/context/auth"
+import { useTranslation } from "~/context/translation"
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "~/components/ui/dialog"
 import { FullScreenLoading } from "~/components/loading-spinner"
 
@@ -37,6 +38,7 @@ interface Wedding {
 export default function WeddingPage() {
   const { slug } = useParams()
   const auth = useAuth()
+  const { t } = useTranslation()
   const [wedding, setWedding] = useState<Wedding | null>(null)
   const [gifts, setGifts] = useState<Gift[]>([])
   const [loading, setLoading] = useState(true)
@@ -122,7 +124,7 @@ export default function WeddingPage() {
 
   if (loading) {
     return (
-      <FullScreenLoading text="Loading wedding details..." />
+      <FullScreenLoading text={t('loading.weddingDetails')} />
     )
   }
 
