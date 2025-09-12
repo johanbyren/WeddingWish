@@ -838,15 +838,95 @@ interface TranslationContextType {
 // Create context
 const TranslationContext = createContext<TranslationContextType | undefined>(undefined);
 
+// Function to detect if user is likely from Sweden
+function detectSwedishUser(): boolean {
+  try {
+    // Check browser language
+    const browserLang = navigator.language.toLowerCase();
+    const browserLangs = navigator.languages?.map(lang => lang.toLowerCase()) || [];
+    
+    // Check if any browser language is Swedish
+    const hasSwedishLang = browserLangs.some(lang => 
+      lang.startsWith('sv') || 
+      lang.includes('sv-se') || 
+      lang.includes('sv-fi') ||
+      lang === 'sv'
+    );
+    
+    // Check timezone (Sweden is UTC+1/+2)
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const swedishTimezones = [
+      'Europe/Stockholm',
+      'Europe/Gothenburg',
+      'Europe/Malmö'
+    ];
+    const hasSwedishTimezone = swedishTimezones.includes(timezone);
+    
+    // Check if browser language suggests Swedish region
+    const hasSwedishRegion = browserLangs.some(lang => 
+      lang.includes('se') || // Sweden
+      lang.includes('fi')    // Finland (Swedish speakers)
+    );
+    
+    // Check number formatting locale (Swedish uses comma as decimal separator)
+    const numberFormatter = new Intl.NumberFormat();
+    const sampleNumber = numberFormatter.format(1.5);
+    const usesSwedishNumberFormat = sampleNumber.includes(',');
+    
+    // Check date formatting locale
+    const dateFormatter = new Intl.DateTimeFormat();
+    const sampleDate = dateFormatter.format(new Date(2024, 0, 15)); // January 15, 2024
+    const usesSwedishDateFormat = sampleDate.includes('15') && sampleDate.includes('jan'); // Swedish uses "jan" for January
+    
+    // Combine all detection methods
+    const detectionScore = [
+      hasSwedishLang ? 3 : 0,      // Strong indicator
+      hasSwedishTimezone ? 2 : 0,  // Good indicator
+      hasSwedishRegion ? 1 : 0,    // Weak indicator
+      usesSwedishNumberFormat ? 1 : 0, // Weak indicator
+      usesSwedishDateFormat ? 1 : 0    // Weak indicator
+    ].reduce((sum, score) => sum + score, 0);
+    
+    // Consider user Swedish if score is 2 or higher
+    return detectionScore >= 2;
+  } catch (error) {
+    // Fallback to simple browser language check if advanced detection fails
+    console.warn('Language detection failed, using fallback:', error);
+    return navigator.language.toLowerCase().startsWith('sv');
+  }
+}
+
 // Provider component
 export function TranslationProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>('en');
 
-  // Load saved language preference
+  // Load saved language preference or detect Swedish users
   useEffect(() => {
     const savedLanguage = localStorage.getItem('wedding-wish-language') as Language;
+    
     if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'sv')) {
+      // User has explicitly set a language preference
       setLanguage(savedLanguage);
+    } else {
+      // No saved preference, detect if user is Swedish
+      const isSwedishUser = detectSwedishUser();
+      const defaultLanguage = isSwedishUser ? 'sv' : 'en';
+      
+      // Debug logging (remove in production)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Language detection:', {
+          browserLang: navigator.language,
+          browserLangs: navigator.languages,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          isSwedishUser,
+          defaultLanguage
+        });
+      }
+      
+      setLanguage(defaultLanguage);
+      
+      // Save the detected language preference
+      localStorage.setItem('wedding-wish-language', defaultLanguage);
     }
   }, []);
 
