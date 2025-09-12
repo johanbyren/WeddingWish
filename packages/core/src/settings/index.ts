@@ -78,6 +78,9 @@ export namespace Settings {
         if (settings.privacySettings) {
             newSettings.privacySettings = settings.privacySettings;
         }
+        if (settings.languageSettings) {
+            newSettings.languageSettings = settings.languageSettings;
+        }
 
         console.log('newSettings: ', newSettings)
 

@@ -49,6 +49,10 @@ export const privacySettingsSchema = z.object({
   showRegistry: z.boolean(),
 });
 
+export const languageSettingsSchema = z.object({
+  language: z.enum(["en", "sv"]),
+});
+
 export const settingsSchema = z.object({
   userId: z.string(),
   email: z.string().email(),
@@ -57,6 +61,7 @@ export const settingsSchema = z.object({
   paymentSettings: paymentSettingsSchema.optional(),
   notificationSettings: notificationSettingsSchema.optional(),
   privacySettings: privacySettingsSchema.optional(),
+  languageSettings: languageSettingsSchema.optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 });
@@ -66,4 +71,5 @@ export type PageSettingsType = z.infer<typeof pageSettingsSchema>;
 export type PaymentSettingsType = z.infer<typeof paymentSettingsSchema>;
 export type NotificationSettingsType = z.infer<typeof notificationSettingsSchema>;
 export type PrivacySettingsType = z.infer<typeof privacySettingsSchema>;
+export type LanguageSettingsType = z.infer<typeof languageSettingsSchema>;
 export type SettingsType = z.infer<typeof settingsSchema>;

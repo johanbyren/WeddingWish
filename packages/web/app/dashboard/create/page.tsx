@@ -50,7 +50,8 @@ export default function CreateWeddingPage() {
     theme: "default",
     primaryColor: "#FF5733",
     visibility: "public",
-    customUrl: ""
+    customUrl: "",
+    language: "en" as "en" | "sv"
   });
 
   const [newGiftItem, setNewGiftItem] = useState({
@@ -239,6 +240,7 @@ export default function CreateWeddingPage() {
             visibility: weddingData.visibility || "public",
             theme: weddingData.theme || "default",
             primaryColor: weddingData.primaryColor || "#FF5733",
+            language: weddingData.language || "en",
             giftItems: giftsWithUrls
           }));
         } else {
@@ -259,6 +261,7 @@ export default function CreateWeddingPage() {
             visibility: weddingData.visibility || "public",
             theme: weddingData.theme || "default",
             primaryColor: weddingData.primaryColor || "#FF5733",
+            language: weddingData.language || "en",
           }));
         }
       } catch (error) {
@@ -634,6 +637,7 @@ export default function CreateWeddingPage() {
       primaryColor: weddingDetails.primaryColor,
       visibility: weddingDetails.visibility,
       customUrl: weddingDetails.customUrl,
+      language: weddingDetails.language,
       updatedAt: new Date().toISOString().split("T")[0],
       ...(isEditMode ? {} : { createdAt: new Date().toISOString().split("T")[0] }),
     };
@@ -831,7 +835,7 @@ export default function CreateWeddingPage() {
                       <p className="text-xs text-gray-500">{t('create.customUrlDescription')}</p>
                     </div>
 
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-4 md:grid-cols-3">
                       <div className="space-y-2">
                         <Label htmlFor="theme">{t('create.pageTheme')}</Label>
                         <Select
@@ -867,6 +871,22 @@ export default function CreateWeddingPage() {
                             <SelectItem value="gold">{t('create.gold')}</SelectItem>
                           </SelectContent>
                         </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="language">{t('create.weddingLanguage')}</Label>
+                        <Select
+                          value={weddingDetails.language}
+                          onValueChange={(value: "en" | "sv") => setWeddingDetails(prev => ({ ...prev, language: value }))}
+                        >
+                          <SelectTrigger id="language">
+                            <SelectValue placeholder={t('create.selectLanguage')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="en">English</SelectItem>
+                            <SelectItem value="sv">Svenska</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-gray-500">{t('create.languageDescription')}</p>
                       </div>
                     </div>
                   </CardContent>

@@ -44,6 +44,7 @@ app.post("/",
             paymentSettings: settingsSchema.shape.paymentSettings.optional(),
             notificationSettings: settingsSchema.shape.notificationSettings.optional(),
             privacySettings: settingsSchema.shape.privacySettings.optional(),
+            languageSettings: settingsSchema.shape.languageSettings.optional(),
         }),
     ),
     async (c) => {
@@ -58,6 +59,7 @@ app.post("/",
                 ...(body.paymentSettings && { paymentSettings: body.paymentSettings }),
                 ...(body.notificationSettings && { notificationSettings: body.notificationSettings }),
                 ...(body.privacySettings && { privacySettings: body.privacySettings }),
+                ...(body.languageSettings && { languageSettings: body.languageSettings }),
             };
             const result = await Settings.save(settings);
             return c.json({ success: true, result });

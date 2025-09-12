@@ -41,23 +41,43 @@ app.get(
                 })
             );
 
-            // Get user's payment settings
+            // Get user's payment and language settings
             let paymentSettings = null;
+            let languageSettings = null;
             try {
-                console.log("Fetching payment settings for userId:", wedding.userId);
+                console.log("Fetching user settings for userId:", wedding.userId);
                 const userSettings = await Settings.get(wedding.userId, wedding.userId);
                 console.log("User settings fetched:", userSettings);
                 paymentSettings = userSettings?.paymentSettings || null;
+                languageSettings = userSettings?.languageSettings || null;
                 console.log("Payment settings extracted:", paymentSettings);
+                console.log("Language settings extracted:", languageSettings);
             } catch (error) {
-                console.error("Error fetching payment settings:", error);
-                // Continue without payment settings if there's an error
+                console.error("Error fetching user settings:", error);
+                // Continue without settings if there's an error
+            }
+
+            // If wedding has a language setting, also save it to user settings
+            if (wedding.language) {
+                try {
+                    await Settings.save({
+                        userId: wedding.userId,
+                        email: wedding.userId,
+                        languageSettings: {
+                            language: wedding.language
+                        }
+                    });
+                } catch (error) {
+                    console.error("Error saving language to user settings:", error);
+                    // Continue without failing the wedding request
+                }
             }
 
             return c.json({
                 ...wedding,
                 photoUrls,
-                paymentSettings
+                paymentSettings,
+                languageSettings: wedding.language ? { language: wedding.language } : languageSettings
             });
         } catch (error) {
             console.error("API: Error fetching wedding by id:", error);
@@ -98,23 +118,43 @@ app.get(
                 })
             );
 
-            // Get user's payment settings
+            // Get user's payment and language settings
             let paymentSettings = null;
+            let languageSettings = null;
             try {
-                console.log("Fetching payment settings for userId:", wedding.userId);
+                console.log("Fetching user settings for userId:", wedding.userId);
                 const userSettings = await Settings.get(wedding.userId, wedding.userId);
                 console.log("User settings fetched:", userSettings);
                 paymentSettings = userSettings?.paymentSettings || null;
+                languageSettings = userSettings?.languageSettings || null;
                 console.log("Payment settings extracted:", paymentSettings);
+                console.log("Language settings extracted:", languageSettings);
             } catch (error) {
-                console.error("Error fetching payment settings:", error);
-                // Continue without payment settings if there's an error
+                console.error("Error fetching user settings:", error);
+                // Continue without settings if there's an error
+            }
+
+            // If wedding has a language setting, also save it to user settings
+            if (wedding.language) {
+                try {
+                    await Settings.save({
+                        userId: wedding.userId,
+                        email: wedding.userId,
+                        languageSettings: {
+                            language: wedding.language
+                        }
+                    });
+                } catch (error) {
+                    console.error("Error saving language to user settings:", error);
+                    // Continue without failing the wedding request
+                }
             }
 
             return c.json({
                 ...wedding,
                 photoUrls,
-                paymentSettings
+                paymentSettings,
+                languageSettings: wedding.language ? { language: wedding.language } : languageSettings
             });
         } catch (error) {
             console.error("Error fetching wedding:", error);

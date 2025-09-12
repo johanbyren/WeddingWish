@@ -31,14 +31,19 @@ interface Wedding {
   customUrl?: string
   theme?: string
   primaryColor?: string
+  language?: "en" | "sv"
   createdAt?: string
   updatedAt?: string
+  paymentSettings?: any
+  languageSettings?: {
+    language: "en" | "sv"
+  }
 }
 
 export default function WeddingPage() {
   const { slug } = useParams()
   const auth = useAuth()
-  const { t } = useTranslation()
+  const { t, setLanguage } = useTranslation()
   const [wedding, setWedding] = useState<Wedding | null>(null)
   const [gifts, setGifts] = useState<Gift[]>([])
   const [loading, setLoading] = useState(true)
@@ -69,6 +74,13 @@ export default function WeddingPage() {
 
         const data = await response.json();
         setWedding(data);
+        
+        // Set language from wedding settings if available
+        if (data.language) {
+          setLanguage(data.language);
+        } else if (data.languageSettings?.language) {
+          setLanguage(data.languageSettings.language);
+        }
 
         // Fetch gifts for this wedding
         const giftsResponse = await fetch(`${import.meta.env.VITE_API_URL}api/show-gift/wedding/${data.weddingId}`, {
@@ -132,11 +144,11 @@ export default function WeddingPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-500">Error</h2>
-          <p className="mt-2 text-gray-600">{error || 'Wedding not found'}</p>
+          <h2 className="text-2xl font-bold text-red-500">{t('weddingPage.error')}</h2>
+          <p className="mt-2 text-gray-600">{error || t('weddingPage.weddingNotFound')}</p>
           <Link to="/" className="block">
             <Button className="w-full mt-4">
-              Back to Home
+              {t('weddingPage.backToHome')}
             </Button>
           </Link>
         </div>
@@ -212,7 +224,7 @@ export default function WeddingPage() {
         <section className="py-12">
           <div className="container px-4 md:px-6 mx-auto">
             <div className="max-w-3xl mx-auto">
-              <h2 className="text-2xl font-bold mb-4">Our Story</h2>
+              <h2 className="text-2xl font-bold mb-4">{t('weddingPage.story')}</h2>
               <p className="text-gray-700 leading-relaxed">{wedding.story}</p>
             </div>
           </div>
@@ -222,7 +234,7 @@ export default function WeddingPage() {
           <section className="py-12">
             <div className="container px-4 md:px-6 mx-auto">
               <div className="max-w-3xl mx-auto">
-                <h2 className="text-2xl font-bold mb-6">Photo Gallery</h2>
+                <h2 className="text-2xl font-bold mb-6">{t('weddingPage.photoGallery')}</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {wedding.photoUrls
                     .filter(url => url.includes('gallery-'))
@@ -248,10 +260,9 @@ export default function WeddingPage() {
         <section className="py-12 bg-pink-50">
           <div className="container px-4 md:px-6 mx-auto">
             <div className="max-w-3xl mx-auto text-center mb-10">
-              <h2 className="text-2xl font-bold">Gift Registry</h2>
+              <h2 className="text-2xl font-bold">{t('weddingPage.giftRegistry')}</h2>
               <p className="text-gray-700 mt-2">
-                Your presence at our wedding is the greatest gift of all. However, if you wish to honor us with a gift,
-                we have created this registry.
+                {t('weddingPage.giftRegistryDescription')}
               </p>
             </div>
 
@@ -273,7 +284,7 @@ export default function WeddingPage() {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-500">
-                          {gift.totalContributed} sek of {gift.price} sek
+                          {gift.totalContributed} {t('weddingPage.sekOf')} {gift.price} {t('weddingPage.sek')}
                         </span>
                         <span className="text-sm font-medium">{Math.round((gift.totalContributed / gift.price) * 100)}%</span>
                       </div>
@@ -283,7 +294,7 @@ export default function WeddingPage() {
                   <CardFooter>
                     <Link to={`/${slug}/contribute/${gift.giftId}`} className="block w-full">
                       <Button className="w-full bg-pink-500 hover:bg-pink-600">
-                        Contribute
+                        {t('weddingPage.contribute')}
                       </Button>
                     </Link>
                   </CardFooter>

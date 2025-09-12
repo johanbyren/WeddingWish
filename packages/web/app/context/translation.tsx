@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './auth';
 
 // Translation types
 type Language = 'en' | 'sv';
@@ -95,6 +96,7 @@ const translations = {
     'settings.savePayment': 'Save Payment',
     'settings.saveNotifications': 'Save Notifications',
     'settings.savePrivacy': 'Save Privacy',
+    'settings.saveLanguage': 'Save Language',
     
     // Gifts
     'gifts.title': 'Gift Registry',
@@ -297,6 +299,8 @@ const translations = {
     'settings.failedToSaveNotificationsError': 'Failed to save notification settings. Please try again.',
     'settings.failedToSavePrivacy': 'Failed to save privacy settings',
     'settings.failedToSavePrivacyError': 'Failed to save privacy settings. Please try again.',
+    'settings.failedToSaveLanguage': 'Failed to save language settings',
+    'settings.failedToSaveLanguageError': 'Failed to save language settings. Please try again.',
     'settings.failedToStartStripe': 'Failed to start Stripe Connect onboarding',
     'settings.failedToStartStripeError': 'Failed to start Stripe Connect onboarding. Please try again.',
     'settings.displayContributorNames': 'Display the names of people who contribute to your registry',
@@ -313,11 +317,17 @@ const translations = {
     'settings.automaticThankYouEmails': 'Automatic thank you emails',
     'settings.sendAutomaticThankYou': 'Send automatic thank you emails to contributors',
     'settings.contributionSettings': 'Contribution Settings',
+    'settings.language': 'Language',
+    'settings.languageDescription': 'Choose your preferred language for the application',
+    'settings.selectLanguage': 'Select Language',
     
     // Create Wedding Page Additional Keys
     'create.coverPhotoDescription': 'This will be the main image at the top of your wedding page.',
     'create.additionalPhotosDescription': 'Add more photos to your wedding gallery (optional).',
     'create.remove': 'Remove',
+    'create.weddingLanguage': 'Wedding Page Language',
+    'create.selectLanguage': 'Select Language',
+    'create.languageDescription': 'Choose the language for your wedding page',
     'create.confirmRemoveCoverPhoto': 'Are you sure you want to remove the cover photo?',
     'create.confirmRemovePhoto': 'Are you sure you want to remove this photo?',
     'create.addGiftItem': 'Add Gift Item',
@@ -350,38 +360,42 @@ const translations = {
     'gifts.addFirstGift': 'Add your first gift to get started',
     
     // Contribute Page
-    'contribute.title': 'Contribute to the Wedding Couple',
-    'contribute.description': 'Your contribution will go directly to the couple and help make their day even more special.',
+    'contribute.title': 'Contribute to Gift',
+    'contribute.description': 'Help us make our wedding dreams come true by contributing to this gift.',
     'contribute.alreadyContributed': 'Already contributed',
-    'contribute.amount': 'Contribution Amount (SEK)',
+    'contribute.contributionAmount': 'Contribution Amount (SEK)',
     'contribute.yourName': 'Your Name (optional)',
     'contribute.message': 'Message (optional)',
-    'contribute.enterName': 'Enter your name',
-    'contribute.addMessage': 'Add a personal message',
+    'contribute.enterYourName': 'Enter your name',
+    'contribute.addPersonalMessage': 'Add a personal message',
     'contribute.payNow': 'Pay Now',
     'contribute.showSwishQR': 'Show Swish QR Code',
-    'contribute.showPaymentDetails': 'Show Payment Details',
+    'contribute.generatingQR': 'Generating QR Code...',
     'contribute.processing': 'Processing...',
-    'contribute.completedPayment': 'I\'ve completed my Swish payment',
-    'contribute.scanQRCode': 'Scan this QR code with your Swish app to complete your donation.',
+    'contribute.completedSwishPayment': 'I\'ve completed my Swish payment',
+    'contribute.scanQRCode': 'Scan the QR code with your Swish app to complete your contribution.',
+    'contribute.scanQRCodeWithSwish': 'Scan this QR code with your Swish app to complete your donation.',
     'contribute.phone': 'Phone',
-    'contribute.amountLabel': 'Amount',
-    'contribute.messageLabel': 'Message',
-    'contribute.securePayment': 'Secure payment via Swish',
+    'contribute.amount': 'Amount',
+    'contribute.securePaymentSwish': 'Secure payment via Swish',
     'contribute.securePaymentStripe': 'Secure payment by Stripe',
-    'contribute.followInstructions': 'Follow the payment instructions to complete your contribution via Swish.',
-    'contribute.encryptedPayment': 'Your payment is encrypted and securely processed. We never store your card details.',
+    'contribute.paymentEncrypted': 'Your payment is encrypted and securely processed. We never store your card details.',
+    'contribute.couldNotSaveDonation': 'Could not save your donation. Please try again.',
+    'contribute.backToWeddingPage': 'Back to Wedding Page',
+    'contribute.giftNotConfigured': 'This gift is not properly configured. Please contact the wedding organizers.',
+    'contribute.failedToCreateCheckout': 'Failed to create checkout session',
+    'contribute.giftNotFound': 'Gift not found',
     
     // Thank You Page
-    'thankYou.title': 'Thank You for Your Contribution!',
-    'thankYou.description': 'Your generosity means the world to us. Your contribution will help make our special day even more memorable. We can\'t wait to celebrate with you!',
+    'thankYou.title': 'Thank You!',
+    'thankYou.description': 'Thank you for your generous contribution to our wedding. Your support means the world to us!',
     'thankYou.contributionProgress': 'Contribution Progress',
     'thankYou.gift': 'Gift',
     'thankYou.progress': 'Progress',
-    'thankYou.contributed': 'contributed',
-    'thankYou.goal': 'goal',
+    'thankYou.sekContributed': 'sek contributed',
+    'thankYou.sekGoal': 'sek goal',
     'thankYou.fullyFunded': 'Fully Funded!',
-    'thankYou.returnToWedding': 'Return to Wedding Page',
+    'thankYou.returnToWeddingPage': 'Return to Wedding Page',
     'thankYou.backToHome': 'Back to Home',
     
     // Wedding Page
@@ -391,6 +405,17 @@ const translations = {
     'weddingPage.story': 'Our Story',
     'weddingPage.giftRegistry': 'Gift Registry',
     'weddingPage.contribute': 'Contribute',
+    'weddingPage.photoGallery': 'Photo Gallery',
+    'weddingPage.giftRegistryDescription': 'Your presence at our wedding is the greatest gift of all. However, if you wish to honor us with a gift, we have created this registry.',
+    'weddingPage.sekOf': 'sek of',
+    'weddingPage.sek': 'sek',
+    'weddingPage.contributed': 'contributed',
+    'weddingPage.goal': 'goal',
+    'weddingPage.fullyFunded': 'Fully Funded!',
+    'weddingPage.backToHome': 'Back to Home',
+    'weddingPage.weddingNotFound': 'Wedding not found',
+    'weddingPage.error': 'Error',
+    
     'thankYou': 'Thank You',
     
     // Errors and Loading
@@ -505,6 +530,7 @@ const translations = {
     'settings.savePayment': 'Spara betalning',
     'settings.saveNotifications': 'Spara notifieringar',
     'settings.savePrivacy': 'Spara integritet',
+    'settings.saveLanguage': 'Spara språk',
     
     // Gifts
     'gifts.title': 'Gåvoregister',
@@ -514,7 +540,7 @@ const translations = {
     'gifts.description': 'Beskrivning',
     'gifts.image': 'Bild',
     'gifts.totalContributed': 'Totalt bidragit',
-    'gifts.progress': 'Framsteg',
+    'gifts.progress': 'Insamlat',
     'gifts.fullyFunded': 'Helt finansierad!',
     
     // Forms
@@ -707,6 +733,8 @@ const translations = {
     'settings.failedToSaveNotificationsError': 'Misslyckades att spara notifieringsinställningar. Försök igen.',
     'settings.failedToSavePrivacy': 'Misslyckades att spara integritetsinställningar',
     'settings.failedToSavePrivacyError': 'Misslyckades att spara integritetsinställningar. Försök igen.',
+    'settings.failedToSaveLanguage': 'Misslyckades att spara språkinställningar',
+    'settings.failedToSaveLanguageError': 'Misslyckades att spara språkinställningar. Försök igen.',
     'settings.failedToStartStripe': 'Misslyckades att starta Stripe Connect onboarding',
     'settings.failedToStartStripeError': 'Misslyckades att starta Stripe Connect onboarding. Försök igen.',
     'settings.displayContributorNames': 'Visa namnen på personer som bidrar till ditt register',
@@ -723,11 +751,17 @@ const translations = {
     'settings.automaticThankYouEmails': 'Automatiska tack-e-postmeddelanden',
     'settings.sendAutomaticThankYou': 'Skicka automatiska tack-e-postmeddelanden till bidragsgivare',
     'settings.contributionSettings': 'Bidragsinställningar',
+    'settings.language': 'Språk',
+    'settings.languageDescription': 'Välj ditt föredragna språk för applikationen',
+    'settings.selectLanguage': 'Välj språk',
     
     // Create Wedding Page Additional Keys
     'create.coverPhotoDescription': 'Detta kommer att vara huvudbilden högst upp på din bröllopssida.',
     'create.additionalPhotosDescription': 'Lägg till fler foton i din bröllopsgalleri (valfritt).',
     'create.remove': 'Ta bort',
+    'create.weddingLanguage': 'Bröllopssidans språk',
+    'create.selectLanguage': 'Välj språk',
+    'create.languageDescription': 'Välj språket för din bröllopssida',
     'create.confirmRemoveCoverPhoto': 'Är du säker på att du vill ta bort omslagsbilden?',
     'create.confirmRemovePhoto': 'Är du säker på att du vill ta bort denna bild?',
     'create.addGiftItem': 'Lägg till gåva',
@@ -760,38 +794,42 @@ const translations = {
     'gifts.addFirstGift': 'Lägg till din första gåva för att komma igång',
     
     // Contribute Page
-    'contribute.title': 'Bidra till bröllopsparet',
-    'contribute.description': 'Ditt bidrag går direkt till paret och hjälper till att göra deras dag ännu mer speciell.',
+    'contribute.title': 'Bidra till gåva',
+    'contribute.description': 'Hjälp oss att förverkliga våra bröllopsdrömmar genom att bidra till denna gåva.',
     'contribute.alreadyContributed': 'Redan bidragit',
-    'contribute.amount': 'Bidragsbelopp (SEK)',
+    'contribute.contributionAmount': 'Bidragsbelopp (SEK)',
     'contribute.yourName': 'Ditt namn (valfritt)',
     'contribute.message': 'Meddelande (valfritt)',
-    'contribute.enterName': 'Ange ditt namn',
-    'contribute.addMessage': 'Lägg till ett personligt meddelande',
+    'contribute.enterYourName': 'Ange ditt namn',
+    'contribute.addPersonalMessage': 'Lägg till ett personligt meddelande',
     'contribute.payNow': 'Betala nu',
     'contribute.showSwishQR': 'Visa Swish QR-kod',
-    'contribute.showPaymentDetails': 'Visa betalningsdetaljer',
+    'contribute.generatingQR': 'Genererar QR-kod...',
     'contribute.processing': 'Bearbetar...',
-    'contribute.completedPayment': 'Jag har slutfört min Swish-betalning',
-    'contribute.scanQRCode': 'Skanna denna QR-kod med din Swish-app för att slutföra din donation.',
+    'contribute.completedSwishPayment': 'Jag har slutfört min Swish-betalning',
+    'contribute.scanQRCode': 'Skanna QR-koden med din Swish-app för att slutföra ditt bidrag.',
+    'contribute.scanQRCodeWithSwish': 'Skanna denna QR-kod med din Swish-app för att slutföra din donation.',
     'contribute.phone': 'Telefon',
-    'contribute.amountLabel': 'Belopp',
-    'contribute.messageLabel': 'Meddelande',
-    'contribute.securePayment': 'Säker betalning via Swish',
-    'contribute.securePaymentStripe': 'Säker betalning av Stripe',
-    'contribute.followInstructions': 'Följ betalningsinstruktionerna för att slutföra ditt bidrag via Swish.',
-    'contribute.encryptedPayment': 'Din betalning är krypterad och säkert bearbetad. Vi lagrar aldrig dina kortuppgifter.',
+    'contribute.amount': 'Belopp',
+    'contribute.securePaymentSwish': 'Säker betalning via Swish',
+    'contribute.securePaymentStripe': 'Säker betalning via Stripe',
+    'contribute.paymentEncrypted': 'Din betalning är krypterad och säkert bearbetad. Vi lagrar aldrig dina kortuppgifter.',
+    'contribute.couldNotSaveDonation': 'Kunde inte spara din donation. Försök igen.',
+    'contribute.backToWeddingPage': 'Tillbaka till bröllopssidan',
+    'contribute.giftNotConfigured': 'Denna gåva är inte korrekt konfigurerad. Kontakta bröllopsarrangörerna.',
+    'contribute.failedToCreateCheckout': 'Misslyckades att skapa kassasession',
+    'contribute.giftNotFound': 'Gåva hittades inte',
     
     // Thank You Page
-    'thankYou.title': 'Tack för ditt bidrag!',
-    'thankYou.description': 'Din generositet betyder allt för oss. Ditt bidrag kommer att hjälpa till att göra vår speciella dag ännu mer minnesvärd. Vi ser fram emot att fira med dig!',
-    'thankYou.contributionProgress': 'Bidragsframsteg',
+    'thankYou.title': 'Tack så mycket!',
+    'thankYou.description': 'Tack för ditt generösa bidrag till vårt bröllop. Ditt stöd betyder allt för oss!',
+    'thankYou.contributionProgress': 'Insamlat belopp',
     'thankYou.gift': 'Gåva',
-    'thankYou.progress': 'Framsteg',
-    'thankYou.contributed': 'bidragit',
-    'thankYou.goal': 'mål',
+    'thankYou.progress': 'Insamlat',
+    'thankYou.sekContributed': 'sek bidragit',
+    'thankYou.sekGoal': 'sek mål',
     'thankYou.fullyFunded': 'Helt finansierad!',
-    'thankYou.returnToWedding': 'Återgå till bröllopssidan',
+    'thankYou.returnToWeddingPage': 'Återgå till bröllopssidan',
     'thankYou.backToHome': 'Tillbaka till hem',
     
     // Wedding Page
@@ -801,6 +839,17 @@ const translations = {
     'weddingPage.story': 'Vår berättelse',
     'weddingPage.giftRegistry': 'Gåvoregister',
     'weddingPage.contribute': 'Bidra',
+    'weddingPage.photoGallery': 'Fotogalleri',
+    'weddingPage.giftRegistryDescription': 'Er närvaro på vårt bröllop är den största gåvan av alla. Men om ni vill hedra oss med en gåva, har vi skapat detta register.',
+    'weddingPage.sekOf': 'sek av',
+    'weddingPage.sek': 'sek',
+    'weddingPage.contributed': 'bidragit',
+    'weddingPage.goal': 'mål',
+    'weddingPage.fullyFunded': 'Helt finansierad!',
+    'weddingPage.backToHome': 'Tillbaka till hem',
+    'weddingPage.weddingNotFound': 'Bröllop hittades inte',
+    'weddingPage.error': 'Fel',
+    
     'thankYou': 'Tack',
     
     // Errors and Loading
@@ -899,15 +948,58 @@ function detectSwedishUser(): boolean {
 // Provider component
 export function TranslationProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>('en');
+  const auth = useAuth();
 
   // Load saved language preference or detect Swedish users
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('wedding-wish-language') as Language;
-    
-    if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'sv')) {
-      // User has explicitly set a language preference
-      setLanguage(savedLanguage);
-    } else {
+    const loadLanguagePreference = async () => {
+      // Check if we're on a public wedding page (guest pages should not use localStorage)
+      const isPublicWeddingPage = window.location.pathname.includes('/wedding/') || 
+                                 window.location.pathname.match(/^\/[^\/]+\/contribute/) ||
+                                 window.location.pathname.match(/^\/[^\/]+\/thank-you/);
+      
+      if (isPublicWeddingPage) {
+        // For public wedding pages, don't initialize from localStorage
+        // The language will be set by the wedding data when it loads
+        console.log('Public wedding page detected, skipping localStorage language initialization');
+        return;
+      }
+
+      // First check localStorage for immediate loading
+      const savedLanguage = localStorage.getItem('wedding-wish-language') as Language;
+      
+      if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'sv')) {
+        // User has explicitly set a language preference in localStorage
+        setLanguage(savedLanguage);
+        
+        // If user is authenticated, also save to database
+        if (auth.user) {
+          await saveLanguageToDatabase(savedLanguage);
+        }
+      } else if (auth.user) {
+        // User is authenticated, try to load from database
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_URL}api/settings`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${await auth.getToken()}`,
+            },
+          });
+          
+          if (response.ok) {
+            const settings = await response.json();
+            if (settings.languageSettings?.language) {
+              setLanguage(settings.languageSettings.language);
+              localStorage.setItem('wedding-wish-language', settings.languageSettings.language);
+              return;
+            }
+          }
+        } catch (error) {
+          console.error('Error loading language from database:', error);
+        }
+      }
+      
       // No saved preference, detect if user is Swedish
       const isSwedishUser = detectSwedishUser();
       const defaultLanguage = isSwedishUser ? 'sv' : 'en';
@@ -927,13 +1019,49 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
       
       // Save the detected language preference
       localStorage.setItem('wedding-wish-language', defaultLanguage);
+      
+      // If user is authenticated, also save to database
+      if (auth.user) {
+        await saveLanguageToDatabase(defaultLanguage);
+      }
+    };
+
+    loadLanguagePreference();
+  }, [auth.user]);
+
+  // Save language preference to database
+  const saveLanguageToDatabase = async (lang: Language) => {
+    if (!auth.user) return;
+    
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}api/settings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${await auth.getToken()}`,
+        },
+        body: JSON.stringify({
+          userId: auth.user.email,
+          email: auth.user.email,
+          languageSettings: {
+            language: lang
+          }
+        }),
+      });
+    } catch (error) {
+      console.error('Error saving language to database:', error);
     }
-  }, []);
+  };
 
   // Save language preference
   useEffect(() => {
     localStorage.setItem('wedding-wish-language', language);
-  }, [language]);
+    
+    // Also save to database if user is authenticated
+    if (auth.user) {
+      saveLanguageToDatabase(language);
+    }
+  }, [language, auth.user]);
 
   // Translation function
   const t = (key: TranslationKey): string => {

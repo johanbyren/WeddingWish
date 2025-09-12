@@ -16,11 +16,22 @@ interface Gift {
   giftId: string;
 }
 
+interface Wedding {
+  weddingId: string;
+  title: string;
+  userId: string;
+  language?: "en" | "sv";
+  languageSettings?: {
+    language: "en" | "sv"
+  };
+}
+
 export default function ThankYouPage() {
   const { slug } = useParams()
-  const { t } = useTranslation()
+  const { t, setLanguage } = useTranslation()
   const location = useLocation()
   const [gift, setGift] = useState<Gift | null>(null)
+  const [wedding, setWedding] = useState<Wedding | null>(null)
   const [loading, setLoading] = useState(true)
   
   // Get giftId from location state (passed from Contribute page)
@@ -50,6 +61,14 @@ export default function ThankYouPage() {
         }
 
         const weddingData = await weddingResponse.json();
+        setWedding(weddingData);
+        
+        // Set language from wedding settings if available
+        if (weddingData.language) {
+          setLanguage(weddingData.language);
+        } else if (weddingData.languageSettings?.language) {
+          setLanguage(weddingData.languageSettings.language);
+        }
         
         // Then get the gift data
         const giftResponse = await fetch(`${import.meta.env.VITE_API_URL}api/show-gift/${giftId}?weddingId=${weddingData.weddingId}`, {
@@ -86,7 +105,7 @@ export default function ThankYouPage() {
             <PartyPopper className="h-16 w-16 mx-auto text-pink-500 mb-6" />
             <h1 className="text-3xl font-bold mb-4">{t('thankYou.title')}</h1>
             <p className="text-gray-700 mb-8">
-{t('thankYou.description')}
+              {t('thankYou.description')}
             </p>
             
             {/* Progress Bar Section */}
@@ -96,26 +115,26 @@ export default function ThankYouPage() {
               </div>
             ) : gift ? (
               <div className="mb-8 bg-white rounded-lg shadow-md p-6 max-w-md mx-auto">
-                <h3 className="text-lg font-semibold mb-4 text-center">Contribution Progress</h3>
+                <h3 className="text-lg font-semibold mb-4 text-center">{t('thankYou.contributionProgress')}</h3>
                 <div className="space-y-3">
                   <div className="text-center">
-                    <span className="text-sm text-gray-600">Gift: {gift.name}</span>
+                    <span className="text-sm text-gray-600">{t('thankYou.gift')}: {gift.name}</span>
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span>Progress</span>
+                      <span>{t('thankYou.progress')}</span>
                       <span>{progressPercentage.toFixed(1)}%</span>
                     </div>
                     <Progress value={progressPercentage} className="h-3" />
                     <div className="flex justify-between text-sm text-gray-600">
-                      <span>{gift.totalContributed} sek contributed</span>
-                      <span>{gift.price} sek goal</span>
+                      <span>{gift.totalContributed} {t('thankYou.sekContributed')}</span>
+                      <span>{gift.price} {t('thankYou.sekGoal')}</span>
                     </div>
                   </div>
                   {gift.isFullyFunded && (
                     <div className="text-center">
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                        🎉 Fully Funded!
+                        🎉 {t('thankYou.fullyFunded')}
                       </span>
                     </div>
                   )}
@@ -126,7 +145,7 @@ export default function ThankYouPage() {
             <div className="flex justify-center">
               <Link to={`/${slug}`} className="block">
                 <Button className="bg-pink-500 hover:bg-pink-600">
-                  Return to Wedding Page
+                  {t('thankYou.returnToWeddingPage')}
                 </Button>
               </Link>
             </div>

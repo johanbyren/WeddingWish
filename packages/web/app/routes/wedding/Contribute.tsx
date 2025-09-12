@@ -34,11 +34,16 @@ interface Wedding {
   weddingId: string;
   title: string;
   userId: string;
+  language?: "en" | "sv";
+  paymentSettings?: any;
+  languageSettings?: {
+    language: "en" | "sv"
+  };
 }
 
 export default function ContributePage() {
   const { slug, giftId } = useParams()
-  const { t } = useTranslation()
+  const { t, setLanguage } = useTranslation()
   const navigate = useNavigate()
   const [amount, setAmount] = useState("50")
   const [name, setName] = useState("")
@@ -214,6 +219,13 @@ export default function ContributePage() {
         const weddingData = await response.json();
         console.log('Wedding data:', weddingData);
         setWedding(weddingData);
+        
+        // Set language from wedding settings if available
+        if (weddingData.language) {
+          setLanguage(weddingData.language);
+        } else if (weddingData.languageSettings?.language) {
+          setLanguage(weddingData.languageSettings.language);
+        }
 
         // Fetch the specific gift
         const giftResponse = await fetch(`${import.meta.env.VITE_API_URL}api/show-gift/${giftId}?weddingId=${weddingData.weddingId}`, {
@@ -248,11 +260,11 @@ export default function ContributePage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-500">Error</h2>
-          <p className="mt-2 text-gray-600">{error || 'Gift not found'}</p>
+          <h2 className="text-2xl font-bold text-red-500">{t('weddingPage.error')}</h2>
+          <p className="mt-2 text-gray-600">{error || t('contribute.giftNotFound')}</p>
           <Link to={`/${slug}`} className="block">
             <Button className="w-full mt-4">
-              Back to Wedding Page
+              {t('contribute.backToWeddingPage')}
             </Button>
           </Link>
         </div>
@@ -278,25 +290,25 @@ export default function ContributePage() {
 {t('contribute.description')}
               </p>
               <div className="flex flex-col items-center gap-1 text-sm mb-4">
-                <span>Already contributed: <strong>${gift.totalContributed}</strong></span>
+                <span>{t('contribute.alreadyContributed')}: <strong>{gift.totalContributed} {t('weddingPage.sek')}</strong></span>
               </div>
               {paymentMethod === 'swish' ? (
                 <div className="flex items-center gap-2 mt-2">
                   <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
                     <span className="text-white text-xs font-bold">S</span>
                   </div>
-                  <span className="text-xs text-gray-500">Secure payment via Swish</span>
+                  <span className="text-xs text-gray-500">{t('contribute.securePaymentSwish')}</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 mt-2">
                   <img src="/stripe_logo.png" alt="Stripe" className="h-5" />
-                  <span className="text-xs text-gray-500">Secure payment by Stripe</span>
+                  <span className="text-xs text-gray-500">{t('contribute.securePaymentStripe')}</span>
                 </div>
               )}
               <p className="text-xs text-gray-500 mt-1 text-center">
                 {paymentMethod === 'swish' 
-                  ? 'Scan the QR code with your Swish app to complete your contribution.'
-                  : 'Your payment is encrypted and securely processed. We never store your card details.'
+                  ? t('contribute.scanQRCode')
+                  : t('contribute.paymentEncrypted')
                 }
               </p>
             </div>
@@ -308,7 +320,7 @@ export default function ContributePage() {
                   // Swish Payment Flow
                   <>
                     <div className="space-y-4">
-                      <Label htmlFor="amount">Contribution Amount (SEK)</Label>
+                      <Label htmlFor="amount">{t('contribute.contributionAmount')}</Label>
                       <div className="space-y-2">
                         <Input
                           id="amount"
@@ -329,23 +341,23 @@ export default function ContributePage() {
                     </div>
                     
                     <div className="space-y-4">
-                      <Label htmlFor="donorName">Your Name (optional)</Label>
+                      <Label htmlFor="donorName">{t('contribute.yourName')}</Label>
                       <Input
                         id="donorName"
                         value={donorName}
                         onChange={(e) => { setDonorName(e.target.value); resetQRState(); }}
-                        placeholder="Enter your name"
+                        placeholder={t('contribute.enterYourName')}
                         className="w-full"
                       />
                     </div>
                     
                     <div className="space-y-4">
-                      <Label htmlFor="donorMessage">Message (optional)</Label>
+                      <Label htmlFor="donorMessage">{t('contribute.message')}</Label>
                       <Input
                         id="donorMessage"
                         value={donorMessage}
                         onChange={(e) => { setDonorMessage(e.target.value); resetQRState(); }}
-                        placeholder="Add a personal message"
+                        placeholder={t('contribute.addPersonalMessage')}
                         className="w-full"
                       />
                     </div>
@@ -354,7 +366,7 @@ export default function ContributePage() {
                       disabled={isProcessing || !swishPhoneNumber || isGeneratingQR}
                       className="w-full bg-green-500 hover:bg-green-600"
                     >
-                      {isProcessing ? 'Processing...' : isGeneratingQR ? 'Generating QR Code...' : 'Show Swish QR Code'}
+                      {isProcessing ? t('contribute.processing') : isGeneratingQR ? t('contribute.generatingQR') : t('contribute.showSwishQR')}
                     </Button>
                     {showSwishQR && swishQRString && (
                       <div className="mt-6 flex flex-col items-center">
@@ -365,7 +377,7 @@ export default function ContributePage() {
                           level="M"
                           includeMargin={true}
                         />
-                        <p className="mt-4 text-center text-gray-700">Scan this QR code with your Swish app to complete your donation.<br/>Phone: <b>{swishPhoneNumber}</b><br/>Amount: <b>{amount} SEK</b><br/>Message: <b>{donorName ? `Wedding gift: ${gift.name} (from ${donorName})` : `Wedding gift: ${gift.name}`}{donorMessage ? ` - ${donorMessage}` : ''}</b></p>
+                        <p className="mt-4 text-center text-gray-700">{t('contribute.scanQRCodeWithSwish')}<br/>{t('contribute.phone')}: <b>{swishPhoneNumber}</b><br/>{t('contribute.amount')}: <b>{amount} SEK</b><br/>{t('contribute.message')}: <b>{donorName ? `Wedding gift: ${gift.name} (from ${donorName})` : `Wedding gift: ${gift.name}`}{donorMessage ? ` - ${donorMessage}` : ''}</b></p>
                         <div className="mt-4 w-full max-w-xs">
                           <Button
                             className="w-full mt-2 bg-pink-500 hover:bg-pink-600"
@@ -396,9 +408,9 @@ export default function ContributePage() {
                               }
                             }}
                           >
-                            I've completed my Swish payment
+                            {t('contribute.completedSwishPayment')}
                           </Button>
-                          {swishDonationError && <p className="text-red-600 mt-2">{swishDonationError}</p>}
+                          {swishDonationError && <p className="text-red-600 mt-2">{t('contribute.couldNotSaveDonation')}</p>}
                         </div>
                       </div>
                     )}
@@ -409,7 +421,7 @@ export default function ContributePage() {
                     {!showCheckout ? (
                       <>
                         <div className="space-y-4">
-                          <Label htmlFor="amount">Contribution Amount (SEK)</Label>
+                          <Label htmlFor="amount">{t('contribute.contributionAmount')}</Label>
                           <div className="space-y-2">
                             <Input
                               id="amount"
@@ -433,7 +445,7 @@ export default function ContributePage() {
                           disabled={isProcessing}
                           className="w-full"
                         >
-                          {isProcessing ? 'Processing...' : 'Pay Now'}
+                          {isProcessing ? t('contribute.processing') : t('contribute.payNow')}
                         </Button>
                       </>
                     ) : (

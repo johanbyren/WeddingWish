@@ -63,7 +63,7 @@ const CACHE_KEY = 'settings_cache';
 
 export default function Settings() {
   const auth = useAuth();
-  const { t } = useTranslation();
+  const { t, setLanguage } = useTranslation();
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [countrySearch, setCountrySearch] = useState("")
@@ -123,9 +123,11 @@ export default function Settings() {
     showRegistry: true,
   })
 
+
   // Add this after the other state declarations
   const [stripeConnectStatus, setStripeConnectStatus] = useState<'not_started' | 'in_progress' | 'completed'>('not_started');
   const [stripeAccountId, setStripeAccountId] = useState<string | null>(null);
+
 
   // Load settings when component mounts
   useEffect(() => {
@@ -172,6 +174,7 @@ export default function Settings() {
               ...data.privacySettings!,
             }));
           }
+
           
           setIsLoading(false);
           return;
@@ -233,6 +236,7 @@ export default function Settings() {
               ...data.settings.privacySettings,
             }));
           }
+
         }
       } catch (error) {
         console.error("Error loading settings:", error);
@@ -488,6 +492,7 @@ export default function Settings() {
       setIsSaving(prev => ({ ...prev, privacy: false }));
     }
   };
+
 
   const handleStripeConnect = async () => {
     try {
@@ -1139,6 +1144,7 @@ export default function Settings() {
                 </CardFooter>
               </Card>
             </TabsContent>
+
           </div>
         </div>
       </Tabs>

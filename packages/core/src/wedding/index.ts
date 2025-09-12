@@ -163,7 +163,8 @@ export namespace Wedding {
             // Add each provided field to the update, excluding date and updatedAt
             Object.entries(wedding).forEach(([key, value]) => {
                 if (key !== "weddingId" && key !== "userId" && key !== "date" && key !== "updatedAt" && value !== undefined) {
-                    if (key === "location") {
+                    // Handle reserved words that need expression attribute names
+                    if (key === "location" || key === "language") {
                         const attributeName = `#${key}`;
                         updateExpressions.push(`${attributeName} = :${key}`);
                         expressionAttributeValues[`:${key}`] = value;
