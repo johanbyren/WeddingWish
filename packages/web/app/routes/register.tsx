@@ -5,12 +5,14 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { HeartIcon, LogIn } from "lucide-react";
 import { useAuth } from "~/context/auth";
+import { useTranslation } from "~/context/translation";
 
 
 export default function Register() {
   const auth = useAuth();
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -72,39 +74,39 @@ export default function Register() {
       <main className="flex-1 flex items-center justify-center p-4">
         <div className="mx-auto w-full max-w-md space-y-6">
           <div className="space-y-2 text-center">
-            <h1 className="text-3xl font-bold">Create an account</h1>
-            <p className="text-gray-500">Enter your information to get started</p>
+            <h1 className="text-3xl font-bold">{t('register.title')}</h1>
+            <p className="text-gray-500">{t('register.subtitle')}</p>
           </div>
           <div className="space-y-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">First Name</Label>
+                <Label htmlFor="name">{t('register.firstName')}</Label>
                 <Input
                   id="firstName"
                   name="firstName"
-                  placeholder="Joe"
+                  placeholder={t('register.firstNamePlaceholder')}
                   required
                   value={formData.firstName}
                   onChange={handleChange}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="name">Last Name</Label>
+                <Label htmlFor="name">{t('register.lastName')}</Label>
                 <Input
                   id="lastName"
                   name="lastName"
-                  placeholder="Doe"
+                  placeholder={t('register.lastNamePlaceholder')}
                   required
                   value={formData.lastName}
                   onChange={handleChange}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('register.email')}</Label>
                 <Input
                   id="email"
                   name="email"
-                  placeholder="you@example.com"
+                  placeholder={t('register.emailPlaceholder')}
                   required
                   type="email"
                   value={formData.email}
@@ -135,13 +137,13 @@ export default function Register() {
               </div> */}
               {error && <p className="text-sm text-red-500">{error}</p>}
               <Button type="submit" className="w-full bg-pink-500 hover:bg-pink-600">
-                Register
+                {t('register.submit')}
               </Button>
             </form>
             <div className="text-center text-sm">
-              Already have an account?{" "}
+              {t('register.alreadyHaveAccount')}{" "}
               <button onClick={login} className="underline bg-transparent border-none p-0 text-inherit cursor-pointer">
-                Login
+                {t('register.login')}
               </button>
             </div>
           </div>

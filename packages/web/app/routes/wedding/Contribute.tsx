@@ -250,9 +250,11 @@ export default function ContributePage() {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-500">Error</h2>
           <p className="mt-2 text-gray-600">{error || 'Gift not found'}</p>
-          <Button asChild className="mt-4">
-            <Link to={`/${slug}`}>Back to Wedding Page</Link>
-          </Button>
+          <Link to={`/${slug}`} className="block">
+            <Button className="w-full mt-4">
+              Back to Wedding Page
+            </Button>
+          </Link>
         </div>
       </div>
     );

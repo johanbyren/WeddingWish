@@ -93,8 +93,8 @@ const app = issuer({
           code_sent: "Verification code sent to ",
         },
         sendCode: async (claims, code) => {
-          console.log('hej claims: ', claims);
-          console.log('hej code: ', code);
+          console.log('OpenAuth claims: ', claims);
+          console.log('OpenAuth code: ', code);
           await client.send(
             new SendEmailCommand({
               FromEmailAddress: Resource.Email.sender,

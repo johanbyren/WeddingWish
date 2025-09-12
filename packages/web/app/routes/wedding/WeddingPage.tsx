@@ -134,9 +134,11 @@ export default function WeddingPage() {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-500">Error</h2>
           <p className="mt-2 text-gray-600">{error || 'Wedding not found'}</p>
-          <Button asChild className="mt-4">
-            <Link to="/">Back to Home</Link>
-          </Button>
+          <Link to="/" className="block">
+            <Button className="w-full mt-4">
+              Back to Home
+            </Button>
+          </Link>
         </div>
       </div>
     )

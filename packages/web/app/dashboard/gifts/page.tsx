@@ -147,11 +147,11 @@ export default function ManageGifts() {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
           {error.includes('No wedding found') ? (
-            <Button asChild className="bg-pink-500 hover:bg-pink-600">
-              <Link to="/dashboard/create">
+            <Link to="/dashboard/create" className="block">
+              <Button className="w-full bg-pink-500 hover:bg-pink-600">
                 Create Wedding Page
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           ) : (
             <Button onClick={() => window.location.reload()}>
               Try Again

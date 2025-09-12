@@ -14,6 +14,38 @@ const translations = {
     'nav.create': 'Create',
     'nav.gifts': 'Gifts',
     
+    // Home page
+    'home.login': 'Login',
+    'home.register': 'Register',
+    'home.logout': 'Logout',
+    'home.title': 'Create Your Perfect Wedding Registry',
+    'home.subtitle': 'Let your guests contribute to the gifts that matter most to you. Create your wedding page in minutes.',
+    'home.dashboard': 'Your Dashboard',
+    'home.getStarted': 'Get Started',
+    'home.learnMore': 'Learn More',
+    'home.createPage': 'Create Your Wedding Page',
+    'home.createPageDesc': 'Customize your wedding page with photos, your story, and event details.',
+    'home.addWishlist': 'Add Your Wishlist',
+    'home.addWishlistDesc': 'Add items like wedding dress, rings, honeymoon expenses, and more to your registry.',
+    'home.receiveContributions': 'Receive Contributions',
+    'home.receiveContributionsDesc': 'Guests can easily contribute to the gifts that matter most to you.',
+    'home.copyright': '© 2025 WeddingWish. All rights reserved.',
+    'home.terms': 'Terms of Service',
+    'home.privacy': 'Privacy',
+    
+    // Register page
+    'register.title': 'Create an account',
+    'register.subtitle': 'Enter your information to get started',
+    'register.firstName': 'First Name',
+    'register.firstNamePlaceholder': 'Joe',
+    'register.lastName': 'Last Name',
+    'register.lastNamePlaceholder': 'Doe',
+    'register.email': 'Email',
+    'register.emailPlaceholder': 'you@example.com',
+    'register.submit': 'Register',
+    'register.alreadyHaveAccount': 'Already have an account?',
+    'register.login': 'Login',
+    
     // Common
     'common.save': 'Save',
     'common.cancel': 'Cancel',
@@ -92,17 +124,6 @@ const translations = {
     'message.settingsSaved': 'Settings saved successfully!',
     'message.contributionReceived': 'Thank you! Your contribution has been received.',
     
-    // Home Page
-    'home.title': 'WeddingWish',
-    'home.subtitle': 'Create beautiful wedding pages and gift registries',
-    'home.getStarted': 'Get Started',
-    'home.login': 'Login',
-    'home.register': 'Register',
-    'home.features': 'Features',
-    'home.createPage': 'Create Wedding Page',
-    'home.giftRegistry': 'Gift Registry',
-    'home.contribute': 'Easy Contributions',
-    'home.secure': 'Secure Payments',
     
     // Dashboard
     'dashboard.title': 'Dashboard',
@@ -403,6 +424,38 @@ const translations = {
     'nav.create': 'Skapa',
     'nav.gifts': 'Gåvor',
     
+    // Home page
+    'home.login': 'Logga in',
+    'home.register': 'Registrera',
+    'home.logout': 'Logga ut',
+    'home.title': 'Skapa din perfekta bröllopslista',
+    'home.subtitle': 'Låt dina gäster bidra till gåvorna som betyder mest för er. Skapa din bröllopssida på minuter.',
+    'home.dashboard': 'Din instrumentpanel',
+    'home.getStarted': 'Kom igång',
+    'home.learnMore': 'Läs mer',
+    'home.createPage': 'Skapa din bröllopssida',
+    'home.createPageDesc': 'Anpassa din bröllopssida med foton, er berättelse och evenemangsdetaljer.',
+    'home.addWishlist': 'Lägg till din önskelista',
+    'home.addWishlistDesc': 'Lägg till saker som bröllopsklänning, ringar, smekmånadsutgifter och mer till din lista.',
+    'home.receiveContributions': 'Ta emot bidrag',
+    'home.receiveContributionsDesc': 'Gäster kan enkelt bidra till gåvorna som betyder mest för er.',
+    'home.copyright': '© 2025 WeddingWish. Alla rättigheter förbehållna.',
+    'home.terms': 'Användarvillkor',
+    'home.privacy': 'Integritet',
+    
+    // Register page
+    'register.title': 'Skapa ett konto',
+    'register.subtitle': 'Ange din information för att komma igång',
+    'register.firstName': 'Förnamn',
+    'register.firstNamePlaceholder': 'Anna',
+    'register.lastName': 'Efternamn',
+    'register.lastNamePlaceholder': 'Andersson',
+    'register.email': 'E-post',
+    'register.emailPlaceholder': 'du@exempel.se',
+    'register.submit': 'Registrera',
+    'register.alreadyHaveAccount': 'Har du redan ett konto?',
+    'register.login': 'Logga in',
+    
     // Common
     'common.save': 'Spara',
     'common.cancel': 'Avbryt',
@@ -481,17 +534,6 @@ const translations = {
     'message.settingsSaved': 'Inställningar sparade framgångsrikt!',
     'message.contributionReceived': 'Tack! Ditt bidrag har mottagits.',
     
-    // Home Page
-    'home.title': 'WeddingWish',
-    'home.subtitle': 'Skapa vackra bröllopssidor och gåvoregister',
-    'home.getStarted': 'Kom igång',
-    'home.login': 'Logga in',
-    'home.register': 'Registrera',
-    'home.features': 'Funktioner',
-    'home.createPage': 'Skapa bröllopssida',
-    'home.giftRegistry': 'Gåvoregister',
-    'home.contribute': 'Enkla bidrag',
-    'home.secure': 'Säkra betalningar',
     
     // Dashboard
     'dashboard.title': 'Instrumentpanel',

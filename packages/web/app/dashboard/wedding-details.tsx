@@ -114,12 +114,12 @@ export default function WeddingDetails() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">{t('dashboard.title')}</h1>
         {weddings.length === 0 && (
-          <Button asChild className="bg-pink-500 hover:bg-pink-600">
-            <Link to="/dashboard/create" className="flex items-center">
+          <Link to="/dashboard/create" className="block">
+            <Button className="w-full bg-pink-500 hover:bg-pink-600">
               <PlusCircle className="h-4 w-4 mr-2" />
               <span>{t('dashboard.createWeddingPage')}</span>
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         )}
       </div>
 
@@ -199,12 +199,12 @@ export default function WeddingDetails() {
                             <p className="text-muted-foreground mb-4">
 {t('dashboard.startByCreatingWeddingPage')}
                             </p>
-                            <Button asChild>
-                              <Link to="/dashboard/create" className="flex items-center">
+                            <Link to="/dashboard/create" className="block">
+                              <Button className="w-full">
                                 <PlusCircle className="h-4 w-4 mr-2" />
                                 <span>{t('dashboard.createWeddingPage')}</span>
-                              </Link>
-                            </Button>
+                              </Button>
+                            </Link>
                           </div>
                         </CardContent>
                       </Card>
