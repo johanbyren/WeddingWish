@@ -214,7 +214,15 @@ export default function WeddingPage() {
                 </div>
                 <div className="flex items-center">
                   <MapPin className="h-4 w-4 mr-2" />
-                  {wedding.location}
+                  <a 
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(wedding.location)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:underline cursor-pointer"
+                    title={`View ${wedding.location} on Google Maps`}
+                  >
+                    {wedding.location}
+                  </a>
                 </div>
               </div>
             </div>

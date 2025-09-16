@@ -23,6 +23,10 @@ declare module "sst" {
       "sender": string
       "type": "sst.aws.Email"
     }
+    "GOOGLE_MAPS_API_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "GiftRegistryTable": {
       "name": string
       "type": "sst.aws.Dynamo"

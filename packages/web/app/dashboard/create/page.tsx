@@ -19,6 +19,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { clearCache } from "~/utils/cache"
 import { RadioGroup, RadioGroupItem } from "../../components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
+import { LocationAutocomplete } from "../../components/location-autocomplete"
 
 export default function CreateWeddingPage() {
   const auth = useAuth();
@@ -748,12 +749,12 @@ export default function CreateWeddingPage() {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="location">{t('create.weddingLocation')}</Label>
-                        <Input
+                        <LocationAutocomplete
                           id="location"
                           name="location"
                           placeholder={t('create.weddingLocationPlaceholder')}
                           value={weddingDetails.location}
-                          onChange={handleChange}
+                          onChange={(value) => setWeddingDetails(prev => ({ ...prev, location: value }))}
                           required
                         />
                       </div>
