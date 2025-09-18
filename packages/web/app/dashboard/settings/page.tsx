@@ -59,7 +59,7 @@ interface SettingsData {
   };
 }
 
-const CACHE_KEY = 'settings_cache';
+// Cache key will be generated per user to prevent data mixing
 
 export default function Settings() {
   const auth = useAuth();
@@ -136,8 +136,11 @@ export default function Settings() {
       setIsLoading(true);
 
       try {
+        // Create user-specific cache key to prevent data mixing between users
+        const userCacheKey = `settings_cache_${auth.user.email}`;
+
         // Check cache first
-        const cache = getCache<SettingsData>(CACHE_KEY);
+        const cache = getCache<SettingsData>(userCacheKey);
         
         if (isCacheValid(cache) && cache!.data) {
           const data = cache!.data;
@@ -202,7 +205,7 @@ export default function Settings() {
         const data = await response.json();
         if (data.success && data.settings) {
           // Update cache
-          setCache(CACHE_KEY, data.settings);
+          setCache(userCacheKey, data.settings);
 
           // Update account settings
           if (data.settings.accountSettings) {
@@ -322,7 +325,7 @@ export default function Settings() {
         throw new Error(t('settings.failedToSaveAccount'));
       }
 
-      clearCache(CACHE_KEY);
+      clearCache(`settings_cache_${auth.user?.email}`);
       setSaveSuccess(true);
       setTimeout(() => {
         setSaveSuccess(false);
@@ -366,7 +369,7 @@ export default function Settings() {
         throw new Error(t('settings.failedToSaveAll'));
       }
 
-      clearCache(CACHE_KEY);
+      clearCache(`settings_cache_${auth.user?.email}`);
       setSaveSuccess(true);
       setTimeout(() => {
         setSaveSuccess(false);
@@ -403,7 +406,7 @@ export default function Settings() {
         throw new Error(t('settings.failedToSavePayment'));
       }
 
-      clearCache(CACHE_KEY);
+      clearCache(`settings_cache_${auth.user?.email}`);
       setSaveSuccess(true);
       setTimeout(() => {
         setSaveSuccess(false);
@@ -440,7 +443,7 @@ export default function Settings() {
         throw new Error(t('settings.failedToSaveNotifications'));
       }
 
-      clearCache(CACHE_KEY);
+      clearCache(`settings_cache_${auth.user?.email}`);
       setSaveSuccess(true);
       setTimeout(() => {
         setSaveSuccess(false);
@@ -477,7 +480,7 @@ export default function Settings() {
         throw new Error(t('settings.failedToSavePrivacy'));
       }
 
-      clearCache(CACHE_KEY);
+      clearCache(`settings_cache_${auth.user?.email}`);
       setSaveSuccess(true);
       setTimeout(() => {
         setSaveSuccess(false);

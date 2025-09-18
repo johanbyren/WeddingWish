@@ -10,6 +10,7 @@ import { createClient } from "@openauthjs/openauth/client"
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router";
 import type { UserType } from "@wedding-wish/core/user/types";
+import { clearUserCaches } from "~/utils/cache";
 
 const client = createClient({
   clientID: "web",
@@ -179,6 +180,12 @@ export function AuthProvider ({ children }: { children: ReactNode }) {
   function logout () {
     localStorage.removeItem("refresh");
     token.current = undefined;
+    
+    // Clear all user-specific cached data to prevent data mixing
+    if (user?.email) {
+      clearUserCaches(user.email);
+    }
+    
     setUser(undefined);
     setLoggedIn(false);
     setError(undefined);

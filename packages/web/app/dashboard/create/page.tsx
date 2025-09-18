@@ -170,10 +170,12 @@ export default function CreateWeddingPage() {
 
       try {
         setIsLoading(true);
-        // Fetch wedding details
-        const weddingResponse = await fetch(`${import.meta.env.VITE_API_URL}api/wedding/id/${weddingId}`, {
+        // Fetch wedding details with cache-busting parameter to ensure fresh data
+        const cacheBuster = Date.now();
+        const weddingResponse = await fetch(`${import.meta.env.VITE_API_URL}api/wedding/id/${weddingId}?t=${cacheBuster}`, {
           headers: {
             Authorization: `Bearer ${await auth.getToken()}`,
+            'Cache-Control': 'no-cache',
           },
         });
 
@@ -182,6 +184,7 @@ export default function CreateWeddingPage() {
         }
 
         const weddingData = await weddingResponse.json();
+        console.log('Loaded wedding data for editing:', weddingData);
         
         // Fetch photos
         const photosResponse = await fetch(`${import.meta.env.VITE_API_URL}api/photo/wedding/${weddingId}`, {
@@ -411,8 +414,11 @@ export default function CreateWeddingPage() {
       // Update wedding with all photos and gift data
       await updateWedding(weddingId, photoUrls, giftResults);
 
-      // Clear dashboard cache so it shows updated data
-      clearCache('wedding_details_cache');
+      // Clear user-specific dashboard cache so it shows updated data
+      clearCache(`wedding_details_cache_${auth.user?.email}`);
+
+      // Add a small delay to ensure database consistency before navigating
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       navigate("/dashboard");
     } catch (error) {
@@ -656,8 +662,13 @@ export default function CreateWeddingPage() {
     );
 
     if (!response.ok) {
+      const errorData = await response.text();
+      console.error(`Failed to ${isEditMode ? 'update' : 'create'} wedding:`, errorData);
       throw new Error(`Failed to ${isEditMode ? 'update' : 'create'} wedding`);
     }
+
+    const result = await response.json();
+    console.log(`Wedding ${isEditMode ? 'updated' : 'created'} successfully:`, result);
   };
 
   const goToNextTab = () => {

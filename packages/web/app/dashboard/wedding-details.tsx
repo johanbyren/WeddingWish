@@ -11,7 +11,7 @@ import { useAuth } from "~/context/auth"
 import { useTranslation } from "~/context/translation"
 import { getCache, setCache, clearCache, isCacheValid } from "~/utils/cache"
 
-const CACHE_KEY = 'wedding_details_cache';
+// Cache key will be generated per user to prevent data mixing
 
 export default function WeddingDetails() {
   const auth = useAuth()
@@ -42,7 +42,7 @@ export default function WeddingDetails() {
         throw new Error('Failed to delete wedding');
       }
 
-      clearCache(CACHE_KEY);
+      clearCache(`wedding_details_cache_${auth.user?.email}`);
       setWeddings([]);
     } catch (error) {
       console.error("Error deleting wedding:", error);
@@ -56,8 +56,11 @@ export default function WeddingDetails() {
       return;
     }
 
+    // Create user-specific cache key to prevent data mixing between users
+    const userCacheKey = `wedding_details_cache_${auth.user.email}`;
+
     // Check cache first
-    const cache = getCache<WeddingType[]>(CACHE_KEY);
+    const cache = getCache<WeddingType[]>(userCacheKey);
     
     // Only use cache if it exists and has data
     if (isCacheValid(cache) && cache!.data && cache!.data.length > 0) {
@@ -90,10 +93,10 @@ export default function WeddingDetails() {
       
       // Only cache if we have actual data
       if (data && data.length > 0) {
-        setCache(CACHE_KEY, data);
+        setCache(userCacheKey, data);
       } else {
         // Clear cache if we got an empty array
-        clearCache(CACHE_KEY);
+        clearCache(userCacheKey);
       }
       
       setWeddings(data);
