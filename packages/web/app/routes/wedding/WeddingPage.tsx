@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom"
+import { Link, useParams, useNavigate, useLocation } from "react-router-dom"
 import { Button } from "~/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card"
 import { Progress } from "~/components/ui/progress"
@@ -8,6 +8,7 @@ import { useAuth } from "~/context/auth"
 import { useTranslation } from "~/context/translation"
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "~/components/ui/dialog"
 import { FullScreenLoading } from "~/components/loading-spinner"
+import { getThemeConfig, getThemeStyles } from "~/utils/themes"
 
 interface Gift {
   giftId: string;
@@ -42,13 +43,20 @@ interface Wedding {
 
 export default function WeddingPage() {
   const { slug } = useParams()
+  const navigate = useNavigate()
+  const location = useLocation()
   const auth = useAuth()
   const { t, setLanguage } = useTranslation()
   const [wedding, setWedding] = useState<Wedding | null>(null)
   const [gifts, setGifts] = useState<Gift[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [themeData, setThemeData] = useState<{theme: string, primaryColor: string} | null>(null)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  
+  // Get theme data from location state (passed from Thank You page)
+  const passedTheme = location.state?.theme
+  const passedPrimaryColor = location.state?.primaryColor
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0)
   const [giftImages, setGiftImages] = useState<Record<string, string>>({})
 
@@ -75,6 +83,12 @@ export default function WeddingPage() {
         const data = await response.json();
         setWedding(data);
         
+        // Set theme data immediately for loading spinner
+        setThemeData({
+          theme: data.theme || 'classic',
+          primaryColor: data.primaryColor || 'pink'
+        });
+        
         // Set language from wedding settings if available
         if (data.language) {
           setLanguage(data.language);
@@ -82,20 +96,27 @@ export default function WeddingPage() {
           setLanguage(data.languageSettings.language);
         }
 
-        // Fetch gifts for this wedding
-        const giftsResponse = await fetch(`${import.meta.env.VITE_API_URL}api/show-gift/wedding/${data.weddingId}`, {
-          method: 'GET'
-        });
+        // Set loading to false after wedding data is loaded (before gifts)
+        setLoading(false);
 
-        if (!giftsResponse.ok) {
-          throw new Error('Failed to fetch gifts');
+        // Fetch gifts for this wedding (this can happen in background)
+        try {
+          const giftsResponse = await fetch(`${import.meta.env.VITE_API_URL}api/show-gift/wedding/${data.weddingId}`, {
+            method: 'GET'
+          });
+
+          if (!giftsResponse.ok) {
+            throw new Error('Failed to fetch gifts');
+          }
+
+          const giftsData = await giftsResponse.json();
+          setGifts(giftsData);
+        } catch (giftError) {
+          console.error('Error fetching gifts:', giftError);
+          // Don't throw here, we can still show the page without gifts
         }
-
-        const giftsData = await giftsResponse.json();
-        setGifts(giftsData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
         setLoading(false);
       }
     }
@@ -136,7 +157,11 @@ export default function WeddingPage() {
 
   if (loading) {
     return (
-      <FullScreenLoading text={t('loading.weddingDetails')} />
+      <FullScreenLoading 
+        text={t('loading.weddingDetails')} 
+        theme={passedTheme || themeData?.theme}
+        primaryColor={passedPrimaryColor || themeData?.primaryColor}
+      />
     )
   }
 
@@ -189,12 +214,32 @@ export default function WeddingPage() {
     }
   }
 
+  const theme = wedding.theme || 'classic';
+  const color = wedding.primaryColor || 'pink';
+  const themeConfig = getThemeConfig(theme, color);
+  const themeStyles = getThemeStyles(theme, color);
+
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="px-4 lg:px-6 h-14 flex items-center border-b">
+    <div 
+      className="flex flex-col min-h-screen"
+      style={{ 
+        background: themeConfig.colors.background,
+        ...themeStyles 
+      }}
+    >
+      <header 
+        className="px-4 lg:px-6 h-14 flex items-center border-b"
+        style={{ 
+          backgroundColor: themeConfig.colors.secondary,
+          borderColor: themeConfig.colors.accent 
+        }}
+      >
         <Link to="/" className="flex items-center gap-2 font-semibold">
-        <HeartIcon className="h-6 w-6 text-pink-500" />
-        <span>Our Dream Day</span>
+          <HeartIcon 
+            className="h-6 w-6" 
+            style={{ color: themeConfig.colors.primary }}
+          />
+          <span style={{ color: themeConfig.colors.text }}>Our Dream Day</span>
         </Link>
       </header>
       <main className="flex-1 flex flex-col">
@@ -232,8 +277,18 @@ export default function WeddingPage() {
         <section className="py-12">
           <div className="container px-4 md:px-6 mx-auto">
             <div className="max-w-3xl mx-auto">
-              <h2 className="text-2xl font-bold mb-4">{t('weddingPage.story')}</h2>
-              <p className="text-gray-700 leading-relaxed">{wedding.story}</p>
+              <h2 
+                className={`text-2xl font-bold mb-4 ${themeConfig.fonts.heading}`}
+                style={{ color: themeConfig.colors.text }}
+              >
+                {t('weddingPage.story')}
+              </h2>
+              <p 
+                className={`leading-relaxed ${themeConfig.fonts.body}`}
+                style={{ color: themeConfig.colors.textSecondary }}
+              >
+                {wedding.story}
+              </p>
             </div>
           </div>
         </section>
@@ -242,7 +297,12 @@ export default function WeddingPage() {
           <section className="py-12">
             <div className="container px-4 md:px-6 mx-auto">
               <div className="max-w-3xl mx-auto">
-                <h2 className="text-2xl font-bold mb-6">{t('weddingPage.photoGallery')}</h2>
+                <h2 
+                  className={`text-2xl font-bold mb-6 ${themeConfig.fonts.heading}`}
+                  style={{ color: themeConfig.colors.text }}
+                >
+                  {t('weddingPage.photoGallery')}
+                </h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {wedding.photoUrls
                     .filter(url => url.includes('gallery-'))
@@ -265,18 +325,36 @@ export default function WeddingPage() {
           </section>
         )}
 
-        <section className="py-12 bg-pink-50">
+        <section 
+          className="py-12"
+          style={{ backgroundColor: themeConfig.colors.secondary }}
+        >
           <div className="container px-4 md:px-6 mx-auto">
             <div className="max-w-3xl mx-auto text-center mb-10">
-              <h2 className="text-2xl font-bold">{t('weddingPage.giftRegistry')}</h2>
-              <p className="text-gray-700 mt-2">
+              <h2 
+                className={`text-2xl font-bold ${themeConfig.fonts.heading}`}
+                style={{ color: themeConfig.colors.text }}
+              >
+                {t('weddingPage.giftRegistry')}
+              </h2>
+              <p 
+                className={`mt-2 ${themeConfig.fonts.body}`}
+                style={{ color: themeConfig.colors.textSecondary }}
+              >
                 {t('weddingPage.giftRegistryDescription')}
               </p>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
               {gifts.map((gift) => (
-                <Card key={gift.giftId}>
+                <Card 
+                  key={gift.giftId}
+                  className={themeConfig.styles.borderRadius}
+                  style={{ 
+                    borderColor: themeConfig.colors.accent,
+                    boxShadow: themeConfig.styles.shadow
+                  }}
+                >
                   <div className="aspect-video bg-gray-100">
                     <img
                       src={giftImages[gift.giftId] || "/placeholder.svg?height=200&width=400"}
@@ -296,15 +374,39 @@ export default function WeddingPage() {
                         </span>
                         <span className="text-sm font-medium">{Math.round((gift.totalContributed / gift.price) * 100)}%</span>
                       </div>
-                      <Progress value={(gift.totalContributed / gift.price) * 100} className="h-2" />
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="h-2 rounded-full transition-all duration-300"
+                          style={{ 
+                            width: `${(gift.totalContributed / gift.price) * 100}%`,
+                            backgroundColor: themeConfig.colors.primary
+                          }}
+                        />
+                      </div>
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Link to={`/${slug}/contribute/${gift.giftId}`} className="block w-full">
-                      <Button className="w-full bg-pink-500 hover:bg-pink-600">
-                        {t('weddingPage.contribute')}
-                      </Button>
-                    </Link>
+                    <Button 
+                      className="w-full text-white border-0"
+                      style={{ 
+                        backgroundColor: themeConfig.colors.primary,
+                        borderColor: themeConfig.colors.primary 
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = themeConfig.colors.primaryHover;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = themeConfig.colors.primary;
+                      }}
+                      onClick={() => navigate(`/${slug}/contribute/${gift.giftId}`, {
+                        state: {
+                          theme: wedding?.theme,
+                          primaryColor: wedding?.primaryColor
+                        }
+                      })}
+                    >
+                      {t('weddingPage.contribute')}
+                    </Button>
                   </CardFooter>
                 </Card>
               ))}
@@ -312,9 +414,15 @@ export default function WeddingPage() {
           </div>
         </section>
       </main>
-      <footer className="border-t py-6">
+      <footer 
+        className="border-t py-6"
+        style={{ borderColor: themeConfig.colors.accent }}
+      >
         <div className="container px-4 md:px-6 mx-auto">
-          <div className="text-center text-sm text-gray-500">
+          <div 
+            className="text-center text-sm"
+            style={{ color: themeConfig.colors.textSecondary }}
+          >
             <p>© 2025 Our Dream Day. All rights reserved.</p>
           </div>
         </div>

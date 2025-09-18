@@ -1,6 +1,6 @@
 import type React from "react"
 import { useState, useEffect, useCallback } from "react"
-import { Link, useNavigate, useParams } from "react-router-dom"
+import { Link, useNavigate, useParams, useLocation } from "react-router-dom"
 import { Button } from "~/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
@@ -10,6 +10,7 @@ import { HeartIcon } from "lucide-react"
 import { QRCodeCanvas } from 'qrcode.react';
 import { useTranslation } from "~/context/translation"
 import { FullScreenLoading } from "~/components/loading-spinner"
+import { getThemeConfig, getThemeStyles } from "~/utils/themes"
 
 import {loadStripe} from '@stripe/stripe-js';
 import {
@@ -35,6 +36,8 @@ interface Wedding {
   title: string;
   userId: string;
   language?: "en" | "sv";
+  theme?: string;
+  primaryColor?: string;
   paymentSettings?: any;
   languageSettings?: {
     language: "en" | "sv"
@@ -43,6 +46,7 @@ interface Wedding {
 
 export default function ContributePage() {
   const { slug, giftId } = useParams()
+  const location = useLocation()
   const { t, setLanguage } = useTranslation()
   const navigate = useNavigate()
   const [amount, setAmount] = useState("50")
@@ -52,6 +56,10 @@ export default function ContributePage() {
   const [gift, setGift] = useState<Gift | null>(null)
   const [wedding, setWedding] = useState<Wedding | null>(null)
   const [loading, setLoading] = useState(true)
+  
+  // Get theme data from location state (passed from Wedding page)
+  const passedTheme = location.state?.theme
+  const passedPrimaryColor = location.state?.primaryColor
   const [error, setError] = useState<string | null>(null)
   const [showCheckout, setShowCheckout] = useState(false)
   const [clientSecret, setClientSecret] = useState<string | null>(null)
@@ -253,7 +261,13 @@ export default function ContributePage() {
   }, [slug, giftId]);
 
   if (loading) {
-    return <FullScreenLoading text={t('loading.giftDetails')} />;
+    return (
+      <FullScreenLoading 
+        text={t('loading.giftDetails')} 
+        theme={passedTheme || wedding?.theme}
+        primaryColor={passedPrimaryColor || wedding?.primaryColor}
+      />
+    );
   }
 
   if (error || !gift || !wedding) {
@@ -272,22 +286,58 @@ export default function ContributePage() {
     );
   }
 
+  // Apply theme - use passed data first, then fall back to fetched data
+  const theme = passedTheme || wedding?.theme || 'classic';
+  const color = passedPrimaryColor || wedding?.primaryColor || 'pink';
+  const themeConfig = getThemeConfig(theme, color);
+  const themeStyles = getThemeStyles(theme, color);
+
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="px-4 lg:px-6 h-14 flex items-center border-b">
+    <div 
+      className="flex flex-col min-h-screen"
+      style={{ 
+        background: themeConfig.colors.background,
+        ...themeStyles 
+      }}
+    >
+      <header 
+        className="px-4 lg:px-6 h-14 flex items-center border-b"
+        style={{ 
+          backgroundColor: themeConfig.colors.secondary,
+          borderColor: themeConfig.colors.accent 
+        }}
+      >
         <Link to="/" className="flex items-center gap-2 font-semibold">
-          <HeartIcon className="h-6 w-6 text-pink-500" />
-          <span>Our Dream Day</span>
+          <HeartIcon 
+            className="h-6 w-6" 
+            style={{ color: themeConfig.colors.primary }}
+          />
+          <span style={{ color: themeConfig.colors.text }}>Our Dream Day</span>
         </Link>
       </header>
-      <main className="flex-1 flex flex-col bg-gradient-to-b from-white to-pink-50">
+      <main className="flex-1 flex flex-col">
         <div className="container px-4 md:px-6 py-12 mx-auto">
           <div className="max-w-4xl mx-auto grid gap-8 md:grid-cols-2 items-start">
             {/* Left: Info/Context Section */}
-            <div className="rounded-xl shadow bg-white p-6 flex flex-col items-center">
-              <h3 className="text-xl font-bold mb-2 text-center">{t('contribute.title')}</h3>
-              <p className="text-gray-600 mb-4 text-center">
-{t('contribute.description')}
+            <div 
+              className="rounded-xl shadow p-6 flex flex-col items-center"
+              style={{ 
+                backgroundColor: 'white',
+                borderColor: themeConfig.colors.accent,
+                boxShadow: themeConfig.styles.shadow
+              }}
+            >
+              <h3 
+                className={`text-xl font-bold mb-2 text-center ${themeConfig.fonts.heading}`}
+                style={{ color: themeConfig.colors.text }}
+              >
+                {t('contribute.title')}
+              </h3>
+              <p 
+                className={`mb-4 text-center ${themeConfig.fonts.body}`}
+                style={{ color: themeConfig.colors.textSecondary }}
+              >
+                {t('contribute.description')}
               </p>
               <div className="flex flex-col items-center gap-1 text-sm mb-4">
                 <span>{t('contribute.alreadyContributed')}: <strong>{gift.totalContributed} {t('weddingPage.sek')}</strong></span>
@@ -314,7 +364,14 @@ export default function ContributePage() {
             </div>
 
             {/* Right: Payment Section */}
-            <div className="rounded-xl shadow bg-white p-6 flex flex-col items-center">
+            <div 
+              className="rounded-xl shadow p-6 flex flex-col items-center"
+              style={{ 
+                backgroundColor: 'white',
+                borderColor: themeConfig.colors.accent,
+                boxShadow: themeConfig.styles.shadow
+              }}
+            >
               <div className="w-full max-w-md space-y-6">
                 {paymentMethod === 'swish' ? (
                   // Swish Payment Flow
@@ -364,7 +421,17 @@ export default function ContributePage() {
                     <Button 
                       onClick={handleSwishClick}
                       disabled={isProcessing || !swishPhoneNumber || isGeneratingQR}
-                      className="w-full bg-green-500 hover:bg-green-600"
+                      className="w-full text-white border-0"
+                      style={{ 
+                        backgroundColor: themeConfig.colors.primary,
+                        borderColor: themeConfig.colors.primary 
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = themeConfig.colors.primaryHover;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = themeConfig.colors.primary;
+                      }}
                     >
                       {isProcessing ? t('contribute.processing') : isGeneratingQR ? t('contribute.generatingQR') : t('contribute.showSwishQR')}
                     </Button>
@@ -380,7 +447,17 @@ export default function ContributePage() {
                         <p className="mt-4 text-center text-gray-700">{t('contribute.scanQRCodeWithSwish')}<br/>{t('contribute.phone')}: <b>{swishPhoneNumber}</b><br/>{t('contribute.amount')}: <b>{amount} SEK</b><br/>{t('contribute.message')}: <b>{donorName ? `Wedding gift: ${gift.name} (from ${donorName})` : `Wedding gift: ${gift.name}`}{donorMessage ? ` - ${donorMessage}` : ''}</b></p>
                         <div className="mt-4 w-full max-w-xs">
                           <Button
-                            className="w-full mt-2 bg-pink-500 hover:bg-pink-600"
+                            className="w-full mt-2 text-white border-0"
+                            style={{ 
+                              backgroundColor: themeConfig.colors.primary,
+                              borderColor: themeConfig.colors.primary 
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = themeConfig.colors.primaryHover;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = themeConfig.colors.primary;
+                            }}
                             onClick={async () => {
                               setSwishDonationError(null);
                               try {
@@ -399,9 +476,13 @@ export default function ContributePage() {
                                 if (!res.ok) throw new Error("Failed to save Swish donation");
                                 // Refresh gift data to show updated progress
                                 await refreshGiftData();
-                                // Redirect to thank you page with gift data
+                                // Redirect to thank you page with gift data and theme
                                 navigate(`/${slug}/thank-you`, { 
-                                  state: { giftId: gift?.giftId } 
+                                  state: { 
+                                    giftId: gift?.giftId,
+                                    theme: wedding?.theme,
+                                    primaryColor: wedding?.primaryColor
+                                  } 
                                 });
                               } catch (err) {
                                 setSwishDonationError("Could not save your donation. Please try again.");
@@ -443,7 +524,17 @@ export default function ContributePage() {
                         <Button 
                           onClick={handlePayClick}
                           disabled={isProcessing}
-                          className="w-full"
+                          className="w-full text-white border-0"
+                          style={{ 
+                            backgroundColor: themeConfig.colors.primary,
+                            borderColor: themeConfig.colors.primary 
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = themeConfig.colors.primaryHover;
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = themeConfig.colors.primary;
+                          }}
                         >
                           {isProcessing ? t('contribute.processing') : t('contribute.payNow')}
                         </Button>
@@ -464,9 +555,15 @@ export default function ContributePage() {
           </div>
         </div>
       </main>
-      <footer className="border-t py-6">
+      <footer 
+        className="border-t py-6"
+        style={{ borderColor: themeConfig.colors.accent }}
+      >
         <div className="container px-4 md:px-6 mx-auto">
-          <div className="text-center text-sm text-gray-500">
+          <div 
+            className="text-center text-sm"
+            style={{ color: themeConfig.colors.textSecondary }}
+          >
             <p>© 2025 Our Dream Day. All rights reserved.</p>
           </div>
         </div>

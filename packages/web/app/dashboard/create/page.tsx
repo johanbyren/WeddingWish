@@ -17,6 +17,7 @@ import { useAuth } from "~/context/auth"
 import { LanguageSelector, useTranslation } from "~/context/translation"
 import { v4 as uuidv4 } from 'uuid'
 import { clearCache } from "~/utils/cache"
+import { getThemeConfig, getThemeStyles } from "~/utils/themes"
 import { RadioGroup, RadioGroupItem } from "../../components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
 import { LocationAutocomplete } from "../../components/location-autocomplete"
@@ -1137,7 +1138,19 @@ export default function CreateWeddingPage() {
                     <CardDescription>{t('create.previewDescription')}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="border rounded-lg overflow-hidden">
+                    {(() => {
+                      const theme = weddingDetails.theme || 'classic';
+                      const color = weddingDetails.primaryColor || 'pink';
+                      const themeConfig = getThemeConfig(theme, color);
+                      
+                      return (
+                        <div 
+                          className="border rounded-lg overflow-hidden"
+                          style={{ 
+                            background: themeConfig.colors.background,
+                            borderColor: themeConfig.colors.accent 
+                          }}
+                        >
                       {/* {t('create.previewHeader')} */}
                       <div className="relative h-[200px] bg-gray-100">
                         {weddingDetails.coverPhotoPreview ? (
@@ -1233,6 +1246,8 @@ export default function CreateWeddingPage() {
                         </div>
                       </div>
                     </div>
+                      );
+                    })()}
                   </CardContent>
                   <CardFooter className="flex justify-between">
                     <Button variant="outline" onClick={goToPreviousTab}>
