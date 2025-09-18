@@ -519,8 +519,8 @@ const translations = {
     'home.privacy': 'Integritet',
     
     // Learn More page (Swedish)
-    'learnMore.hero.title': 'Gör era bröllopsdrömmar verklighet — tillsammans med era gäster',
-    'learnMore.hero.subtitle': 'Låt era gäster bidra till meningsfulla gåvor istället för att köpa slumpmässiga saker. Skapa er drömbröllop där varje bidrag räknas.',
+    'learnMore.hero.title': 'Gör era bröllopsdrömmar till verklighet — tillsammans med era gäster',
+    'learnMore.hero.subtitle': 'Låt era gäster bidra till meningsfulla gåvor istället för att köpa slumpmässiga saker. Skapa erat drömbröllop där varje bidrag räknas.',
     'learnMore.hero.createButton': 'Skapa er bröllopssida',
     'learnMore.hero.backButton': 'Tillbaka till Hem',
     
@@ -528,7 +528,7 @@ const translations = {
     'learnMore.howItWorks.step1.title': 'Skapa er sida',
     'learnMore.howItWorks.step1.description': 'Par skapar en personlig bröllopssida med foton och deras berättelse.',
     'learnMore.howItWorks.step2.title': 'Lägg till gåvmål',
-    'learnMore.howItWorks.step2.description': 'Lägg till meningsfulla gåvor som smekmånad, bröllopsklänning eller ny heminredning.',
+    'learnMore.howItWorks.step2.description': 'Lägg till meningsfulla gåvor som smekmånad, bröllopsklänning eller drömlokalen.',
     'learnMore.howItWorks.step3.title': 'Gäster bidrar',
     'learnMore.howItWorks.step3.description': 'Gäster bidrar direkt med Swish eller kort — ingen inloggning krävs.',
     'learnMore.howItWorks.step4.title': 'Ta emot pengar',

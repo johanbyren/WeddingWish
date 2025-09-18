@@ -91,16 +91,16 @@ export default function LearnMore() {
       </header>
 
       {/* Hero Section */}
-      <section className="py-16 px-4 md:px-6 relative z-10">
-        <div className="container mx-auto max-w-4xl text-center">
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <HeartIcon className="h-8 w-8 text-pink-500" />
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900">Our Dream Day</h1>
+      <section className="py-20 px-4 md:px-6 relative z-10">
+        <div className="container mx-auto max-w-5xl text-center">
+          <div className="flex items-center justify-center gap-3 mb-8">
+            <HeartIcon className="h-10 w-10 text-pink-500" />
+            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 leading-tight">Our Dream Day</h1>
           </div>
-          <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 mb-6">
+          <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-800 mb-8 leading-tight max-w-6xl mx-auto">
             {t('learnMore.hero.title')}
           </h2>
-          <p className="text-lg text-gray-600 mb-8 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed">
             {t('learnMore.hero.subtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
