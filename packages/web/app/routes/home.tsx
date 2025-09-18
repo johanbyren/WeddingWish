@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { Button } from "~/components/ui/button"
 import { HeartIcon, LogIn, LogOut, UserPlus } from "lucide-react"
 import { useAuth } from "~/context/auth";
@@ -7,6 +7,7 @@ import { LanguageSelector, useTranslation } from "~/context/translation";
 export default function Home() {
   const { loggedIn, user, loaded, login, logout, error, clearError } = useAuth();
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   return (
     <div 
@@ -131,7 +132,12 @@ export default function Home() {
                     {t('home.getStarted')}
                   </Button>
                 )}
-                <Button size="lg" variant="outline" className="border-pink-200 hover:bg-pink-50 px-8" onClick={login}>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="border-pink-200 hover:bg-pink-50 px-8"
+                  onClick={() => navigate('/learn-more')}
+                >
                   {t('home.learnMore')}
                 </Button>
               </div>

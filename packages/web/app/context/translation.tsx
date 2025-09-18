@@ -34,6 +34,56 @@ const translations = {
     'home.terms': 'Terms of Service',
     'home.privacy': 'Privacy',
     
+    // Learn More page
+    'learnMore.hero.title': 'Make your wedding dreams come true — together with your guests',
+    'learnMore.hero.subtitle': 'Let your guests contribute to meaningful gifts instead of buying random stuff. Create your dream wedding registry where every contribution matters.',
+    'learnMore.hero.createButton': 'Create your wedding page',
+    'learnMore.hero.backButton': 'Back to Home',
+    
+    'learnMore.howItWorks.title': 'How it works',
+    'learnMore.howItWorks.step1.title': 'Create your page',
+    'learnMore.howItWorks.step1.description': 'Couples create a personal wedding page with photos and their story.',
+    'learnMore.howItWorks.step2.title': 'Add gift goals',
+    'learnMore.howItWorks.step2.description': 'Add meaningful gifts like honeymoon, dress, or new home furniture.',
+    'learnMore.howItWorks.step3.title': 'Guests contribute',
+    'learnMore.howItWorks.step3.description': 'Guests contribute directly with Swish or card — no login required.',
+    'learnMore.howItWorks.step4.title': 'Receive money',
+    'learnMore.howItWorks.step4.description': 'Couples receive the money directly, easy and transparent.',
+    
+    'learnMore.benefits.title': 'Why Our Dream Day?',
+    'learnMore.benefits.noAwkward.title': 'No awkward gifts',
+    'learnMore.benefits.noAwkward.description': 'Every contribution matters — no more random gifts you don\'t need.',
+    'learnMore.benefits.transparent.title': '100% transparent',
+    'learnMore.benefits.transparent.description': 'Guests know exactly what they\'re supporting and where their money goes.',
+    'learnMore.benefits.easyForGuests.title': 'Easy for guests',
+    'learnMore.benefits.easyForGuests.description': 'No login required — just pay and send love with a few clicks.',
+    'learnMore.benefits.fairPricing.title': 'Fair pricing',
+    'learnMore.benefits.fairPricing.description': 'Couples only pay a small fee if they actually receive contributions.',
+    
+    'learnMore.trust.title': 'Trust & legal transparency',
+    'learnMore.trust.subtitle': 'Safe, secure, and legally compliant in Sweden',
+    'learnMore.trust.explanation': 'In Sweden, donations are regulated. That\'s why we designed Our Dream Day so that payments go directly from guests to couples, safely and legally. No middleman handling the money.',
+    'learnMore.trust.swish': 'Swish integration',
+    'learnMore.trust.encrypted': 'Encrypted payments',
+    'learnMore.trust.secure': 'Secure & safe',
+    
+    'learnMore.testimonials.title': 'What couples say',
+    'learnMore.testimonials.quote1': 'We used Our Dream Day for our wedding — guests loved it, and we could put the money toward our dream honeymoon.',
+    'learnMore.testimonials.author1': 'Anna & Erik, Stockholm',
+    'learnMore.testimonials.quote2': 'Finally, a way for our guests to contribute to something we actually wanted. No more toasters we don\'t need!',
+    'learnMore.testimonials.author2': 'Maria & Johan, Göteborg',
+    
+    'learnMore.social.title': 'Follow our journey',
+    'learnMore.social.description': 'Stay updated with tips, success stories, and wedding inspiration.',
+    'learnMore.social.twitter': 'Follow us on X (Twitter)',
+    
+    'learnMore.cta.title': 'Ready to create your wedding page?',
+    'learnMore.cta.subtitle': 'It only takes 2 minutes — and it\'s free to start.',
+    'learnMore.cta.createButton': 'Create your page',
+    'learnMore.cta.homeButton': 'Back to Home',
+    
+    'learnMore.footer.copyright': '© 2025 Our Dream Day. All rights reserved.',
+    
     // Register page
     'register.title': 'Create an account',
     'register.subtitle': 'Enter your information to get started',
@@ -467,6 +517,56 @@ const translations = {
     'home.copyright': '© 2025 Our Dream Day. Alla rättigheter förbehållna.',
     'home.terms': 'Användarvillkor',
     'home.privacy': 'Integritet',
+    
+    // Learn More page (Swedish)
+    'learnMore.hero.title': 'Gör era bröllopsdrömmar verklighet — tillsammans med era gäster',
+    'learnMore.hero.subtitle': 'Låt era gäster bidra till meningsfulla gåvor istället för att köpa slumpmässiga saker. Skapa er drömbröllop där varje bidrag räknas.',
+    'learnMore.hero.createButton': 'Skapa er bröllopssida',
+    'learnMore.hero.backButton': 'Tillbaka till Hem',
+    
+    'learnMore.howItWorks.title': 'Så fungerar det',
+    'learnMore.howItWorks.step1.title': 'Skapa er sida',
+    'learnMore.howItWorks.step1.description': 'Par skapar en personlig bröllopssida med foton och deras berättelse.',
+    'learnMore.howItWorks.step2.title': 'Lägg till gåvmål',
+    'learnMore.howItWorks.step2.description': 'Lägg till meningsfulla gåvor som smekmånad, bröllopsklänning eller ny heminredning.',
+    'learnMore.howItWorks.step3.title': 'Gäster bidrar',
+    'learnMore.howItWorks.step3.description': 'Gäster bidrar direkt med Swish eller kort — ingen inloggning krävs.',
+    'learnMore.howItWorks.step4.title': 'Ta emot pengar',
+    'learnMore.howItWorks.step4.description': 'Bröllopspar får pengarna direkt, enkelt och transparent.',
+    
+    'learnMore.benefits.title': 'Varför Our Dream Day?',
+    'learnMore.benefits.noAwkward.title': 'Inga besvärliga gåvor',
+    'learnMore.benefits.noAwkward.description': 'Varje bidrag räknas — inga fler slumpmässiga gåvor ni inte behöver.',
+    'learnMore.benefits.transparent.title': '100% transparent',
+    'learnMore.benefits.transparent.description': 'Gäster vet exakt vad de stödjer och vart deras pengar går.',
+    'learnMore.benefits.easyForGuests.title': 'Enkelt för gäster',
+    'learnMore.benefits.easyForGuests.description': 'Ingen inloggning krävs — bara betala och skicka kärlek med några klick.',
+    'learnMore.benefits.fairPricing.title': 'Rättvis prissättning',
+    'learnMore.benefits.fairPricing.description': 'Par betalar bara en liten avgift om de faktiskt får bidrag.',
+    
+    'learnMore.trust.title': 'Förtroende & juridisk transparens',
+    'learnMore.trust.subtitle': 'Säker och juridiskt kompatibel i Sverige',
+    'learnMore.trust.explanation': 'I Sverige är donationer reglerade. Det är därför vi designade Our Dream Day så att betalningar går direkt från gäster till par, säkert och juridiskt. Ingen mellanhand som hanterar pengarna.',
+    'learnMore.trust.swish': 'Swish integration',
+    'learnMore.trust.encrypted': 'Krypterade betalningar',
+    'learnMore.trust.secure': 'Säker & trygg',
+    
+    'learnMore.testimonials.title': 'Vad par säger',
+    'learnMore.testimonials.quote1': 'Vi använde Our Dream Day för vårt bröllop — gästerna älskade det, och vi kunde lägga pengarna på vår drömsmekmånad.',
+    'learnMore.testimonials.author1': 'Anna & Erik, Stockholm',
+    'learnMore.testimonials.quote2': 'Äntligen ett sätt för våra gäster att bidra till något vi faktiskt ville ha. Inga fler brödrostar vi inte behöver!',
+    'learnMore.testimonials.author2': 'Maria & Johan, Göteborg',
+    
+    'learnMore.social.title': 'Följ vår resa',
+    'learnMore.social.description': 'Håll dig uppdaterad med tips, framgångsberättelser och bröllopsinspiration.',
+    'learnMore.social.twitter': 'Följ oss på X (Twitter)',
+    
+    'learnMore.cta.title': 'Redo att skapa er bröllopssida?',
+    'learnMore.cta.subtitle': 'Det tar bara 2 minuter — och det är gratis att komma igång.',
+    'learnMore.cta.createButton': 'Skapa er bröllopsida',
+    'learnMore.cta.homeButton': 'Tillbaka till Hem',
+    
+    'learnMore.footer.copyright': '© 2025 Our Dream Day. Alla rättigheter förbehållna.',
     
     // Register page
     'register.title': 'Skapa ett konto',
