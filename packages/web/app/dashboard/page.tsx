@@ -14,7 +14,10 @@ export default function Dashboard() {
       <header className="px-4 lg:px-6 h-14 flex items-center border-b">
         <Link to="/" className="flex items-center gap-2 font-semibold">
           <HeartIcon className="h-6 w-6 text-pink-500" />
-          <span>WeddingWish{user ? ` - ${user.email}` : ''}</span>
+          <span>
+            Our Dream Day
+            {user && <span className="text-sm text-gray-500 font-normal ml-1">- {user.email}</span>}
+          </span>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
           <LanguageSelector />

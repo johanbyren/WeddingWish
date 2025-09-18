@@ -22,6 +22,8 @@ interface AuthContextType {
   loggedIn: boolean
   logout: () => void
   login: () => Promise<void>
+  error?: string
+  clearError: () => void
   getToken: () => Promise<string | undefined>
 }
 
@@ -33,6 +35,7 @@ export function AuthProvider ({ children }: { children: ReactNode }) {
   const [loggedIn, setLoggedIn] = useState(false);
   const token = useRef<string | undefined>(undefined);
   const [user, setUser] = useState<UserType | undefined>();
+  const [error, setError] = useState<string | undefined>();
   const navigate = useNavigate();
 
 
@@ -77,6 +80,8 @@ export function AuthProvider ({ children }: { children: ReactNode }) {
     });
     if (next.err) {
       console.error("refreshTokens: Error refreshing token", next.err);
+      // Clear invalid refresh token
+      localStorage.removeItem("refresh");
       return;
     }
     if (!next.tokens) {
@@ -109,27 +114,65 @@ export function AuthProvider ({ children }: { children: ReactNode }) {
   }
 
   async function callback (code: string, state: string) {
-    const challenge = JSON.parse(sessionStorage.getItem("challenge")!);
-    if (code) {
-      if (state === challenge.state && challenge.verifier) {
-        const exchanged = await client.exchange(
-          code!,
-          location.origin,
-          challenge.verifier,
-        );
-        if (!exchanged.err) {
-          token.current = exchanged.tokens.access;
-          localStorage.setItem("refresh", exchanged.tokens.refresh);
-
-          const decodedToken = jwtDecode<{ properties: UserType }>(exchanged.tokens.access);
-          setUser(decodedToken.properties);
-          setLoggedIn(true);
-        } else {
-          console.error("callback: Token exchange failed", exchanged.err);
-        }
+    try {
+      const challengeData = sessionStorage.getItem("challenge");
+      if (!challengeData) {
+        setError("Authentication session expired. Please try logging in again.");
+        navigate('/');
+        return;
       }
-      // Use window.location.href for the initial redirect after auth
-      window.location.href = '/dashboard';
+
+      const challenge = JSON.parse(challengeData);
+      
+      if (!code) {
+        setError("No authorization code received. Please try logging in again.");
+        navigate('/');
+        return;
+      }
+
+      if (state !== challenge.state || !challenge.verifier) {
+        setError("Invalid authentication state. Please try logging in again.");
+        navigate('/');
+        return;
+      }
+
+      const exchanged = await client.exchange(
+        code,
+        location.origin,
+        challenge.verifier,
+      );
+
+      if (exchanged.err) {
+        console.error("callback: Token exchange failed", exchanged.err);
+        setError("Login failed. Please check your verification code and try again.");
+        navigate('/');
+        return;
+      }
+
+      if (!exchanged.tokens) {
+        setError("Failed to receive authentication tokens. Please try again.");
+        navigate('/');
+        return;
+      }
+
+      // Success - clear any previous errors
+      setError(undefined);
+      token.current = exchanged.tokens.access;
+      localStorage.setItem("refresh", exchanged.tokens.refresh);
+
+      const decodedToken = jwtDecode<{ properties: UserType }>(exchanged.tokens.access);
+      setUser(decodedToken.properties);
+      setLoggedIn(true);
+
+      // Clean up session storage
+      sessionStorage.removeItem("challenge");
+
+      // Only redirect to dashboard on successful login
+      navigate('/dashboard');
+    } catch (err) {
+      console.error("callback: Unexpected error during authentication", err);
+      setError("An unexpected error occurred during login. Please try again.");
+      navigate('/');
     }
   }
 
@@ -138,7 +181,12 @@ export function AuthProvider ({ children }: { children: ReactNode }) {
     token.current = undefined;
     setUser(undefined);
     setLoggedIn(false);
+    setError(undefined);
     window.location.replace('/');
+  }
+
+  function clearError () {
+    setError(undefined);
   }
 
   return (
@@ -149,6 +197,8 @@ export function AuthProvider ({ children }: { children: ReactNode }) {
         user,
         loaded,
         loggedIn,
+        error,
+        clearError,
         getToken,
       }}
     >

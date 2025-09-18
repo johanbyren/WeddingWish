@@ -5,7 +5,7 @@ import { useAuth } from "~/context/auth";
 import { LanguageSelector, useTranslation } from "~/context/translation";
 
 export default function Home() {
-  const { loggedIn, user, loaded, login, logout } = useAuth();
+  const { loggedIn, user, loaded, login, logout, error, clearError } = useAuth();
   const { t } = useTranslation();
 
   return (
@@ -65,7 +65,10 @@ export default function Home() {
       <header className="px-4 lg:px-6 h-14 flex items-center border-b bg-white/80 backdrop-blur-sm relative z-10">
         <Link to="/" className="flex items-center gap-2 font-semibold">
           <HeartIcon className="h-6 w-6 text-pink-500" />
-          <span>WeddingWish{user ? ` - ${user.email}` : ''}</span>
+          <span>
+            Our Dream Day
+            {user && <span className="text-sm text-gray-500 font-normal ml-1">- {user.email}</span>}
+          </span>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
           <LanguageSelector />
@@ -93,6 +96,20 @@ export default function Home() {
       <main className="flex-1 flex flex-col relative z-10">
         <section className="flex-1 flex items-center w-full">
           <div className="container px-4 md:px-6 mx-auto">
+            {error && (
+              <div className="mb-6 mx-auto max-w-md">
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center justify-between">
+                  <span className="text-sm">{error}</span>
+                  <button 
+                    onClick={clearError}
+                    className="ml-2 text-red-500 hover:text-red-700 font-bold text-lg"
+                    aria-label="Close error message"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="flex flex-col items-center space-y-8 text-center">
               <div className="space-y-4">
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl text-gray-900">

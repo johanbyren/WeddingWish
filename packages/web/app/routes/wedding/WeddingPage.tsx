@@ -194,7 +194,7 @@ export default function WeddingPage() {
       <header className="px-4 lg:px-6 h-14 flex items-center border-b">
         <Link to="/" className="flex items-center gap-2 font-semibold">
         <HeartIcon className="h-6 w-6 text-pink-500" />
-        <span>WeddingWish</span>
+        <span>Our Dream Day</span>
         </Link>
       </header>
       <main className="flex-1 flex flex-col">
@@ -315,7 +315,7 @@ export default function WeddingPage() {
       <footer className="border-t py-6">
         <div className="container px-4 md:px-6 mx-auto">
           <div className="text-center text-sm text-gray-500">
-            <p>© 2025 WeddingWish. All rights reserved.</p>
+            <p>© 2025 Our Dream Day. All rights reserved.</p>
           </div>
         </div>
       </footer>

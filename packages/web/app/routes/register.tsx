@@ -68,7 +68,7 @@ export default function Register() {
       <header className="px-4 lg:px-6 h-14 flex items-center border-b">
         <Link to="/" className="flex items-center gap-2 font-semibold">
           <HeartIcon className="h-6 w-6 text-pink-500" />
-          <span>WeddingWish</span>
+          <span>Our Dream Day</span>
         </Link>
       </header>
       <main className="flex-1 flex items-center justify-center p-4">
