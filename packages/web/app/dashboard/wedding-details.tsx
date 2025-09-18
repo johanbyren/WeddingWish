@@ -3,7 +3,6 @@
 import { Link } from "react-router-dom"
 import { Button } from "~/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
 import { PlusCircle, Trash2 } from "lucide-react"
 import { useEffect, useState, useCallback, useRef } from "react"
 import type { WeddingType } from "@wedding-wish/core/wedding"
@@ -126,11 +125,7 @@ export default function WeddingDetails() {
         )}
       </div>
 
-      <Tabs defaultValue="wedding-details">
-        <TabsList>
-          <TabsTrigger value="wedding-details">{t('dashboard.weddingDetails')}</TabsTrigger>
-        </TabsList>
-        <TabsContent value="wedding-details" className="space-y-4 mt-4">
+      <div className="space-y-4 mt-4">
           <div className="relative">
             {loading && (
               <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center z-50">
@@ -167,14 +162,14 @@ export default function WeddingDetails() {
                         </CardContent>
                         <CardFooter className="flex gap-2 justify-between">
                           <div className="flex gap-2">
-                            <Link to={`/${weddings[0].weddingId}`} target="_blank" rel="noopener noreferrer" className="block">
-                              <Button variant="outline" size="sm">
-                                {t('dashboard.viewPage')}
-                              </Button>
-                            </Link>
                             <Link to={`/dashboard/create?weddingId=${weddings[0].weddingId}`} className="block">
                               <Button variant="outline" size="sm">
                                 {t('dashboard.edit')}
+                              </Button>
+                            </Link>
+                            <Link to={`/${weddings[0].weddingId}`} target="_blank" rel="noopener noreferrer" className="block">
+                              <Button variant="outline" size="sm">
+                                {t('dashboard.viewPage')}
                               </Button>
                             </Link>
                           </div>
@@ -217,8 +212,7 @@ export default function WeddingDetails() {
               </Card>
             </div>
           </div>
-        </TabsContent>
-      </Tabs>
+      </div>
     </div>
   )
 } 
