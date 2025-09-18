@@ -870,10 +870,7 @@ export default function CreateWeddingPage() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="classic">{t('create.classic')}</SelectItem>
-                            <SelectItem value="modern">{t('create.modern')}</SelectItem>
-                            <SelectItem value="rustic">{t('create.rustic')}</SelectItem>
-                            <SelectItem value="elegant">{t('create.elegant')}</SelectItem>
-                            <SelectItem value="minimalist">{t('create.minimalist')}</SelectItem>
+                            <SelectItem value="romanticClassic">{t('create.romanticClassic')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -888,10 +885,15 @@ export default function CreateWeddingPage() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="pink">{t('create.pink')}</SelectItem>
-                            <SelectItem value="blue">{t('create.blue')}</SelectItem>
-                            <SelectItem value="green">{t('create.green')}</SelectItem>
-                            <SelectItem value="purple">{t('create.purple')}</SelectItem>
-                            <SelectItem value="gold">{t('create.gold')}</SelectItem>
+                            <SelectItem value="rosePetal">{t('create.rosePetal')}</SelectItem>
+                            <SelectItem value="lavender">{t('create.lavender')}</SelectItem>
+                            <SelectItem value="sageGreen">{t('create.sageGreen')}</SelectItem>
+                            <SelectItem value="dustyBlue">{t('create.dustyBlue')}</SelectItem>
+                            <SelectItem value="vintageGold">{t('create.vintageGold')}</SelectItem>
+                            <SelectItem value="deepNavy">{t('create.deepNavy')}</SelectItem>
+                            <SelectItem value="champagne">{t('create.champagne')}</SelectItem>
+                            <SelectItem value="mauve">{t('create.mauve')}</SelectItem>
+                            <SelectItem value="eucalyptus">{t('create.eucalyptus')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
