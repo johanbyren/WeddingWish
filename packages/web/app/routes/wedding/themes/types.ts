@@ -15,6 +15,7 @@ export interface Wedding {
   userId: string
   title: string
   date: string
+  time?: string
   location: string
   story: string
   photoUrls: string[]
@@ -41,7 +42,7 @@ export interface ThemeComponentProps {
   handleImageClick: (image: string) => void;
   handlePreviousImage: () => void;
   handleNextImage: () => void;
-  formatWeddingDateTime: (date: string) => { date: string; time: string };
+  formatWeddingDateTime: (date: string, time?: string) => { date: string; time: string };
   navigate: (path: string, options?: any) => void;
   slug: string | undefined;
   giftImages: Record<string, string>;

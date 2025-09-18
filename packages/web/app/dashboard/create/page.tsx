@@ -35,6 +35,7 @@ export default function CreateWeddingPage() {
   const [weddingDetails, setWeddingDetails] = useState({
     title: "",
     date: new Date(),
+    time: "14:00",
     location: "",
     story: "",
     coverPhoto: null as File | null,
@@ -232,6 +233,7 @@ export default function CreateWeddingPage() {
             ...prev,
             title: weddingData.title || "",
             date: weddingData.date ? new Date(weddingData.date.split('T')[0]) : new Date(),
+            time: weddingData.time || "14:00",
             location: weddingData.location || "",
             story: weddingData.story || "",
             coverPhotoPreview: photosData.find((photo: { key: string }) => photo.key.includes('cover-'))?.url || "",
@@ -253,6 +255,7 @@ export default function CreateWeddingPage() {
             ...prev,
             title: weddingData.title || "",
             date: weddingData.date ? new Date(weddingData.date.split('T')[0]) : new Date(),
+            time: weddingData.time || "14:00",
             location: weddingData.location || "",
             story: weddingData.story || "",
             coverPhotoPreview: photosData.find((photo: { key: string }) => photo.key.includes('cover-'))?.url || "",
@@ -638,6 +641,7 @@ export default function CreateWeddingPage() {
       userId: auth.user?.email,
       title: weddingDetails.title,
       date: weddingDetails.date.toISOString(),
+      time: weddingDetails.time,
       location: weddingDetails.location,
       story: weddingDetails.story,
       photoUrls,
@@ -765,9 +769,21 @@ export default function CreateWeddingPage() {
                           required
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="date">{t('create.weddingDate')}</Label>
-                        <DatePicker date={weddingDetails.date} setDate={handleDateChange} />
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="date">{t('create.weddingDate')}</Label>
+                          <DatePicker date={weddingDetails.date} setDate={handleDateChange} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="time">{t('create.weddingTime')}</Label>
+                          <Input
+                            id="time"
+                            type="time"
+                            value={weddingDetails.time}
+                            onChange={(e) => setWeddingDetails(prev => ({ ...prev, time: e.target.value }))}
+                            className="w-full"
+                          />
+                        </div>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="location">{t('create.weddingLocation')}</Label>
@@ -1176,7 +1192,7 @@ export default function CreateWeddingPage() {
                                     year: "numeric",
                                     month: "long",
                                     day: "numeric",
-                                  })}
+                                  })} at {weddingDetails.time}
                                 </span>
                               </div>
                               <div className="flex items-center">

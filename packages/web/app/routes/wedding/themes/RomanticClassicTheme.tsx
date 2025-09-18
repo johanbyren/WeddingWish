@@ -76,7 +76,7 @@ export default function RomanticClassicTheme({
             <div className="relative z-10 flex flex-col sm:flex-row gap-4 justify-center items-center px-8 py-4">
             <div className="flex items-center gap-2 text-white/90 drop-shadow-md">
               <Calendar className="w-5 h-5" />
-              <span className="text-lg">{formatWeddingDateTime(wedding.date).date}</span>
+              <span className="text-lg">{formatWeddingDateTime(wedding.date, wedding.time).date}</span>
             </div>
             <div className="hidden sm:block w-px h-6 bg-white/60" />
             <div className="flex items-center gap-2 text-white/90 drop-shadow-md">
@@ -134,8 +134,8 @@ export default function RomanticClassicTheme({
                 {t('weddingPage.when')}
               </h3>
               <div className="space-y-2" style={{ color: themeConfig.colors.textSecondary }}>
-                <p className="text-lg font-medium">{formatWeddingDateTime(wedding.date).date}</p>
-                <p>{t('weddingPage.ceremony')}: {formatWeddingDateTime(wedding.date).time}</p>
+                <p className="text-lg font-medium">{formatWeddingDateTime(wedding.date, wedding.time).date}</p>
+                <p>{t('weddingPage.ceremony')}: {formatWeddingDateTime(wedding.date, wedding.time).time}</p>
               </div>
             </Card>
 

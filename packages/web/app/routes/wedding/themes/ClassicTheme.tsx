@@ -58,7 +58,7 @@ export default function ClassicTheme({
               <div className="flex flex-wrap gap-4 mt-2 text-white">
                 <div className="flex items-center">
                   <Calendar className="h-4 w-4 mr-2" />
-                  {formatWeddingDateTime(wedding.date).date} {formatWeddingDateTime(wedding.date).time}
+                  {formatWeddingDateTime(wedding.date, wedding.time).date} {formatWeddingDateTime(wedding.date, wedding.time).time}
                 </div>
                 <div className="flex items-center">
                   <MapPin className="h-4 w-4 mr-2" />

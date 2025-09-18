@@ -5,6 +5,7 @@ export const schema = z.object({
     userId: z.string(),
     title: z.string().optional(),
     date: z.string().optional(),
+    time: z.string().optional(),
     location: z.string().optional(),
     story: z.string().optional(),
     coverPhotoKey: z.string().optional(),

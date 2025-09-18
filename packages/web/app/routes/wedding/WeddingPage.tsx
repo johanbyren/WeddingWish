@@ -22,6 +22,7 @@ interface Wedding {
   userId: string
   title: string
   date: string
+  time?: string
   location: string
   story: string
   photoUrls: string[]
@@ -200,14 +201,23 @@ export default function WeddingPage() {
     setSelectedImage(galleryPhotos[newIndex])
   }
 
-  const formatWeddingDateTime = (dateString: string) => {
+  const formatWeddingDateTime = (dateString: string, timeString?: string) => {
     const date = new Date(dateString)
-    const formattedDate = date.toISOString().split('T')[0]
-    const hours = date.getHours().toString().padStart(2, '0')
-    const minutes = date.getMinutes().toString().padStart(2, '0')
+    const formattedDate = date.toLocaleDateString()
+    
+    // Use separate time field if available, otherwise extract from date
+    let formattedTime = ''
+    if (timeString) {
+      formattedTime = timeString
+    } else {
+      const hours = date.getHours().toString().padStart(2, '0')
+      const minutes = date.getMinutes().toString().padStart(2, '0')
+      formattedTime = `${hours}:${minutes}`
+    }
+    
     return {
       date: formattedDate,
-      time: `${hours}:${minutes}`
+      time: formattedTime
     }
   }
 

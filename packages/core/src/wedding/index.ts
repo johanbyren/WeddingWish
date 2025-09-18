@@ -155,14 +155,21 @@ export namespace Wedding {
                 expressionAttributeNames["#weddingDate"] = "date";
             }
 
+            // Handle time field separately (reserved word in DynamoDB)
+            if (wedding.time !== undefined) {
+                updateExpressions.push("#weddingTime = :weddingTime");
+                expressionAttributeValues[":weddingTime"] = wedding.time;
+                expressionAttributeNames["#weddingTime"] = "time";
+            }
+
             // Handle updatedAt separately
             updateExpressions.push("#lastUpdated = :lastUpdated");
             expressionAttributeValues[":lastUpdated"] = new Date().toISOString();
             expressionAttributeNames["#lastUpdated"] = "updatedAt";
 
-            // Add each provided field to the update, excluding date and updatedAt
+            // Add each provided field to the update, excluding date, time, and updatedAt
             Object.entries(wedding).forEach(([key, value]) => {
-                if (key !== "weddingId" && key !== "userId" && key !== "date" && key !== "updatedAt" && value !== undefined) {
+                if (key !== "weddingId" && key !== "userId" && key !== "date" && key !== "time" && key !== "updatedAt" && value !== undefined) {
                     // Handle reserved words that need expression attribute names
                     if (key === "location" || key === "language") {
                         const attributeName = `#${key}`;
