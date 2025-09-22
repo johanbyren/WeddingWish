@@ -5,6 +5,7 @@ import { Photo } from "@wedding-wish/core/photo";
 import { Settings } from "@wedding-wish/core/settings";
 import { zValidator } from "@hono/zod-validator";
 import { Resource } from "sst";
+import bcrypt from "bcryptjs";
 
 const app = new Hono();
 
@@ -159,6 +160,67 @@ app.get(
         } catch (error) {
             console.error("Error fetching wedding:", error);
             return c.json({ error: "Failed to fetch wedding" }, 500);
+        }
+    },
+);
+
+/**
+ * Verify password for a wedding
+ */
+app.post(
+    "/:slug/verify-password",
+    zValidator(
+        "param",
+        z.object({
+            slug: z.string(),
+        }),
+    ),
+    async (c) => {
+        try {
+            const { slug } = c.req.valid("param");
+            const { password } = await c.req.json();
+            
+            console.log("Verifying password for wedding:", slug);
+            
+            // Try to get wedding by ID first, then by custom URL
+            let wedding = await Wedding.getById(slug);
+            if (!wedding) {
+                wedding = await Wedding.getByCustomUrl(slug);
+            }
+            
+            if (!wedding) {
+                return c.json({ error: "Wedding not found" }, 404);
+            }
+            
+            if (wedding.visibility !== "password") {
+                return c.json({ error: "Wedding is not password protected" }, 400);
+            }
+            
+            if (!wedding.password) {
+                return c.json({ error: "No password set for this wedding" }, 400);
+            }
+            
+            // Compare the provided password with the stored password
+            // Handle both hashed passwords (new) and plain text passwords (legacy)
+            let isPasswordValid = false;
+            
+            // First try bcrypt comparison (for hashed passwords)
+            try {
+                isPasswordValid = await bcrypt.compare(password, wedding.password);
+            } catch (error) {
+                // If bcrypt comparison fails, it might be a plain text password (legacy)
+                // Fall back to direct string comparison for backward compatibility
+                isPasswordValid = password === wedding.password;
+            }
+            
+            if (isPasswordValid) {
+                return c.json({ success: true });
+            } else {
+                return c.json({ error: "Incorrect password" }, 401);
+            }
+        } catch (error) {
+            console.error("Error verifying password:", error);
+            return c.json({ error: "Failed to verify password" }, 500);
         }
     },
 );

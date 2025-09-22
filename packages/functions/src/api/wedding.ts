@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { Wedding } from "@wedding-wish/core/wedding";
 import { zValidator } from "@hono/zod-validator";
+import bcrypt from "bcryptjs";
 
 const app = new Hono();
 
@@ -12,6 +13,13 @@ app.post("/create", async (c) => {
     try {
         const body = await c.req.json();
         console.log("Creating wedding with body:", body);
+        
+        // Hash password if provided
+        if (body.password && body.password.trim() !== "") {
+            const saltRounds = 12;
+            body.password = await bcrypt.hash(body.password, saltRounds);
+        }
+        
         const result = await Wedding.create(body);
         return c.json(result);
     } catch (error) {
@@ -27,6 +35,13 @@ app.put("/update", async (c) => {
     try {
         const body = await c.req.json();
         console.log("Updating wedding with body:", body);
+        
+        // Hash password if provided and not empty
+        if (body.password && body.password.trim() !== "") {
+            const saltRounds = 12;
+            body.password = await bcrypt.hash(body.password, saltRounds);
+        }
+        
         const result = await Wedding.update(body);
         return c.json(result);
     } catch (error) {

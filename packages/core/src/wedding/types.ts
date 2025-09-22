@@ -11,6 +11,7 @@ export const schema = z.object({
     coverPhotoKey: z.string().optional(),
     additionalPhotoKeys: z.array(z.string()).optional(),
     visibility: z.string().optional(),
+    password: z.string().optional(),
     customUrl: z.string().optional(),
     theme: z.string().optional(),
     primaryColor: z.string().optional(),

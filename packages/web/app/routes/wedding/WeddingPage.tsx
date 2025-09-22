@@ -6,6 +6,8 @@ import { FullScreenLoading } from "~/components/loading-spinner"
 import { getThemeConfig, getThemeStyles } from "~/utils/themes"
 import { getThemeComponent } from "./themes"
 import { Button } from "~/components/ui/button"
+import PasswordProtection from "~/components/password-protection"
+import PrivateWedding from "~/components/private-wedding"
 
 interface Gift {
   giftId: string;
@@ -48,6 +50,9 @@ export default function WeddingPage() {
   const [wedding, setWedding] = useState<Wedding | null>(null)
   const [gifts, setGifts] = useState<Gift[]>([])
   const [loading, setLoading] = useState(true)
+  const [isPasswordVerified, setIsPasswordVerified] = useState(false)
+  const [showPasswordProtection, setShowPasswordProtection] = useState(false)
+  const [showPrivateWedding, setShowPrivateWedding] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [themeData, setThemeData] = useState<{theme: string, primaryColor: string} | null>(null)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
@@ -80,6 +85,27 @@ export default function WeddingPage() {
 
         const data = await response.json();
         setWedding(data);
+        
+        // Check wedding visibility
+        if (data.visibility === 'password') {
+          // Check if user has already verified password in this session
+          const isVerified = sessionStorage.getItem(`wedding_${data.weddingId}_verified`);
+          if (isVerified === 'true') {
+            setIsPasswordVerified(true);
+          } else {
+            setShowPasswordProtection(true);
+            setLoading(false);
+            return; // Don't continue loading the rest of the page
+          }
+        } else if (data.visibility === 'private') {
+          // Show private wedding message
+          setShowPrivateWedding(true);
+          setLoading(false);
+          return; // Don't continue loading the rest of the page
+        } else {
+          // Public wedding - show normally
+          setIsPasswordVerified(true);
+        }
         
         // Set theme data immediately for loading spinner
         setThemeData({
@@ -152,6 +178,30 @@ export default function WeddingPage() {
 
     loadGiftImages();
   }, [gifts]);
+
+  // Show private wedding message if needed
+  if (showPrivateWedding && wedding) {
+    return (
+      <PrivateWedding 
+        language={wedding.language || 'en'}
+      />
+    );
+  }
+
+  // Show password protection if needed
+  if (showPasswordProtection && wedding) {
+    return (
+      <PasswordProtection 
+        onPasswordCorrect={() => {
+          setIsPasswordVerified(true);
+          setShowPasswordProtection(false);
+          // Continue loading the rest of the page
+          setLoading(false);
+        }}
+        language={wedding.language || 'en'}
+      />
+    );
+  }
 
   if (loading) {
     return (

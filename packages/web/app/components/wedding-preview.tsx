@@ -1,7 +1,7 @@
 import { Suspense, useState } from "react"
 import { getThemeComponent } from "~/routes/wedding/themes"
 import { getThemeConfig, getThemeStyles } from "~/utils/themes"
-import { useTranslation } from "~/context/translation"
+import { useTranslation, translations } from "~/context/translation"
 import type { Wedding, Gift } from "~/routes/wedding/themes/types"
 
 interface WeddingPreviewProps {
@@ -33,15 +33,25 @@ export default function WeddingPreview({ weddingDetails }: WeddingPreviewProps) 
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
+  // Create a translation function that uses the wedding's language
+  // This uses the global translations but with a specific language parameter
+  const getTranslation = (key: string) => {
+    const currentLanguage = weddingDetails.language || 'en';
+    
+    // Use the exported translations object directly
+    // This is much cleaner and avoids duplication
+    return (translations[currentLanguage] as any)?.[key] || key;
+  };
+
   // Convert weddingDetails to the format expected by theme components
   const mockWedding: Wedding = {
     weddingId: "preview",
     userId: "preview",
-    title: weddingDetails.title || t('create.yourWeddingTitle'),
+    title: weddingDetails.title || getTranslation('create.yourWeddingTitle'),
     date: weddingDetails.date.toISOString().split('T')[0],
     time: weddingDetails.time,
-    location: weddingDetails.location || t('create.weddingLocation'),
-    story: weddingDetails.story || t('create.loveStoryPlaceholder'),
+    location: weddingDetails.location || getTranslation('create.weddingLocation'),
+    story: weddingDetails.story || getTranslation('create.loveStoryPlaceholder'),
     photoUrls: [
       ...(weddingDetails.coverPhotoPreview ? [weddingDetails.coverPhotoPreview] : []),
       ...weddingDetails.additionalPhotos.map(photo => photo.preview)
@@ -60,7 +70,8 @@ export default function WeddingPreview({ weddingDetails }: WeddingPreviewProps) 
     description: item.description,
     price: parseFloat(item.price) || 0,
     totalContributed: 0,
-    isFullyFunded: false
+    isFullyFunded: false,
+    imageUrl: item.imagePreview || null
   }))
 
   // Create gift images mapping
@@ -141,7 +152,7 @@ export default function WeddingPreview({ weddingDetails }: WeddingPreviewProps) 
             navigate={navigate}
             slug="preview"
             giftImages={giftImages}
-            t={t}
+            t={getTranslation}
           />
         </Suspense>
       </div>

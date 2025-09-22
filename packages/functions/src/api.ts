@@ -53,8 +53,8 @@ const protectedApp = new Hono()
     return await auth(c, next);
   });
 
-// Public routes
-const routes = app
+// Mount public routes
+app
   .route("/api/user", userRoute)
   .route("/api/show-photo", showPhotoRoute)
   .route("/api/show-wedding", showWeddingRoute)
@@ -62,16 +62,14 @@ const routes = app
   .route("/api/create-checkout-session", checkoutSessionRoute)
   .route("/api/swish-donation", swishDonationRoute);
 
-// Protected routes
-const protectedRoutes = protectedApp
+// Mount protected routes
+app.route("/", protectedApp
   .route("/api/wedding", weddingRoute)
   .route("/api/photo", photoRoute)
   .route("/api/settings", settingsRoute)
   .route("/api/gift-registry", giftRegistryRoute)
+);
 
-// Mount protected routes under the main app
-app.route("/", protectedRoutes);
-
-export type AppType = typeof routes;
+export type AppType = typeof app;
 
 export const handler = handle(app);

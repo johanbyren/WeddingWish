@@ -6,7 +6,7 @@ type Language = 'en' | 'sv';
 type TranslationKey = string;
 
 // Translation data
-const translations = {
+export const translations = {
   en: {
     // Navigation
     'nav.home': 'Home',
@@ -390,6 +390,13 @@ const translations = {
     'create.languageDescription': 'Choose the language for your wedding page',
     'create.english': 'English',
     'create.swedish': 'Swedish',
+    'create.weddingPassword': 'Wedding Password',
+    'create.enterPassword': 'Enter password for guests',
+    'create.passwordDescription': 'Guests will need to enter this password to view your wedding page',
+    'private.title': 'Wedding page not ready',
+    'private.description': 'This wedding page is currently private and not yet available to the public.',
+    'private.subtitle': 'The couple is still preparing their special day.',
+    'private.contactMessage': 'Please contact the couple directly for more information.',
     'create.confirmRemoveCoverPhoto': 'Are you sure you want to remove the cover photo?',
     'create.confirmRemovePhoto': 'Are you sure you want to remove this photo?',
     'create.addGiftItem': 'Add Gift Item',
@@ -899,6 +906,13 @@ const translations = {
     'create.languageDescription': 'Välj språket för din bröllopssida',
     'create.english': 'Engelska',
     'create.swedish': 'Svenska',
+    'create.weddingPassword': 'Bröllopslösenord',
+    'create.enterPassword': 'Ange lösenord för gäster',
+    'create.passwordDescription': 'Gäster behöver ange detta lösenord för att se din bröllopssida',
+    'private.title': 'Bröllopssida inte redo',
+    'private.description': 'Denna bröllopssida är för närvarande privat och inte tillgänglig för allmänheten.',
+    'private.subtitle': 'Paret förbereder fortfarande sin speciella dag.',
+    'private.contactMessage': 'Vänligen kontakta paret direkt för mer information.',
     'create.confirmRemoveCoverPhoto': 'Är du säker på att du vill ta bort omslagsbilden?',
     'create.confirmRemovePhoto': 'Är du säker på att du vill ta bort denna bild?',
     'create.addGiftItem': 'Lägg till gåva',

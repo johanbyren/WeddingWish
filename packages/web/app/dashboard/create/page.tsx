@@ -54,6 +54,7 @@ export default function CreateWeddingPage() {
     theme: "default",
     primaryColor: "#FF5733",
     visibility: "public",
+    password: "",
     customUrl: "",
     language: "en" as "en" | "sv"
   });
@@ -247,6 +248,7 @@ export default function CreateWeddingPage() {
               })),
             customUrl: weddingData.customUrl || "",
             visibility: weddingData.visibility || "public",
+            password: weddingData.password || "",
             theme: weddingData.theme || "default",
             primaryColor: weddingData.primaryColor || "#FF5733",
             language: weddingData.language || "en",
@@ -269,6 +271,7 @@ export default function CreateWeddingPage() {
               })),
             customUrl: weddingData.customUrl || "",
             visibility: weddingData.visibility || "public",
+            password: weddingData.password || "",
             theme: weddingData.theme || "default",
             primaryColor: weddingData.primaryColor || "#FF5733",
             language: weddingData.language || "en",
@@ -650,6 +653,7 @@ export default function CreateWeddingPage() {
       theme: weddingDetails.theme,
       primaryColor: weddingDetails.primaryColor,
       visibility: weddingDetails.visibility,
+      password: weddingDetails.password,
       customUrl: weddingDetails.customUrl,
       language: weddingDetails.language,
       updatedAt: new Date().toISOString().split("T")[0],
@@ -850,6 +854,21 @@ export default function CreateWeddingPage() {
                         </div>
                       </RadioGroup>
                     </div>
+
+                    {weddingDetails.visibility === "password" && (
+                      <div className="space-y-2">
+                        <Label htmlFor="password">{t('create.weddingPassword')}</Label>
+                        <Input
+                          id="password"
+                          type="password"
+                          value={weddingDetails.password}
+                          onChange={(e) => setWeddingDetails(prev => ({ ...prev, password: e.target.value }))}
+                          placeholder={t('create.enterPassword')}
+                          className="max-w-[300px]"
+                        />
+                        <p className="text-xs text-gray-500">{t('create.passwordDescription')}</p>
+                      </div>
+                    )}
 
                     <div className="space-y-2">
                       <Label htmlFor="customUrl">{t('create.customUrl')}</Label>
