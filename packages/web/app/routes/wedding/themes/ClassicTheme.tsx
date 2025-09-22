@@ -111,7 +111,7 @@ export default function ClassicTheme({
                     .filter(url => url.includes('gallery-'))
                     .map((photoUrl, index) => (
                     <div 
-                      key={index} 
+                      key={photoUrl} 
                       className="aspect-square overflow-hidden rounded-lg cursor-pointer"
                       onClick={() => handleImageClick(photoUrl)}
                     >
@@ -181,7 +181,7 @@ export default function ClassicTheme({
                         <div 
                           className="h-2 rounded-full transition-all duration-300"
                           style={{ 
-                            width: `${(gift.totalContributed / gift.price) * 100}%`,
+                            width: `${Math.min((gift.totalContributed / gift.price) * 100, 100)}%`,
                             backgroundColor: themeConfig.colors.primary
                           }}
                         />

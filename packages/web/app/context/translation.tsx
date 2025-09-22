@@ -299,6 +299,7 @@ const translations = {
     
     // Preview Tab
     'create.previewWeddingPage': 'Preview Your Wedding Page',
+    'create.livePreview': 'Live Preview',
     'create.noCoverPhotoSelected': 'No cover photo selected',
     'create.yourWeddingTitle': 'Your Wedding Title',
     'create.ourStory': 'Our Story',
@@ -387,6 +388,8 @@ const translations = {
     'create.weddingLanguage': 'Wedding Page Language',
     'create.selectLanguage': 'Select Language',
     'create.languageDescription': 'Choose the language for your wedding page',
+    'create.english': 'English',
+    'create.swedish': 'Swedish',
     'create.confirmRemoveCoverPhoto': 'Are you sure you want to remove the cover photo?',
     'create.confirmRemovePhoto': 'Are you sure you want to remove this photo?',
     'create.addGiftItem': 'Add Gift Item',
@@ -805,6 +808,7 @@ const translations = {
     
     // Preview Tab
     'create.previewWeddingPage': 'Förhandsvisa din bröllopssida',
+    'create.livePreview': 'Live förhandsvisning',
     'create.noCoverPhotoSelected': 'Ingen omslagsbild vald',
     'create.yourWeddingTitle': 'Din bröllopstitel',
     'create.ourStory': 'Vår historia',
@@ -893,6 +897,8 @@ const translations = {
     'create.weddingLanguage': 'Bröllopssidans språk',
     'create.selectLanguage': 'Välj språk',
     'create.languageDescription': 'Välj språket för din bröllopssida',
+    'create.english': 'Engelska',
+    'create.swedish': 'Svenska',
     'create.confirmRemoveCoverPhoto': 'Är du säker på att du vill ta bort omslagsbilden?',
     'create.confirmRemovePhoto': 'Är du säker på att du vill ta bort denna bild?',
     'create.addGiftItem': 'Lägg till gåva',

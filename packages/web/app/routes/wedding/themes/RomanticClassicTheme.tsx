@@ -228,7 +228,7 @@ export default function RomanticClassicTheme({
                 .filter(url => url.includes('gallery-'))
                 .map((photoUrl, index) => (
                 <div 
-                  key={index} 
+                  key={photoUrl} 
                   className={`aspect-square overflow-hidden cursor-pointer ${themeConfig.styles.borderRadius} ${themeConfig.animations.hover}`}
                   onClick={() => handleImageClick(photoUrl)}
                   style={{ backgroundColor: themeConfig.colors.muted }}
@@ -326,7 +326,7 @@ export default function RomanticClassicTheme({
                         <div 
                           className="h-2 rounded-full transition-all duration-300"
                           style={{ 
-                            width: `${(gift.totalContributed / gift.price) * 100}%`,
+                            width: `${Math.min((gift.totalContributed / gift.price) * 100, 100)}%`,
                             backgroundColor: themeConfig.colors.primary
                           }}
                         />

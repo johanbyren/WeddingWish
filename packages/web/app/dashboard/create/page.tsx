@@ -21,6 +21,7 @@ import { getThemeConfig, getThemeStyles } from "~/utils/themes"
 import { RadioGroup, RadioGroupItem } from "../../components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
 import { LocationAutocomplete } from "../../components/location-autocomplete"
+import WeddingPreview from "../../components/wedding-preview"
 
 export default function CreateWeddingPage() {
   const auth = useAuth();
@@ -142,7 +143,7 @@ export default function CreateWeddingPage() {
 
   const addGiftItem = () => {
     if (newGiftItem.name && newGiftItem.price) {
-      const id = Date.now().toString()
+      const id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
       setWeddingDetails((prev) => ({
         ...prev,
         giftItems: [...prev.giftItems, { ...newGiftItem, id }],
@@ -224,6 +225,7 @@ export default function CreateWeddingPage() {
               }
               return {
                 ...gift,
+                id: gift.giftId || gift.id, // Ensure we have an id field
                 imagePreview
               };
             })
@@ -874,62 +876,6 @@ export default function CreateWeddingPage() {
                       <p className="text-xs text-gray-500">{t('create.customUrlDescription')}</p>
                     </div>
 
-                    <div className="grid gap-4 md:grid-cols-3">
-                      <div className="space-y-2">
-                        <Label htmlFor="theme">{t('create.pageTheme')}</Label>
-                        <Select
-                          value={weddingDetails.theme}
-                          onValueChange={(value) => setWeddingDetails(prev => ({ ...prev, theme: value }))}
-                        >
-                          <SelectTrigger id="theme">
-                            <SelectValue placeholder={t('create.selectTheme')} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="classic">{t('create.classic')}</SelectItem>
-                            <SelectItem value="romanticClassic">{t('create.romanticClassic')}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="primaryColor">{t('create.primaryColor')}</Label>
-                        <Select
-                          value={weddingDetails.primaryColor}
-                          onValueChange={(value) => setWeddingDetails(prev => ({ ...prev, primaryColor: value }))}
-                        >
-                          <SelectTrigger id="primaryColor">
-                            <SelectValue placeholder={t('create.selectColor')} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pink">{t('create.pink')}</SelectItem>
-                            <SelectItem value="rosePetal">{t('create.rosePetal')}</SelectItem>
-                            <SelectItem value="lavender">{t('create.lavender')}</SelectItem>
-                            <SelectItem value="sageGreen">{t('create.sageGreen')}</SelectItem>
-                            <SelectItem value="dustyBlue">{t('create.dustyBlue')}</SelectItem>
-                            <SelectItem value="vintageGold">{t('create.vintageGold')}</SelectItem>
-                            <SelectItem value="deepNavy">{t('create.deepNavy')}</SelectItem>
-                            <SelectItem value="champagne">{t('create.champagne')}</SelectItem>
-                            <SelectItem value="mauve">{t('create.mauve')}</SelectItem>
-                            <SelectItem value="eucalyptus">{t('create.eucalyptus')}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="language">{t('create.weddingLanguage')}</Label>
-                        <Select
-                          value={weddingDetails.language}
-                          onValueChange={(value: "en" | "sv") => setWeddingDetails(prev => ({ ...prev, language: value }))}
-                        >
-                          <SelectTrigger id="language">
-                            <SelectValue placeholder={t('create.selectLanguage')} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="en">English</SelectItem>
-                            <SelectItem value="sv">Svenska</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-gray-500">{t('create.languageDescription')}</p>
-                      </div>
-                    </div>
                   </CardContent>
                   <CardFooter className="flex justify-between">
                     <Button variant="outline" onClick={goToPreviousTab}>
@@ -1032,25 +978,11 @@ export default function CreateWeddingPage() {
                         <CardContent>
                           <div className="grid md:grid-cols-[1fr_2fr] gap-6">
                             <div className="flex items-center">
-                              {newGiftItem.imagePreview ? (
-                                <div className="relative aspect-square overflow-hidden rounded-lg border">
-                                  <img
-                                    src={newGiftItem.imagePreview}
-                                    alt={t('create.giftPreview')}
-                                    className="w-full h-full object-cover"
-                                  />
-                                  <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    className="absolute top-2 right-2"
-                                    onClick={() => setNewGiftItem((prev) => ({ ...prev, imageFile: null, imagePreview: "" }))}
-                                  >
-                                    {t('create.remove')}
-                                  </Button>
-                                </div>
-                              ) : (
-                                <ImageUploader onImageSelected={handleGiftImageSelected} />
-                              )}
+                              <ImageUploader 
+                                onImageSelected={handleGiftImageSelected}
+                                onImageCleared={() => setNewGiftItem((prev) => ({ ...prev, imageFile: null, imagePreview: "" }))}
+                                preview={newGiftItem.imagePreview}
+                              />
                             </div>
                             <div className="space-y-4">
                               <div className="space-y-2">
@@ -1155,117 +1087,69 @@ export default function CreateWeddingPage() {
                     <CardTitle>{t('create.previewWeddingPage')}</CardTitle>
                     <CardDescription>{t('create.previewDescription')}</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    {(() => {
-                      const theme = weddingDetails.theme || 'classic';
-                      const color = weddingDetails.primaryColor || 'pink';
-                      const themeConfig = getThemeConfig(theme, color);
-                      
-                      return (
-                        <div 
-                          className="border rounded-lg overflow-hidden"
-                          style={{ 
-                            background: themeConfig.colors.background,
-                            borderColor: themeConfig.colors.accent 
-                          }}
+                  <CardContent className="space-y-6">
+                    {/* Theme and Color Settings */}
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="theme">{t('create.pageTheme')}</Label>
+                        <Select
+                          value={weddingDetails.theme}
+                          onValueChange={(value) => setWeddingDetails(prev => ({ ...prev, theme: value }))}
                         >
-                      {/* {t('create.previewHeader')} */}
-                      <div className="relative h-[200px] bg-gray-100">
-                        {weddingDetails.coverPhotoPreview ? (
-                          <img
-                            src={weddingDetails.coverPhotoPreview || "/placeholder.svg"}
-                            alt={t('create.cover')}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            {t('create.noCoverPhotoSelected')}
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-black/30 flex items-end">
-                          <div className="p-4 text-white">
-                            <h2 className="text-2xl font-bold">{weddingDetails.title || t('create.yourWeddingTitle')}</h2>
-                            <div className="flex flex-wrap gap-4 mt-2 text-sm">
-                              <div className="flex items-center">
-                                <span>
-                                  {weddingDetails.date.toLocaleDateString("en-US", {
-                                    year: "numeric",
-                                    month: "long",
-                                    day: "numeric",
-                                  })} at {weddingDetails.time}
-                                </span>
-                              </div>
-                              <div className="flex items-center">
-                                <span>{weddingDetails.location || t('create.weddingLocation')}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                          <SelectTrigger id="theme">
+                            <SelectValue placeholder={t('create.selectTheme')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="classic">{t('create.classic')}</SelectItem>
+                            <SelectItem value="romanticClassic">{t('create.romanticClassic')}</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
-
-                      {/* {t('create.previewContent')} */}
-                      <div className="p-6 space-y-6">
-                        <div>
-                          <h3 className="text-xl font-semibold mb-2">{t('create.ourStory')}</h3>
-                          <p className="text-gray-700">{weddingDetails.story || t('create.loveStoryPlaceholder')}</p>
-                        </div>
-
-                        {weddingDetails.additionalPhotos.length > 0 && (
-                          <div>
-                            <h3 className="text-xl font-semibold mb-2">{t('create.photoGallery')}</h3>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                              {weddingDetails.additionalPhotos.map((photo, index) => (
-                                <div key={index} className="aspect-square rounded-lg overflow-hidden">
-                                  <img
-                                    src={photo.preview || "/placeholder.svg"}
-                                    alt={`Photo ${index + 1}`}
-                                    className="w-full h-full object-cover"
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        <div>
-                          <h3 className="text-xl font-semibold mb-2">{t('create.giftRegistry')}</h3>
-                          {weddingDetails.giftItems.length > 0 ? (
-                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                              {weddingDetails.giftItems.map((item) => (
-                                <Card key={item.id}>
-                                  <div className="aspect-video bg-gray-100">
-                                    {item.imagePreview ? (
-                                      <img
-                                        src={item.imagePreview}
-                                        alt={item.name}
-                                        className="w-full h-full object-cover"
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                        {t('create.noImage')}
-                                      </div>
-                                    )}
-                                  </div>
-                                  <CardHeader>
-                                    <CardTitle>{item.name}</CardTitle>
-                                    <CardDescription>{item.description}</CardDescription>
-                                  </CardHeader>
-                                  <CardContent>
-                                    <p className="font-medium">{item.price} sek</p>
-                                  </CardContent>
-                                </Card>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="text-gray-500 italic">
-                              {t('create.noGiftItemsAddedYet')}
-                            </p>
-                          )}
-                        </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="primaryColor">{t('create.primaryColor')}</Label>
+                        <Select
+                          value={weddingDetails.primaryColor}
+                          onValueChange={(value) => setWeddingDetails(prev => ({ ...prev, primaryColor: value }))}
+                        >
+                          <SelectTrigger id="primaryColor">
+                            <SelectValue placeholder={t('create.selectColor')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pink">{t('create.pink')}</SelectItem>
+                            <SelectItem value="rosePetal">{t('create.rosePetal')}</SelectItem>
+                            <SelectItem value="lavender">{t('create.lavender')}</SelectItem>
+                            <SelectItem value="sageGreen">{t('create.sageGreen')}</SelectItem>
+                            <SelectItem value="dustyBlue">{t('create.dustyBlue')}</SelectItem>
+                            <SelectItem value="vintageGold">{t('create.vintageGold')}</SelectItem>
+                            <SelectItem value="deepNavy">{t('create.deepNavy')}</SelectItem>
+                            <SelectItem value="champagne">{t('create.champagne')}</SelectItem>
+                            <SelectItem value="mauve">{t('create.mauve')}</SelectItem>
+                            <SelectItem value="eucalyptus">{t('create.eucalyptus')}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="language">{t('create.weddingLanguage')}</Label>
+                        <Select
+                          value={weddingDetails.language}
+                          onValueChange={(value: "en" | "sv") => setWeddingDetails(prev => ({ ...prev, language: value }))}
+                        >
+                          <SelectTrigger id="language">
+                            <SelectValue placeholder={t('create.selectLanguage')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="en">{t('create.english')}</SelectItem>
+                            <SelectItem value="sv">{t('create.swedish')}</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
-                      );
-                    })()}
+
+                    {/* Live Preview */}
+                    <div>
+                      <h3 className="text-lg font-medium mb-4">{t('create.livePreview')}</h3>
+                      <WeddingPreview weddingDetails={weddingDetails} />
+                    </div>
                   </CardContent>
                   <CardFooter className="flex justify-between">
                     <Button variant="outline" onClick={goToPreviousTab}>
