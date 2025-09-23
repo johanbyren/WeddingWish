@@ -280,7 +280,7 @@ export default function RomanticClassicTheme({
                   }}
                 >
                   <div 
-                    className={`aspect-video overflow-hidden ${themeConfig.styles.borderRadius}`}
+                    className="aspect-video overflow-hidden rounded-t-2xl"
                     style={{ backgroundColor: themeConfig.colors.muted }}
                   >
                     <img

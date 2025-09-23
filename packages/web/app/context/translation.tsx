@@ -277,13 +277,13 @@ export const translations = {
     'create.modern': 'Modern',
     'create.primaryColor': 'Primary Color',
     'create.selectColor': 'Select color',
-    'create.pink': 'Blush Pink',
-    'create.rosePetal': 'Rose Petal',
+    'create.pink': 'Pink',
+    'create.rosePetal': 'Rose Red',
     'create.lavender': 'Lavender',
-    'create.sageGreen': 'Sage Green',
-    'create.dustyBlue': 'Dusty Blue',
+    'create.sageGreen': 'Green',
+    'create.dustyBlue': 'Light Blue',
     'create.vintageGold': 'Vintage Gold',
-    'create.deepNavy': 'Deep Navy',
+    'create.deepNavy': 'Dark Blue',
     'create.champagne': 'Champagne',
     'create.mauve': 'Mauve',
     'create.eucalyptus': 'Eucalyptus',
@@ -802,15 +802,15 @@ export const translations = {
     'create.modern': 'Modern',
     'create.primaryColor': 'Primärfärg',
     'create.selectColor': 'Välj färg',
-    'create.pink': 'Rodnad Rosa',
-    'create.rosePetal': 'Rosblad',
+    'create.pink': 'Rosa',
+    'create.rosePetal': 'Rosaröd',
     'create.lavender': 'Lavendel',
-    'create.sageGreen': 'Salviegrön',
-    'create.dustyBlue': 'Dammig Blå',
+    'create.sageGreen': 'Grön',
+    'create.dustyBlue': 'Ljusblå',
     'create.vintageGold': 'Vintage Guld',
-    'create.deepNavy': 'Djup Marinblå',
+    'create.deepNavy': 'Mörkblå',
     'create.champagne': 'Champagne',
-    'create.mauve': 'Malva',
+    'create.mauve': 'Lila',
     'create.eucalyptus': 'Eukalyptus',
     
     // Gift Registry Tab
@@ -1261,7 +1261,13 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
 export function useTranslation() {
   const context = useContext(TranslationContext);
   if (context === undefined) {
-    throw new Error('useTranslation must be used within a TranslationProvider');
+    // Provide a fallback context to prevent crashes during initial render
+    console.warn('useTranslation used outside TranslationProvider, using fallback');
+    return {
+      language: 'en' as 'en' | 'sv',
+      setLanguage: () => {},
+      t: (key: string) => key, // Return the key as fallback
+    };
   }
   return context;
 }

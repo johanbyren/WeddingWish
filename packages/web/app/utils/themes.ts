@@ -112,11 +112,11 @@ export const colors: Record<string, ColorConfig> = {
     accent: "#f9a8d4"
   },
   rosePetal: {
-    name: "Rose Petal",
-    primary: "#f43f5e",
-    primaryHover: "#e11d48",
-    secondary: "#fdf2f8",
-    accent: "#fda4af"
+    name: "Rose Red",
+    primary: "#dc2626",
+    primaryHover: "#b91c1c",
+    secondary: "#fef2f2",
+    accent: "#f87171"
   },
   lavender: {
     name: "Lavender",
@@ -133,11 +133,11 @@ export const colors: Record<string, ColorConfig> = {
     accent: "#86efac"
   },
   dustyBlue: {
-    name: "Dusty Blue",
-    primary: "#3b82f6",
-    primaryHover: "#2563eb",
-    secondary: "#dbeafe",
-    accent: "#93c5fd"
+    name: "Light Blue",
+    primary: "#0ea5e9",
+    primaryHover: "#0284c7",
+    secondary: "#e0f2fe",
+    accent: "#7dd3fc"
   },
   vintageGold: {
     name: "Vintage Gold",
@@ -147,25 +147,25 @@ export const colors: Record<string, ColorConfig> = {
     accent: "#fbbf24"
   },
   deepNavy: {
-    name: "Deep Navy",
-    primary: "#1e40af",
-    primaryHover: "#1d4ed8",
-    secondary: "#dbeafe",
-    accent: "#60a5fa"
+    name: "Dark Blue",
+    primary: "#1e3a8a",
+    primaryHover: "#1e40af",
+    secondary: "#1e293b",
+    accent: "#3b82f6"
   },
   champagne: {
     name: "Champagne",
-    primary: "#ca8a04",
-    primaryHover: "#a16207",
-    secondary: "#fefce8",
-    accent: "#facc15"
+    primary: "#f59e0b",
+    primaryHover: "#d97706",
+    secondary: "#fffbeb",
+    accent: "#fbbf24"
   },
   mauve: {
-    name: "Mauve",
-    primary: "#be185d",
-    primaryHover: "#9d174d",
-    secondary: "#fdf2f8",
-    accent: "#f472b6"
+    name: "Purple",
+    primary: "#7c3aed",
+    primaryHover: "#6d28d9",
+    secondary: "#f3e8ff",
+    accent: "#a78bfa"
   },
   eucalyptus: {
     name: "Eucalyptus",

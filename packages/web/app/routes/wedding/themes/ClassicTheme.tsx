@@ -46,7 +46,7 @@ export default function ClassicTheme({
       </header>
       
       <main className="flex-1 flex flex-col">
-        <div className="relative h-[300px] md:h-[400px]">
+        <div className="relative h-[300px] md:h-[400px] rounded-xl overflow-hidden">
           <img
             src={wedding.photoUrls.find(url => url.includes('cover-')) || "/placeholder.svg?height=400&width=1200"}
             alt={wedding.title}
@@ -112,7 +112,7 @@ export default function ClassicTheme({
                     .map((photoUrl, index) => (
                     <div 
                       key={photoUrl} 
-                      className="aspect-square overflow-hidden rounded-lg cursor-pointer"
+                      className="aspect-square overflow-hidden rounded-xl cursor-pointer"
                       onClick={() => handleImageClick(photoUrl)}
                     >
                       <img
@@ -158,7 +158,7 @@ export default function ClassicTheme({
                     boxShadow: themeConfig.styles.shadow
                   }}
                 >
-                  <div className="aspect-video bg-gray-100">
+                  <div className="aspect-video bg-gray-100 rounded-t-lg overflow-hidden">
                     <img
                       src={giftImages[gift.giftId] || "/placeholder.svg?height=200&width=400"}
                       alt={gift.name}
