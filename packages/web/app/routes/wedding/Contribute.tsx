@@ -69,6 +69,63 @@ export default function ContributePage() {
   const [donorMessage, setDonorMessage] = useState("");
   const [swishDonationError, setSwishDonationError] = useState<string | null>(null);
   const [isGeneratingQR, setIsGeneratingQR] = useState(false);
+  
+  // Step management
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 3;
+
+  // Step navigation functions
+  const nextStep = () => {
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  // Progress indicator component
+  const ProgressIndicator = () => {
+    return (
+      <div className="flex items-center justify-center mb-8">
+        {Array.from({ length: totalSteps }, (_, index) => (
+          <div key={index} className="flex items-center">
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold ${
+                index + 1 <= currentStep
+                  ? 'text-white'
+                  : 'text-gray-500 bg-gray-200'
+              }`}
+              style={{
+                backgroundColor: index + 1 <= currentStep 
+                  ? themeConfig.colors.primary 
+                  : '#e5e7eb'
+              }}
+            >
+              {index + 1}
+            </div>
+            {index < totalSteps - 1 && (
+              <div
+                className={`w-16 h-1 mx-2 ${
+                  index + 1 < currentStep
+                    ? ''
+                    : 'bg-gray-200'
+                }`}
+                style={{
+                  backgroundColor: index + 1 < currentStep 
+                    ? themeConfig.colors.primary 
+                    : '#e5e7eb'
+                }}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   // Helper function to reset QR state
   const resetQRState = () => {
@@ -148,7 +205,7 @@ export default function ContributePage() {
   console.log('Swish phone number:', swishPhoneNumber);
   console.log('Wedding payment settings:', (wedding as any)?.paymentSettings);
 
-  const handleSwishClick = () => {
+  const generateQRCode = () => {
     // Validate all required data is present
     if (!gift?.name || !swishPhoneNumber || !wedding?.weddingId) {
       console.error('Missing required data for QR generation:', {
@@ -363,7 +420,7 @@ export default function ContributePage() {
               </p>
             </div>
 
-            {/* Right: Payment Section */}
+            {/* Right: Step-by-Step Payment Section */}
             <div 
               className="rounded-xl shadow p-6 flex flex-col items-center"
               style={{ 
@@ -373,81 +430,118 @@ export default function ContributePage() {
               }}
             >
               <div className="w-full max-w-md space-y-6">
+                {/* Progress Indicator */}
+                <ProgressIndicator />
+                
                 {paymentMethod === 'swish' ? (
-                  // Swish Payment Flow
+                  // Swish Step-by-Step Flow
                   <>
-                    <div className="space-y-4">
-                      <Label htmlFor="amount">{t('contribute.contributionAmount')}</Label>
-                      <div className="space-y-2">
-                        <Input
-                          id="amount"
-                          type="number"
-                          min="1"
-                          value={amount}
-                          onChange={(e) => { handleAmountChange(e.target.value); }}
-                          className="w-full"
-                        />
-                        <Slider
-                          value={[parseFloat(amount)]}
-                          min={1}
-                          max={5000}
-                          step={1}
-                          onValueChange={(value: number[]) => { handleAmountChange(value[0].toString()); }}
-                        />
+                    {/* Step 1: Amount */}
+                    {currentStep === 1 && (
+                      <div className="space-y-6">
+                        <div className="text-center">
+                          <h3 className="text-lg font-semibold mb-2" style={{ color: themeConfig.colors.text }}>
+                            {t('contribute.step1Title')}
+                          </h3>
+                          <p className="text-sm" style={{ color: themeConfig.colors.textSecondary }}>
+                            {t('contribute.step1Description')}
+                          </p>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <Label htmlFor="amount">{t('contribute.contributionAmount')}</Label>
+                          <div className="space-y-2">
+                            <Input
+                              id="amount"
+                              type="number"
+                              min="1"
+                              value={amount}
+                              onChange={(e) => { handleAmountChange(e.target.value); }}
+                              className="w-full"
+                            />
+                            <Slider
+                              value={[parseFloat(amount)]}
+                              min={1}
+                              max={5000}
+                              step={1}
+                              onValueChange={(value: number[]) => { handleAmountChange(value[0].toString()); }}
+                            />
+                          </div>
+                        </div>
+                        
+                        <Button 
+                          onClick={nextStep}
+                          disabled={!amount || parseFloat(amount) < 1}
+                          className="w-full text-white border-0"
+                          style={{ 
+                            backgroundColor: themeConfig.colors.primary,
+                            borderColor: themeConfig.colors.primary 
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = themeConfig.colors.primaryHover;
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = themeConfig.colors.primary;
+                          }}
+                        >
+                          {t('contribute.next')}
+                        </Button>
                       </div>
-                    </div>
+                    )}
                     
-                    <div className="space-y-4">
-                      <Label htmlFor="donorName">{t('contribute.yourName')}</Label>
-                      <Input
-                        id="donorName"
-                        value={donorName}
-                        onChange={(e) => { setDonorName(e.target.value); resetQRState(); }}
-                        placeholder={t('contribute.enterYourName')}
-                        className="w-full"
-                      />
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <Label htmlFor="donorMessage">{t('contribute.message')}</Label>
-                      <Input
-                        id="donorMessage"
-                        value={donorMessage}
-                        onChange={(e) => { setDonorMessage(e.target.value); resetQRState(); }}
-                        placeholder={t('contribute.addPersonalMessage')}
-                        className="w-full"
-                      />
-                    </div>
-                    <Button 
-                      onClick={handleSwishClick}
-                      disabled={isProcessing || !swishPhoneNumber || isGeneratingQR}
-                      className="w-full text-white border-0"
-                      style={{ 
-                        backgroundColor: themeConfig.colors.primary,
-                        borderColor: themeConfig.colors.primary 
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = themeConfig.colors.primaryHover;
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = themeConfig.colors.primary;
-                      }}
-                    >
-                      {isProcessing ? t('contribute.processing') : isGeneratingQR ? t('contribute.generatingQR') : t('contribute.showSwishQR')}
-                    </Button>
-                    {showSwishQR && swishQRString && (
-                      <div className="mt-6 flex flex-col items-center">
-                        <QRCodeCanvas 
-                          key={swishQRString} 
-                          value={swishQRString} 
-                          size={200}
-                          level="M"
-                          includeMargin={true}
-                        />
-                        <p className="mt-4 text-center text-gray-700">{t('contribute.scanQRCodeWithSwish')}<br/>{t('contribute.phone')}: <b>{swishPhoneNumber}</b><br/>{t('contribute.amount')}: <b>{amount} SEK</b><br/>{t('contribute.message')}: <b>{donorName ? `Wedding gift: ${gift.name} (from ${donorName})` : `Wedding gift: ${gift.name}`}{donorMessage ? ` - ${donorMessage}` : ''}</b></p>
-                        <div className="mt-4 w-full max-w-xs">
-                          <Button
-                            className="w-full mt-2 text-white border-0"
+                    {/* Step 2: Name and Message */}
+                    {currentStep === 2 && (
+                      <div className="space-y-6">
+                        <div className="text-center">
+                          <h3 className="text-lg font-semibold mb-2" style={{ color: themeConfig.colors.text }}>
+                            {t('contribute.step2Title')}
+                          </h3>
+                          <p className="text-sm" style={{ color: themeConfig.colors.textSecondary }}>
+                            {t('contribute.step2Description')}
+                          </p>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <Label htmlFor="donorName">{t('contribute.yourName')}</Label>
+                          <Input
+                            id="donorName"
+                            value={donorName}
+                            onChange={(e) => { setDonorName(e.target.value); resetQRState(); }}
+                            placeholder={t('contribute.enterYourName')}
+                            className="w-full"
+                          />
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <Label htmlFor="donorMessage">{t('contribute.message')}</Label>
+                          <Input
+                            id="donorMessage"
+                            value={donorMessage}
+                            onChange={(e) => { setDonorMessage(e.target.value); resetQRState(); }}
+                            placeholder={t('contribute.addPersonalMessage')}
+                            className="w-full"
+                          />
+                        </div>
+                        
+                        <div className="flex gap-3">
+                          <Button 
+                            onClick={prevStep}
+                            variant="outline"
+                            className="flex-1"
+                            style={{ 
+                              borderColor: themeConfig.colors.primary,
+                              color: themeConfig.colors.primary
+                            }}
+                          >
+                            {t('contribute.back')}
+                          </Button>
+                          <Button 
+                            onClick={() => {
+                              generateQRCode();
+                              nextStep();
+                            }}
+                            disabled={isGeneratingQR}
+                            className="flex-1 text-white border-0"
                             style={{ 
                               backgroundColor: themeConfig.colors.primary,
                               borderColor: themeConfig.colors.primary 
@@ -458,6 +552,56 @@ export default function ContributePage() {
                             onMouseLeave={(e) => {
                               e.currentTarget.style.backgroundColor = themeConfig.colors.primary;
                             }}
+                          >
+                            {isGeneratingQR ? t('contribute.generatingQR') : t('contribute.next')}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Step 3: QR Code */}
+                    {currentStep === 3 && (
+                      <div className="space-y-6">
+                        <div className="text-center">
+                          <h3 className="text-lg font-semibold mb-2" style={{ color: themeConfig.colors.text }}>
+                            {t('contribute.step3Title')}
+                          </h3>
+                          <p className="text-sm" style={{ color: themeConfig.colors.textSecondary }}>
+                            {t('contribute.step3Description')}
+                          </p>
+                        </div>
+                        
+                        {showSwishQR && swishQRString && (
+                          <div className="flex flex-col items-center">
+                            <QRCodeCanvas 
+                              key={swishQRString} 
+                              value={swishQRString} 
+                              size={200}
+                              level="M"
+                              includeMargin={true}
+                            />
+                            <p className="mt-4 text-center text-gray-700 text-sm">
+                              {t('contribute.scanQRCodeWithSwish')}<br/>
+                              {t('contribute.phone')}: <b>{swishPhoneNumber}</b><br/>
+                              {t('contribute.amount')}: <b>{amount} SEK</b><br/>
+                              {t('contribute.message')}: <b>{donorName ? `Wedding gift: ${gift.name} (from ${donorName})` : `Wedding gift: ${gift.name}`}{donorMessage ? ` - ${donorMessage}` : ''}</b>
+                            </p>
+                          </div>
+                        )}
+                        
+                        <div className="flex gap-3">
+                          <Button 
+                            onClick={prevStep}
+                            variant="outline"
+                            className="flex-1"
+                            style={{ 
+                              borderColor: themeConfig.colors.primary,
+                              color: themeConfig.colors.primary
+                            }}
+                          >
+                            {t('contribute.back')}
+                          </Button>
+                          <Button
                             onClick={async () => {
                               setSwishDonationError(null);
                               try {
@@ -488,16 +632,30 @@ export default function ContributePage() {
                                 setSwishDonationError("Could not save your donation. Please try again.");
                               }
                             }}
+                            className="flex-1 text-white border-0"
+                            style={{ 
+                              backgroundColor: themeConfig.colors.primary,
+                              borderColor: themeConfig.colors.primary 
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = themeConfig.colors.primaryHover;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = themeConfig.colors.primary;
+                            }}
                           >
-                            {t('contribute.completedSwishPayment')}
+                            {t('contribute.finish')}
                           </Button>
-                          {swishDonationError && <p className="text-red-600 mt-2">{t('contribute.couldNotSaveDonation')}</p>}
                         </div>
+                        
+                        {swishDonationError && (
+                          <p className="text-red-600 text-center text-sm">{t('contribute.couldNotSaveDonation')}</p>
+                        )}
                       </div>
                     )}
                   </>
                 ) : (
-                  // Stripe Payment Flow
+                  // Stripe Payment Flow (keeping original for now)
                   <>
                     {!showCheckout ? (
                       <>

@@ -454,6 +454,15 @@ export const translations = {
     'contribute.giftNotConfigured': 'This gift is not properly configured. Please contact the wedding organizers.',
     'contribute.failedToCreateCheckout': 'Failed to create checkout session',
     'contribute.giftNotFound': 'Gift not found',
+    'contribute.step1Title': 'Choose Amount',
+    'contribute.step1Description': 'How much would you like to contribute?',
+    'contribute.step2Title': 'Your Details',
+    'contribute.step2Description': 'Add your name and a personal message (optional)',
+    'contribute.step3Title': 'Complete Payment',
+    'contribute.step3Description': 'Scan the QR code with your Swish app to complete your contribution',
+    'contribute.next': 'Next',
+    'contribute.back': 'Back',
+    'contribute.finish': 'Finish',
     
     // Thank You Page
     'thankYou.title': 'Thank You!',
@@ -970,6 +979,15 @@ export const translations = {
     'contribute.giftNotConfigured': 'Denna gåva är inte korrekt konfigurerad. Kontakta bröllopsarrangörerna.',
     'contribute.failedToCreateCheckout': 'Misslyckades att skapa kassasession',
     'contribute.giftNotFound': 'Gåva hittades inte',
+    'contribute.step1Title': 'Välj belopp',
+    'contribute.step1Description': 'Hur mycket vill du bidra med?',
+    'contribute.step2Title': 'Dina uppgifter',
+    'contribute.step2Description': 'Lägg till ditt namn och ett personligt meddelande (valfritt)',
+    'contribute.step3Title': 'Slutför betalning',
+    'contribute.step3Description': 'Skanna QR-koden med din Swish-app för att slutföra ditt bidrag',
+    'contribute.next': 'Nästa',
+    'contribute.back': 'Tillbaka',
+    'contribute.finish': 'Slutför',
     
     // Thank You Page
     'thankYou.title': 'Tack så mycket!',

@@ -41,6 +41,8 @@ export default function ManageGifts() {
   const [giftItems, setGiftItems] = useState<GiftItem[]>([])
   const [contributors, setContributors] = useState<Record<string, Contributor[]>>({})
   const [weddingId, setWeddingId] = useState<string>("")
+  const [weddingTheme, setWeddingTheme] = useState<string>("")
+  const [weddingPrimaryColor, setWeddingPrimaryColor] = useState<string>("")
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -72,8 +74,13 @@ export default function ManageGifts() {
           return;
         }
 
-        const weddingId = weddings[0].weddingId;
+        const wedding = weddings[0];
+        const weddingId = wedding.weddingId;
         setWeddingId(weddingId);
+        
+        // Store theme information for loading component
+        setWeddingTheme(wedding.theme || "");
+        setWeddingPrimaryColor(wedding.primaryColor || "");
 
         // Load gifts
         await loadGifts(weddingId);
@@ -136,7 +143,11 @@ export default function ManageGifts() {
 
 
   if (loading) {
-    return <FullScreenLoading text={t('loading.giftRegistry')} />;
+    return <FullScreenLoading 
+      text={t('loading.giftRegistry')} 
+      theme={weddingTheme || "classic"}
+      primaryColor={weddingPrimaryColor || "#ec4899"}
+    />;
   }
 
   if (error) {
