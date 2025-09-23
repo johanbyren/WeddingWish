@@ -383,7 +383,11 @@ export const translations = {
     
     // Create Wedding Page Additional Keys
     'create.coverPhotoDescription': 'This will be the main image at the top of your wedding page.',
+    'create.coverPhotoOptimalSize': 'Optimal size: 1200x400px (3:1 ratio). The image will be cropped to fit this ratio.',
     'create.additionalPhotosDescription': 'Add more photos to your wedding gallery (optional).',
+    'create.galleryPhotoOptimalSize': 'Optimal size: 800x800px (1:1 ratio). Square images work best.',
+    'create.weddingCreatedSuccessfully': 'Wedding page created successfully!',
+    'create.weddingUpdatedSuccessfully': 'Wedding page updated successfully!',
     'create.remove': 'Remove',
     'create.weddingLanguage': 'Wedding Page Language',
     'create.selectLanguage': 'Select Language',
@@ -908,7 +912,11 @@ export const translations = {
     
     // Create Wedding Page Additional Keys
     'create.coverPhotoDescription': 'Detta kommer att vara huvudbilden högst upp på din bröllopssida.',
+    'create.coverPhotoOptimalSize': 'Optimal storlek: 1200x400px (3:1 förhållande). Bilden kommer att beskärs för att passa detta förhållande.',
     'create.additionalPhotosDescription': 'Lägg till fler foton i din bröllopsgalleri (valfritt).',
+    'create.galleryPhotoOptimalSize': 'Optimal storlek: 800x800px (1:1 förhållande). Kvadratiska bilder fungerar bäst.',
+    'create.weddingCreatedSuccessfully': 'Bröllopssida skapad framgångsrikt!',
+    'create.weddingUpdatedSuccessfully': 'Bröllopssida uppdaterad framgångsrikt!',
     'create.remove': 'Ta bort',
     'create.weddingLanguage': 'Bröllopssidans språk',
     'create.selectLanguage': 'Välj språk',

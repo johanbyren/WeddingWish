@@ -23,13 +23,24 @@ export function ImageUploader({ onImageSelected, onImageCleared, className, prev
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
+    console.log('ImageUploader handleFileChange called with file:', file?.name, file?.size);
+    
     if (file) {
+      console.log('Calling onImageSelected with file:', file.name);
       onImageSelected(file)
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setPreview(reader.result as string)
+      
+      // Only set preview if showPreview is true
+      if (showPreview) {
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          setPreview(reader.result as string)
+        }
+        reader.readAsDataURL(file)
       }
-      reader.readAsDataURL(file)
+    }
+    // Clear the file input to allow selecting the same file again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
     }
   }
 
@@ -50,7 +61,7 @@ export function ImageUploader({ onImageSelected, onImageCleared, className, prev
         ref={fileInputRef}
         onChange={handleFileChange}
       />
-      {!preview ? (
+      {!preview || !showPreview ? (
         <Button
           type="button"
           variant="outline"

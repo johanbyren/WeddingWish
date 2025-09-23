@@ -2,17 +2,19 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { Button } from "../../components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/ui/card"
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
 import { Textarea } from "../../components/ui/textarea"
-import { HeartIcon, ArrowLeft, ImagePlus, Plus, Trash2 } from "lucide-react"
+import { HeartIcon, ArrowLeft, ImagePlus, Plus, Trash2, Check } from "lucide-react"
 import { DatePicker } from "../../components/date-picker"
 import { ImageUploader } from "../../components/image-uploader"
+import { CoverImageUploader } from "../../components/cover-image-uploader"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
+import { Alert, AlertDescription } from "../../components/ui/alert"
 import { useAuth } from "~/context/auth"
 import { LanguageSelector, useTranslation } from "~/context/translation"
 import { v4 as uuidv4 } from 'uuid'
@@ -33,6 +35,7 @@ export default function CreateWeddingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(isEditMode);
   const [activeTab, setActiveTab] = useState("details");
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const [weddingDetails, setWeddingDetails] = useState({
     title: "",
     date: new Date(),
@@ -102,11 +105,38 @@ export default function CreateWeddingPage() {
   }
 
   const handleAdditionalPhotoAdd = (file: File) => {
-    const preview = URL.createObjectURL(file)
-    setWeddingDetails((prev) => ({
-      ...prev,
-      additionalPhotos: [...prev.additionalPhotos, { file, preview }],
-    }))
+    console.log('handleAdditionalPhotoAdd called with file:', file.name, file.size);
+    
+    // Create a unique identifier for this file
+    const fileId = `${file.name}-${file.size}-${file.lastModified}`;
+    
+    // Use a more robust duplicate check that includes the preview URL
+    setWeddingDetails((prev) => {
+      console.log('Current additionalPhotos count:', prev.additionalPhotos.length);
+      console.log('Current additionalPhotos:', prev.additionalPhotos.map(p => ({ name: p.file?.name, size: p.file?.size, preview: p.preview?.substring(0, 50) })));
+      
+      // Check if this exact file is already in the array to prevent duplicates
+      const isDuplicate = prev.additionalPhotos.some(photo => 
+        photo.file && 
+        photo.file.name === file.name && 
+        photo.file.size === file.size &&
+        photo.file.lastModified === file.lastModified
+      );
+      
+      if (isDuplicate) {
+        console.warn('Duplicate photo detected, skipping add');
+        return prev;
+      }
+      
+      const preview = URL.createObjectURL(file);
+      const newPhotos = [...prev.additionalPhotos, { file, preview }];
+      console.log('Adding new photo, new count:', newPhotos.length);
+      
+      return {
+        ...prev,
+        additionalPhotos: newPhotos,
+      };
+    })
   }
 
   const removeCoverPhoto = () => {
@@ -121,12 +151,34 @@ export default function CreateWeddingPage() {
 
   const removeAdditionalPhoto = (index: number) => {
     if (confirm(t('create.confirmRemovePhoto'))) {
-      setWeddingDetails((prev) => ({
-        ...prev,
-        additionalPhotos: prev.additionalPhotos.filter((_, i) => i !== index),
-      }))
+      setWeddingDetails((prev) => {
+        const photoToRemove = prev.additionalPhotos[index];
+        // Clean up the object URL if it exists
+        if (photoToRemove?.preview && photoToRemove.preview.startsWith('blob:')) {
+          URL.revokeObjectURL(photoToRemove.preview);
+        }
+        return {
+          ...prev,
+          additionalPhotos: prev.additionalPhotos.filter((_, i) => i !== index),
+        };
+      })
     }
   }
+
+  // Cleanup object URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      // Clean up all blob URLs when component unmounts
+      weddingDetails.additionalPhotos.forEach(photo => {
+        if (photo.preview && photo.preview.startsWith('blob:')) {
+          URL.revokeObjectURL(photo.preview);
+        }
+      });
+      if (weddingDetails.coverPhotoPreview && weddingDetails.coverPhotoPreview.startsWith('blob:')) {
+        URL.revokeObjectURL(weddingDetails.coverPhotoPreview);
+      }
+    };
+  }, []);
 
   const handleGiftImageSelected = (file: File) => {
     const preview = URL.createObjectURL(file)
@@ -383,6 +435,7 @@ export default function CreateWeddingPage() {
 
         // 2. Process new photos (both cover and gallery)
         const newPhotoUrls = await processNewPhotos(weddingId);
+        console.log('New photo URLs:', newPhotoUrls);
         photoUrls.push(...newPhotoUrls);
 
         // 3. Get existing photos that should be kept
@@ -395,11 +448,14 @@ export default function CreateWeddingPage() {
             return `weddings/${weddingId}/${fileName}`;
           });
 
+        console.log('Existing photo URLs:', existingPhotoUrls);
+
         // Add cover photo if it exists and hasn't been changed
         if (weddingDetails.coverPhotoPreview && !weddingDetails.coverPhoto) {
           const coverPhotoUrl = currentPhotoUrls.find(url => url.includes('cover-'));
           if (coverPhotoUrl) {
             existingPhotoUrls.push(coverPhotoUrl);
+            console.log('Added existing cover photo:', coverPhotoUrl);
           }
         }
 
@@ -408,10 +464,12 @@ export default function CreateWeddingPage() {
           ![...newPhotoUrls, ...existingPhotoUrls].includes(url)
         );
 
+        console.log('Photos to delete:', photosToDelete);
         await deletePhotos(photosToDelete);
 
-        // 5. Update wedding with all photos (new + existing)
-        photoUrls.push(...newPhotoUrls, ...existingPhotoUrls);
+        // 5. Add existing photos that should be kept
+        photoUrls.push(...existingPhotoUrls);
+        console.log('Final photo URLs:', photoUrls);
       } else {
         const newPhotoUrls = await processNewPhotos(weddingId);
         photoUrls.push(...newPhotoUrls);
@@ -426,10 +484,11 @@ export default function CreateWeddingPage() {
       // Clear user-specific dashboard cache so it shows updated data
       clearCache(`wedding_details_cache_${auth.user?.email}`);
 
-      // Add a small delay to ensure database consistency before navigating
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      navigate("/dashboard");
+      // Show success message
+      setSaveSuccess(true);
+      setTimeout(() => {
+        setSaveSuccess(false);
+      }, 5000);
     } catch (error) {
       console.error(`Error ${isEditMode ? 'updating' : 'creating'} wedding:`, error);
       alert(`Failed to ${isEditMode ? 'update' : 'create'} wedding. Please try again.`);
@@ -731,6 +790,15 @@ export default function CreateWeddingPage() {
         </Button>
       </div>
 
+      {saveSuccess && (
+        <Alert className="mb-6 bg-green-50 text-green-800 border-green-200">
+          <Check className="h-4 w-4 mr-2" />
+          <AlertDescription>
+            {isEditMode ? t('create.weddingUpdatedSuccessfully') : t('create.weddingCreatedSuccessfully')}
+          </AlertDescription>
+        </Alert>
+      )}
+
       {isLoading && (
         <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="flex flex-col items-center gap-4">
@@ -920,32 +988,20 @@ export default function CreateWeddingPage() {
                         <p className="text-sm text-gray-500">
                           {t('create.coverPhotoDescription')}
                         </p>
-                        {weddingDetails.coverPhotoPreview ? (
-                          <div className="relative aspect-[3/1] overflow-hidden rounded-lg border">
-                            <img
-                              src={weddingDetails.coverPhotoPreview || "/placeholder.svg"}
-                              alt={t('create.coverPreview')}
-                              className="w-full h-full object-cover"
-                            />
-                            <div 
-                              className="absolute top-2 right-2 bg-white/80 hover:bg-white text-gray-600 hover:text-red-600 shadow-md z-50 cursor-pointer rounded-full p-1.5 transition-colors"
-                              onClick={removeCoverPhoto}
-                              title={t('create.removeCoverPhoto')}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </div>
-                          </div>
-                        ) : (
-                          <ImageUploader onImageSelected={handleCoverPhotoChange} />
-                        )}
+                        <CoverImageUploader 
+                          onImageSelected={handleCoverPhotoChange}
+                          onImageCleared={removeCoverPhoto}
+                          preview={weddingDetails.coverPhotoPreview}
+                        />
                       </div>
 
                       <div className="space-y-2">
                         <Label>{t('create.additionalPhotos')}</Label>
                         <p className="text-sm text-gray-500">{t('create.additionalPhotosDescription')}</p>
+                        <p className="text-xs text-gray-500">{t('create.galleryPhotoOptimalSize')}</p>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
                           {weddingDetails.additionalPhotos.map((photo, index) => (
-                            <div key={index} className="relative aspect-square overflow-hidden rounded-lg border">
+                            <div key={`photo-${index}-${photo.preview}`} className="relative aspect-square overflow-hidden rounded-lg border">
                               <img
                                 src={photo.preview || "/placeholder.svg"}
                                 alt={`Photo ${index + 1}`}
@@ -1186,3 +1242,4 @@ export default function CreateWeddingPage() {
     </div>
   )
 }
+
